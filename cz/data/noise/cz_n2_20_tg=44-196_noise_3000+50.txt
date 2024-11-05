@@ -1,0 +1,28 @@
+[Parallel(n_jobs=10)]: Using backend LokyBackend with 10 concurrent workers.
+cz_fidelity_optimize_1A_noise.py
+Current Mountain Time: 2024-08-27 15:30:38.296035-06:00
+n_cpu =  6 ;   n_job =  10
+gamma_2 =  3.3333333333333335e-07 gamma_p2 =  2e-05 ;   max_steps =  0.0001
+[Parallel(n_jobs=10)]: Done  20 out of  20 | elapsed:  1.3min finished
+[Parallel(n_jobs=10)]: Using backend LokyBackend with 10 concurrent workers.
+UserWarning: A worker stopped while some jobs were given to the executor. This can be caused by a too short worker timeout or by a memory leak.
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/externals/loky/process_executor.py: 752
+f_ideal = [
+-1.058020863266683, -1.453874409472168, -2.013731075728809, -2.3071633172460313 ,
+-2.5965638853771997, -3.2660857933794745, -3.63485050486145, -3.2049743628302902 ,
+-3.339067792811438, -3.5852296708416787, -3.644176366382091, -3.9240531530786575 ,
+-4.248615259713661, -4.456291921836473, -4.581821372916044, -4.422539264536038 ,
+-4.443201237248585, -4.389006529949741, -4.320901224363965, -4.225722078560466 ,
+]
+[Parallel(n_jobs=10)]: Done  20 out of  20 | elapsed: 204.7min finished
+
+f_noise = [
+-1.0573659748319053, -1.4518658769357982, -2.004866724572045, -2.286257435207804 ,
+-2.54816328853917, -3.0518798136742453, -3.2055619650565492, -2.9754678665541157 ,
+-3.0231722994328836, -3.1006160611266367, -3.1039869086954015, -3.147509930727078 ,
+-3.1563560637026864, -3.148857367631352, -3.1257969664381777, -3.081577430169305 ,
+-3.0606960365349476, -3.039547044825624, -3.016524886574164, -2.9945874307840747 ,
+]
+Current Mountain Time: 2024-08-27 18:57:15.445319-06:00
+559215.42user 636.76system 3:26:39elapsed 4514%CPU (0avgtext+0avgdata 7433712maxresident)k
+0inputs+104outputs (3888major+58806235minor)pagefaults 0swaps

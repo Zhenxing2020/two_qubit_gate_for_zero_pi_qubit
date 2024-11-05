@@ -1,0 +1,23 @@
+
+detune_bounds= (-0.2, 0.2)
+amp_bounds= (0, 0.3)
+gate_time_vector:
+ [ 40.  48.  56.  64.  72.  80.  88.  96. 104. 112. 120. 128. 136. 144.
+ 152. 160. 168. 176. 184. 192. 200.]
+workers= 20
+popsize= 30
+mutation= (1.0, 1.5)
+recombination= 0.7
+tol= 0.001
+x0_vec= [[-0.03546228, 0.01548912, 160.0, -4.45320218]]
+
+
+
+***&&&***repeats=0
+
+
+
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387Command terminated by signal 15
+236.63user 39.96system 3:35.19elapsed 128%CPU (0avgtext+0avgdata 325072maxresident)k
+0inputs+80outputs (0major+149406minor)pagefaults 0swaps
