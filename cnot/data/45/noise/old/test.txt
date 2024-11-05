@@ -1,0 +1,51 @@
+[Parallel(n_jobs=15)]: Using backend LokyBackend with 15 concurrent workers.
+gamma_2 =  6.25e-07 gamma_4 =  6.25e-05 ;   max_steps =  0.0001 ;   nsteps =  10000.0
+joblib.externals.loky.process_executor._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/externals/loky/process_executor.py", line 463, in _process_worker
+    r = call_item()
+        ^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/externals/loky/process_executor.py", line 291, in __call__
+    return self.fn(*self.args, **self.kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 589, in __call__
+    return [func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 589, in <listcomp>
+    return [func(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/cnot/cnot_fidelity_optimize_2A0_noise.py", line 47, in fidelity_noise_sweep
+    p_super = qt.propagator(H=H_qbt_drive,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/qutip/propagator.py", line 96, in propagator
+    _solver_safety_check(H, None, c_ops=c_op_list, e_ops=[], args=args)
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/qutip/solver.py", line 921, in _solver_safety_check
+    raise Exception('Invalid td-list element.')
+Exception: Invalid td-list element.
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/cnot/cnot_fidelity_optimize_2A0_noise.py", line 181, in <module>
+    fidelity = Parallel(n_jobs=n_job, verbose=1)(delayed(fidelity_noise_sweep)(param, *args)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 1952, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 1595, in _get_outputs
+    yield from self._retrieve()
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 1699, in _retrieve
+    self._raise_error_fast()
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 1734, in _raise_error_fast
+    error_job.get_result(self.timeout)
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 736, in get_result
+    return self._return_or_raise()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 754, in _return_or_raise
+    raise self._result
+Exception: Invalid td-list element.
+Command exited with non-zero status 1
+261.18user 31.49system 1:05.27elapsed 448%CPU (0avgtext+0avgdata 1925500maxresident)k
+0inputs+16outputs (0major+1019764minor)pagefaults 0swaps
