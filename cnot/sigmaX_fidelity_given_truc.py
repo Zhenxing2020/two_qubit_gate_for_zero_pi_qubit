@@ -29,10 +29,13 @@ phi_grid = scq.Grid1d(-6*np.pi, 6*np.pi, 100)
 ############################################################
 drive_phi = False
 drive_theta = True
-tg, drive_amp_A, drive_amp_B, detune_A, detune_B = [20, 0.239886, 0.0551455, -0.0051449, -0.00191928] # truc=50
+tg, drive_amp_A, drive_amp_B, detune_A, detune_B = [20, 0.247986, 0.058597, -0.019272, -0.016288] # truc=50
 print('drive_phi = ', drive_phi, ';   drive_theta = ', drive_theta)
+print('tg, drive_amp_A, drive_amp_B, detune_A, detune_B = ',
+      tg, drive_amp_A, drive_amp_B, detune_A, detune_B)
 
-truc_vec = [300, 400, 500]
+truc_vec = [80]
+print('truc_vec = ', truc_vec)
 fidelity = []
 for idx, truc in tqdm(enumerate(truc_vec)):
     zero_pi = scq.ZeroPi(grid=phi_grid, EJ=EJ, EL=EL, ECJ=E_CJ, EC = E_C, dEJ=dEJ,
@@ -57,14 +60,19 @@ for idx, truc in tqdm(enumerate(truc_vec)):
         w_trans_1 = evals[9] - evals[0]
         w_trans_2 = evals[9] - evals[2]
         drive_term = 0.976*n_phi+ 0.024*n_theta
-    argz = [H0, drive_term, tg, w_trans_1, w_trans_2, drive_amp_A, drive_amp_B, detune_A, detune_B]
     hilbert_space = np.arange(truc)
 
-    fidelity.append(ut.xgate_fidelity_given_hspace(hilbert_space, argz))
+    arg = [drive_amp_A, drive_amp_B, detune_A, detune_B]
+    args = [H0, drive_term, tg, w_trans_1, w_trans_2, hilbert_space]
+    fidelity.append(ut.xgate_fidelity_optimize(arg, args))
 
     print('\ntruc = ', np.array(truc_vec[:idx+1]).tolist())
-    print('\nfidelity = ')
+    print('\nlog of gate error = ')
     for i in range(0, len(fidelity), 4):
         print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
-
+        
+    fidelity_real = np.array(fidelity)
+    print('\nfidelity = ')
+    for i in range(0, len(fidelity), 4):
+        print(', '.join(map(str, np.round((1-10**fidelity_real)[i:i+4], 8))), ',')
 print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
