@@ -1,0 +1,178 @@
+sigmaX_fidelity_optimize.py
+Current Mountain Time: 2024-11-14 12:13:41.770606-07:00
+truc= 80 ; drive_phi= False ; drive_theta =  True
+num of truncation = 44
+hilbert_space :
+0, 1, 2, 4, 5, 7, 8, 11, 12, 16 ,
+17, 18, 21, 23, 25, 27, 30, 31, 32, 33 ,
+37, 38, 40, 41, 42, 45, 46, 47, 48, 51 ,
+52, 56, 59, 62, 63, 64, 65, 67, 72, 73 ,
+74, 76, 78, 79 ,
+tg_vec = 
+20, 30, 40 ,
+x0= [[ 0.248363  0.060381 -0.016372 -0.013767 -0.995504]
+ [ 0.283221  0.051568 -0.038113 -0.035568  0.177783]
+ [ 0.209667  0.045522 -0.025267 -0.022739 -0.666255]]
+
+amp_bounds= (0, 0.3)
+detune_bounds= (-0.1, 0.1)
+alpha_bounds= (-1, 1)
+
+workers= 150
+popsize= 50
+mutation= (0.5, 1.0)
+recombination= 0.7
+tol= 0.01
+
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387
+1it [02:24, 144.46s/it]differential_evolution step 1: f(x)= -1.96975
+Best Soln: [ 0.248363  0.060381 -0.016372 -0.013767 -0.995504]
+convergence 0.0591
+----------------------------
+differential_evolution step 2: f(x)= -1.97061
+Best Soln: [ 0.248363    0.060381   -0.016372   -0.013767   -0.99992197]
+convergence 0.0882
+----------------------------
+differential_evolution step 3: f(x)= -1.97061
+Best Soln: [ 0.248363    0.060381   -0.016372   -0.013767   -0.99992197]
+convergence 0.1163
+----------------------------
+differential_evolution step 4: f(x)= -1.97061
+Best Soln: [ 0.248363    0.060381   -0.016372   -0.013767   -0.99992197]
+convergence 0.1522
+----------------------------
+differential_evolution step 5: f(x)= -1.97063
+Best Soln: [ 0.248363    0.060381   -0.016372   -0.013767   -0.99998204]
+convergence 0.1873
+----------------------------
+differential_evolution step 6: f(x)= -1.97063
+Best Soln: [ 0.248363    0.060381   -0.016372   -0.013767   -0.99998204]
+convergence 0.2169
+----------------------------
+differential_evolution step 7: f(x)= -1.97063
+Best Soln: [ 0.248363    0.060381   -0.016372   -0.013767   -0.99998204]
+convergence 0.3128
+----------------------------
+differential_evolution step 8: f(x)= -1.97063
+Best Soln: [ 0.248363    0.060381   -0.016372   -0.013767   -0.99998204]
+convergence 0.4039
+----------------------------
+differential_evolution step 9: f(x)= -1.97063
+Best Soln: [ 0.248363    0.060381   -0.016372   -0.013767   -0.99998204]
+convergence 0.8789
+----------------------------
+differential_evolution step 10: f(x)= -1.97063
+Best Soln: [ 0.248363    0.060381   -0.016372   -0.013767   -0.99998204]
+convergence 1.3118
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -1.9706283150314319
+       x: [ 2.484e-01  6.038e-02 -1.637e-02 -1.377e-02 -1.000e+00]
+     nit: 10
+    nfev: 1408 
+
+
+tg =  [20]
+
+log of gate error = 
+-1.97062832 ,
+
+fidelity = 
+0.9893003 ,
+
+drive_param = 
+[0.248363, 0.060381, -0.016372, -0.013767, -0.999982] ,
+Current Mountain Time: 2024-11-14 12:16:07.807707-07:00
+
+2it [03:58, 114.97s/it]differential_evolution step 1: f(x)= -2.44053
+Best Soln: [ 0.283221    0.051568   -0.038113   -0.035568    0.12665542]
+convergence 0.249
+----------------------------
+differential_evolution step 2: f(x)= -2.44053
+Best Soln: [ 0.283221    0.051568   -0.038113   -0.035568    0.12665542]
+convergence 0.3829
+----------------------------
+differential_evolution step 3: f(x)= -2.44053
+Best Soln: [ 0.283221    0.051568   -0.038113   -0.035568    0.12665542]
+convergence 0.6483
+----------------------------
+differential_evolution step 4: f(x)= -2.44053
+Best Soln: [ 0.283221    0.051568   -0.038113   -0.035568    0.12665542]
+convergence 0.9817
+----------------------------
+differential_evolution step 5: f(x)= -2.44053
+Best Soln: [ 0.283221    0.051568   -0.038113   -0.035568    0.12665542]
+convergence 4.5089
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -2.4405300351807955
+       x: [ 2.832e-01  5.157e-02 -3.811e-02 -3.557e-02  1.267e-01]
+     nit: 5
+    nfev: 384 
+
+
+tg =  [20, 30]
+
+log of gate error = 
+-1.97062832, -2.44053004 ,
+
+fidelity = 
+0.9893003, 0.99637365 ,
+
+drive_param = 
+[0.248363, 0.060381, -0.016372, -0.013767, -0.999982] ,
+[0.283221, 0.051568, -0.038113, -0.035568, 0.126655] ,
+Current Mountain Time: 2024-11-14 12:17:42.135679-07:00
+
+3it [07:06, 147.98s/it]
+3it [07:06, 142.02s/it]
+differential_evolution step 1: f(x)= -3.01044
+Best Soln: [ 0.209667  0.045522 -0.025267 -0.022739 -0.666255]
+convergence 0.1128
+----------------------------
+differential_evolution step 2: f(x)= -3.01044
+Best Soln: [ 0.209667  0.045522 -0.025267 -0.022739 -0.666255]
+convergence 0.1687
+----------------------------
+differential_evolution step 3: f(x)= -3.01044
+Best Soln: [ 0.209667  0.045522 -0.025267 -0.022739 -0.666255]
+convergence 0.2027
+----------------------------
+differential_evolution step 4: f(x)= -3.01044
+Best Soln: [ 0.209667  0.045522 -0.025267 -0.022739 -0.666255]
+convergence 0.2451
+----------------------------
+differential_evolution step 5: f(x)= -3.01045
+Best Soln: [ 0.209667    0.045522   -0.025267   -0.022739   -0.66572594]
+convergence 3.0145
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.0104462499234623
+       x: [ 2.097e-01  4.552e-02 -2.527e-02 -2.274e-02 -6.657e-01]
+     nit: 5
+    nfev: 384 
+
+
+tg =  [20, 30, 40]
+
+log of gate error = 
+-1.97062832, -2.44053004, -3.01044625 ,
+
+fidelity = 
+0.9893003, 0.99637365, 0.99902377 ,
+
+drive_param = 
+[0.248363, 0.060381, -0.016372, -0.013767, -0.999982] ,
+[0.283221, 0.051568, -0.038113, -0.035568, 0.126655] ,
+[0.209667, 0.045522, -0.025267, -0.022739, -0.665726] ,
+Current Mountain Time: 2024-11-14 12:20:49.399315-07:00
+
+amp_bounds= (0, 0.3)
+detune_bounds= (-0.1, 0.1)
+Current Mountain Time: 2024-11-14 12:20:49.399800-07:00
+31126.55user 65.20system 7:09.15elapsed 7268%CPU (0avgtext+0avgdata 308132maxresident)k
+0inputs+40outputs (257major+5866645minor)pagefaults 0swaps
