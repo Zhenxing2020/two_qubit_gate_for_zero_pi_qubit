@@ -95,8 +95,16 @@ def drive_gauss_A(t: float, args: dict) -> float:
     tg = args.get('gate_time', 0)
     return A * (np.exp(-8 * t * (t - tg) / tg**2) - 1) * np.cos(wd * t) * (0<=t<=tg)
 
+def drag_A(t: float, args: dict) -> float:
+    A = args.get('drive_amp_A', 0)
+    wd = args.get('drive_freq_A', 0)
+    tg = args.get('gate_time', 0)
+    alpha = args.get('alpha_A', 0)
+    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
+    return  vg* np.cos(wd* t)* (0<=t<=tg) + alpha* vg* (-8*(2*t-tg)/tg**2)* np.sin(wd* t)* (0<=t<=tg)
+
 # Drive Coefficient on qubit B
-def drive_coeff_B(t: float, args: dict) -> float:
+def drive_cos_B(t: float, args: dict) -> float:
     A = args.get('drive_amp_B', 0)
     wd = args.get('drive_freq_B', 0)
     tg = args.get('gate_time', 0)
@@ -107,6 +115,14 @@ def drive_gauss_B(t: float, args: dict) -> float:
     wd = args.get('drive_freq_B', 0)
     tg = args.get('gate_time', 0)
     return A * (np.exp(-8 * t * (t - tg) / tg**2) - 1) * np.cos(wd * t) * (0<=t<=tg)
+
+def drag_B(t: float, args: dict) -> float:
+    A = args.get('drive_amp_B', 0)
+    wd = args.get('drive_freq_B', 0)
+    tg = args.get('gate_time', 0)
+    alpha = args.get('alpha_B', 0)
+    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
+    return  vg* np.cos(wd* t)* (0<=t<=tg) + alpha* vg* (-8*(2*t-tg)/tg**2)* np.sin(wd* t)* (0<=t<=tg)
 
 # #Gaussian pulse envelope
 # def cos_pulse(t: float, args: dict) -> float:
