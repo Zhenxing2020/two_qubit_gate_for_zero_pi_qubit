@@ -30,32 +30,28 @@ if __name__ == '__main__':
 #     ])
 #     para_tot = np.column_stack((tg_vec, para_tot))
 
-
+    truc1 = 500
+    n_cpu = 30
+    drive_phi = True
+    drive_theta = False
+    drag = 0
     para_tot = np.array([
-[45, 0.154128, 0.091293, -0.295173, -0.270381]
+        [20,0.236014,0.210179,0.325496,0.377853],
+        [25,0.221721,0.211883,0.329296,0.371963],
+        [30,0.213381,0.20848,0.33484,0.370759],
+        [35,0.23764,0.174945,0.323456,0.383149],
         ])
+    n_job = len(para_tot)
+    print('truc1=', truc1, ', n_job=', n_job, ', n_cpu=', n_cpu)
+    print('drive_phi=', drive_phi, '; drive_theta = ', drive_theta)
+    print('\nmode of DRAG (0 is no drag, 1 is one drag) =',drag)
     print('para_tot =')
     for para in para_tot:
         print(para.tolist())
-
-    drag = 0
-    print('\nmode of DRAG (0 is no drag, 1 is one drag) =',drag)
-
-    truc1 = 300
-    n_job = len(para_tot)
-    n_cpu = 30
-    drive_phi = False
-    drive_theta = True
-    print('truc1=', truc1, ', n_job=', n_job, ', n_cpu=', n_cpu)
-    print('drive_phi=', drive_phi, '; drive_theta = ', drive_theta)
     [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=truc1,)
-
-    ## print hilbert space
     print('hilbert space: num of truncation =', len(hspace_charge))
-    # dim = 10
-    # data = hspace_charge
-    # for i in range(0, len(data), dim):
-    #     print(', '.join(map(str, np.round(data[i:i+dim], 8) )), ',')
+
+
 
     ### parallel sweep
     args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, drag]
@@ -63,7 +59,7 @@ if __name__ == '__main__':
                                                 for arg in para_tot)
 
     ### print result
-    print('\nlog of gate error (truc1=300) = ')
+    print('\nlog of gate error (truc=500) = ')
     for i in range(0, len(f_theta), 4):
         print(', '.join(map(str, np.round(f_theta[i:i+4], 8))), ',')
 
@@ -73,13 +69,13 @@ if __name__ == '__main__':
         print(', '.join(map(str, np.round(fidelity_real[i:i+4], 8))), ',')
 
     ############################################################
-    truc1 = 80
+    truc1 = 300
     [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=truc1,)
     args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, drag]
     f_80 = Parallel(n_jobs=n_job, verbose=5)(delayed(ut.xgate_fidelity_parallel)(arg, args)
                                                 for arg in para_tot)
     ### print result
-    print('\nlog of gate error (truc1=80) = ')
+    print('\nlog of gate error (truc=300) = ')
     for i in range(0, len(f_80), 4):
         print(', '.join(map(str, np.round(f_80[i:i+4], 8))), ',')
 
