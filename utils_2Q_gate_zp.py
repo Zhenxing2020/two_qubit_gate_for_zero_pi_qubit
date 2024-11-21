@@ -101,7 +101,8 @@ def drag_A(t: float, args: dict) -> float:
     tg = args.get('gate_time', 0)
     alpha = args.get('alpha_A', 0)
     vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
-    return  vg* np.cos(wd* t)* (0<=t<=tg) + alpha* vg* (-8*(2*t-tg)/tg**2)* np.sin(wd* t)* (0<=t<=tg)
+    return  vg* np.cos(wd* t)* (0<=t<=tg) + alpha* (vg)* (-8*(2*t-tg)/tg**2)* np.sin(wd* t)* (0<=t<=tg)
+
 
 # Drive Coefficient on qubit B
 def drive_cos_B(t: float, args: dict) -> float:
