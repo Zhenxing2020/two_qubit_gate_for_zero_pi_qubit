@@ -100,8 +100,8 @@ def drag_A(t: float, args: dict) -> float:
     wd = args.get('drive_freq_A', 0)
     tg = args.get('gate_time', 0)
     alpha = args.get('alpha_A', 0)
-    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
-    return  vg* np.cos(wd* t)* (0<=t<=tg) + alpha* vg* (-8*(2*t-tg)/tg**2)* np.sin(wd* t)* (0<=t<=tg)
+    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)* (0<=t<=tg)
+    return vg* np.cos(wd* t) + alpha* (vg+A) * (-8*(2*t-tg)/tg**2)* np.sin(wd* t)
 
 
 
@@ -123,8 +123,8 @@ def drag_B(t: float, args: dict) -> float:
     wd = args.get('drive_freq_B', 0)
     tg = args.get('gate_time', 0)
     alpha = args.get('alpha_B', 0)
-    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
-    return  vg* np.cos(wd* t)* (0<=t<=tg) + alpha* vg* (-8*(2*t-tg)/tg**2)* np.sin(wd* t)* (0<=t<=tg)
+    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)* (0<=t<=tg)
+    return vg* np.cos(wd* t) + alpha* (vg+A) * (-8*(2*t-tg)/tg**2)* np.sin(wd* t)
 
 def geometric_phase_integral(xx, yy, zz):
     phi = np.arctan2(yy, xx)
