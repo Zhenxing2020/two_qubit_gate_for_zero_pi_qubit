@@ -665,9 +665,9 @@ def xgate_fidelity_optimize(arg, *args):
     alpha_B = 0
     if drag == 0:
         alpha_A = 0
-        [drive_amp_A, drive_amp_B, detune_A, detune_B, tg] = arg
+        [drive_amp_A, drive_amp_B, detune_A, detune_B] = arg
     else:
-        [drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, tg] = arg
+        [drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = arg
 
     n_cpu = 1
     argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, tg,
