@@ -71,7 +71,7 @@ def fidelity_de(argss, x0_vec):
             [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = drive_param[jdx]
         else:
             [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B] = drive_param[jdx]
-        n_cpu = 6
+        n_cpu = workers
         argz = [H0_300, drive_300, w_trans_1, w_trans_2, hspace_300, n_cpu, tg_base+tg_mod,
                 drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
         f300.append(ut.xgate_fidelity(argz))
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    drive_phi, drive_theta, drag = False, True, 1
+    drive_phi, drive_theta, drag = True, False, 1
     tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 2.0), (-0.5, 0.5), (-20, 20)]
     # tg_vec = [20] # + np.arange(40, 62.5, step=2.5).tolist()
     # tg_vec = [40, 45, 50, 55]
@@ -108,26 +108,26 @@ if __name__ == '__main__':
     ])
 
     
-    workers, popsize = 1, 1
+    workers, popsize = 200, 40
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     truc1 = 80
-    # print('drive_phi=', drive_phi, ', drive_theta = ', drive_theta, ', Drag=', drag)
-    # print('amp_bounds=',amp_bounds,', detune_bounds=',detune_bounds, ', alpha_bounds=',alpha_bounds)
-    # print('workers=',workers, ', popsize=',popsize)
-    # print('recombination=',recombination, ', tol=',tol, ', mutation=',mutation)
-    # if 'x0_vec' in globals():
-    #     print('x0_vec = ')
-    #     for i in x0_vec:
-    #         print(np.round(i,6).tolist(),',')
-    # if 'tg_vec' in globals():
-    #     print('tg_vec = ')
-    #     for i in range(0, len(tg_vec), 4):
-    #         print(', '.join(map(str, tg_vec[i:i+4])), ',')
+    print('drive_phi=', drive_phi, ', drive_theta = ', drive_theta, ', Drag=', drag)
+    print('tg_bounds', tg_bounds, 'amp_bounds=',amp_bounds,', detune_bounds=',detune_bounds, ', alpha_bounds=',alpha_bounds)
+    print('workers=',workers, ', popsize=',popsize)
+    print('recombination=',recombination, ', tol=',tol, ', mutation=',mutation)
+    if 'x0_vec' in globals():
+        print('x0_vec = ')
+        for i in x0_vec:
+            print(np.round(i,6).tolist(),',')
+    if 'tg_vec' in globals():
+        print('tg_vec = ')
+        for i in range(0, len(tg_vec), 4):
+            print(', '.join(map(str, tg_vec[i:i+4])), ',')
 
 
     [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=truc1,)
-    # [H0_300, drive_300, _, _, hspace_300] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,)
-    # print('truncation_1 =', truc1, ', truncation_2 (in optimization) =', len(hspace_charge))
+    [H0_300, drive_300, _, _, hspace_300] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,)
+    print('truncation_1 =', truc1, ', truncation_2 (in optimization) =', len(hspace_charge))
 
     if drag == 0:
         bounds = (tg_bounds, amp_bounds, amp_bounds, detune_bounds, detune_bounds)
@@ -137,23 +137,29 @@ if __name__ == '__main__':
 
     ### optimize
     argss = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, drag, bounds]
-    # fidelity_de(argss, x0_vec[3:4])
+    fidelity_de(argss, x0_vec[4:5])
 
-    import time
-    t0 = time.time()
 
-    [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = x0_vec[3, 3:]
-    tg_base = x0_vec[3, 0]
-    n_cpu = 1
-    xgate_fidelity_args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, tg_base,
-                            drive_amp_A, drive_amp_B, detune_A, detune_B, 0, 0]
-    print("fidelity", ut.xgate_fidelity(xgate_fidelity_args))
+    #### PROFILING FIDELITY FUNCTION
+    # import time
 
-    tf = time.time()
-    print(np.round(tf-t0, 1), "s to run")
+    # [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = x0_vec[3, 3:]
+    # tg_base = x0_vec[3, 0]
+    # runtimes = []
+    # for n_cpu in [1, 2, 4, 8, 16, 32, 44]:
+    #     # n_cpu = 44
+    #     t0 = time.time()
+    #     xgate_fidelity_args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, tg_base,
+    #                             drive_amp_A, drive_amp_B, detune_A, detune_B, 0, 0]
+    #     # print("fidelity", ut.xgate_fidelity(xgate_fidelity_args))
+    #     ut.xgate_fidelity(xgate_fidelity_args)
+
+    #     tf = time.time()
+
+    #     print("n_cpu:", n_cpu, np.round(tf-t0, 1), "s to run")
     
 
-    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
+    # print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
 
 

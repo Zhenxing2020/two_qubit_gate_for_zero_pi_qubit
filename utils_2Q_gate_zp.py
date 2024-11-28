@@ -661,16 +661,16 @@ def cz_phase_correct(U_kraus):
 #     return fidelity
 
 def xgate_fidelity_optimize(arg, *args):
-    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg, drag] = args
+    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg_base, drag] = args
     alpha_B = 0
     if drag == 0:
         alpha_A = 0
-        [drive_amp_A, drive_amp_B, detune_A, detune_B] = arg
+        [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg
     else:
-        [drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = arg
+        [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = arg
 
     n_cpu = 1
-    argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, tg,
+    argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, tg_base+tg_mod,
             drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
     return xgate_fidelity(argz)
 
@@ -709,21 +709,23 @@ def xgate_fidelity(argz):
             'gate_time': tg,
              'alpha_A': alpha_A,
              'alpha_B': alpha_B }
-    tlist = np.linspace(0, tg,  num=100* int(np.max([tg, len(hilbert_space) ]) ) )  # total time
+    num=100* int(np.max([tg, len(hilbert_space) ]))
+    tlist = np.linspace(0, tg, num)  # total time
+    options =qt.Options(num_cpus=1, nsteps=100*num)
     if n_cpu==1:
         prop = qt.propagator( H=H_qbt_drive,
-                            t=tlist,
+                            t=tg,
                             args=pulse_args,
-                            )[-1]  # get the propagator at the final time step
+                            options = options
+                            )  # get the propagator at the final time step
     else:
-        options =qt.Options( num_cpus=1 )
         prop = qt.propagator( H=H_qbt_drive,
-                            t=tlist,
+                            t=tg,
                             args=pulse_args,
                             options=options,
                             num_cpus=n_cpu,
                             parallel=True,
-                            )[-1]  # get the propagator at the final time step
+                            )  # get the propagator at the final time step
     index_2 = hilbert_space.index(2)
     state_logi = [states[0], states[index_2]]
     Uc = qt.Qobj([ [prop.matrix_element(s1, s2) for s1 in state_logi]
