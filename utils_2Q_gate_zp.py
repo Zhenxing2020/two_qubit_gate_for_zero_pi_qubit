@@ -6,6 +6,7 @@ from qutip.qip.operations import rz, cz_gate, cnot, rx, hadamard_transform, swap
 import cmath
 import scipy.sparse as ssp
 from sympy import symbols
+from joblib import Parallel, delayed
 
 def set_fig_font():
     SMALL_SIZE = 8
@@ -100,8 +101,8 @@ def drag_A(t: float, args: dict) -> float:
     wd = args.get('drive_freq_A', 0)
     tg = args.get('gate_time', 0)
     alpha = args.get('alpha_A', 0)
-    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)* (0<=t<=tg)
-    return vg* np.cos(wd* t) + alpha* (vg+A) * (-8*(2*t-tg)/tg**2)* np.sin(wd* t)
+    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
+    return ( vg* np.cos(wd* t) + alpha* (vg+A)* (-8*(2*t-tg)/tg**2)* np.sin(wd* t) ) * (0<=t<=tg)
 
 
 
@@ -123,8 +124,19 @@ def drag_B(t: float, args: dict) -> float:
     wd = args.get('drive_freq_B', 0)
     tg = args.get('gate_time', 0)
     alpha = args.get('alpha_B', 0)
-    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)* (0<=t<=tg)
-    return vg* np.cos(wd* t) + alpha* (vg+A) * (-8*(2*t-tg)/tg**2)* np.sin(wd* t)
+    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
+    return ( vg* np.cos(wd* t) + alpha* (vg+A)* (-8*(2*t-tg)/tg**2)* np.sin(wd* t) ) * (0<=t<=tg)
+
+
+def make_power_spectrum(pulse, tlist, drive_freq):
+        # Power spectrum of pulse
+        mag = np.fft.fftshift(np.abs(np.fft.fft(pulse)))
+        freqs = np.fft.fftshift(np.fft.fftfreq(pulse.size, tlist[1]-tlist[0]))
+        peak_loc = np.argmin(np.abs(freqs-drive_freq/(2*np.pi)))
+        ps_db = 20*np.log10(mag/mag[peak_loc])
+        return mag, freqs, peak_loc, ps_db
+
+
 
 def geometric_phase_integral(xx, yy, zz):
     phi = np.arctan2(yy, xx)
@@ -296,55 +308,210 @@ def get_operator_two_zeropi(Ec0=1.0, trunc_dim=10, get_eval=False):
             eval_tot, order_sort, H0, trunc_states, eket0, eket1, eket_tot ]
 
 
-def get_fidelity_cz(args_indep, *args):
-    detune, drive_amp = args_indep # Independent arguments that can be optimized over
-    [H_qbt_drive, W_target, tg, state_tot] = args # System arguments
+def get_operator_two_zeropi_v2(Ec0=1.0, truc1=300, truc2=300, thresh_matrix_element=1e-4):
+    zp = scq.Circuit(zp_yml, from_file=False)
+    zp.Ec0 = Ec0
+    zp.configure(transformation_matrix=np.linalg.inv(transform_2zeropi))
+
+    ##############################################################################################
+    ### 3. Construct subsystem, calculate eigenvalues
+    system_hierarchy = [[1,2],  [5,6]]
+    subsystem_trunc_dims = [truc1, truc1]
+    zp.configure(system_hierarchy=system_hierarchy,
+                subsystem_trunc_dims=subsystem_trunc_dims)
+
+    zp.cutoff_ext_1 = 100
+    zp.cutoff_n_2 = 30
+    zp.cutoff_ext_5 = 100
+    zp.cutoff_n_6 = 30
+
+    eval0, eket0 = zp.subsystems[0].eigensys(evals_count=truc1)
+    eval1, eket1 = zp.subsystems[1].eigensys(evals_count=truc1)
+    eval0 = eval0 - eval0[0]
+    eval1 = eval1 - eval1[0]
+    eket0 = ssp.csr_matrix([eket0[:,idx] for idx in range(truc1)])
+    eket1 = ssp.csr_matrix([eket1[:,idx] for idx in range(truc1)])
+
+    # get the n-operator in qubit basis of single qubit
+    n_theta0 = np.round(eket0 @ zp.subsystems[0].n2_operator() @ eket0.conj().T, 8).todense()
+    n_theta1 = np.round(eket1 @ zp.subsystems[1].n6_operator() @ eket1.conj().T, 8).todense()
+
+    hspace_0 = [0, 2]
+    hspace_1 = [0, 2]
+    for s in hspace_0:
+        for i in range(truc1):
+            if np.abs(n_theta0[s, i]) > thresh_matrix_element and i not in hspace_0:
+                hspace_0.append(i)
+    hspace_0.sort()
+    for s in hspace_1:
+        for i in range(truc1):
+            if np.abs(n_theta1[s, i]) > thresh_matrix_element and i not in hspace_1:
+                hspace_1.append(i)
+    hspace_1.sort()
+
+    n_theta0_truc = truncate_2(n_theta0, hspace_0)
+    n_theta1_truc = truncate_2(n_theta1, hspace_1)
+    eval0_truc = eval0[hspace_0]
+    eval1_truc = eval1[hspace_1]
+    eket0_truc = eket0[hspace_0]
+    eket1_truc = eket1[hspace_1]
+
+    n2, n6 = symbols('n2 n6')
+    g = float(zp.sym_interaction((1,0), return_expr=True).coeff(n2*n6) )
+    Hint = qt.tensor(qt.Qobj(n_theta0_truc) , qt.Qobj(n_theta1_truc))
+    H_bare = (  qt.tensor(qt.Qobj(np.diag(eval0_truc)),  qt.identity(len(hspace_1)))
+            +  qt.tensor(qt.identity(len(hspace_0)),  qt.Qobj(np.diag(eval1_truc))) )
+    Htot = (g* Hint + H_bare).tidyup(atol=1e-8)
+
+    eval_tot, eket_tot = ssp.linalg.eigsh(Htot.data, k=truc2, which='SA', tol=1.e-10)
+    eket_tot = ssp.csr_matrix([eket_tot[:,idx] for idx in range(truc2)])
+    eval_tot = eval_tot - eval_tot[0]
+
+    def find_overlap(eket):
+        # overlaps = np.array([[np.abs( (eket @ qt.tensor(qt.basis(len(hspace_0), i), 
+        #                                                 qt.basis(len(hspace_1), j)).data).todense()[0,0] ) 
+        #                     for j in range(len(hspace_1))]
+        #                         for i in range(len(hspace_0))])
+        overlaps = np.array([[np.abs( (eket @ ssp.kron(eket0_truc[i],eket1_truc[j])).todense()[0,0] ) 
+                            for j in range(len(hspace_1))]
+                                for i in range(len(hspace_0))])             
+        flat_array = overlaps.flatten() # Flatten the 2D array
+        # Find the indices of the top 3 largest values (in the flattened 1D array)
+        top3_indices_flat = np.argpartition(-flat_array, 3)[:3]
+        # Convert the flat indices to 2D indices
+        top3_indices_2d = np.unravel_index(top3_indices_flat, overlaps.shape)
+        # Extract the values corresponding to the indices
+        top3_values = overlaps[top3_indices_2d]
+        # Sort the values in descending order
+        sorted_indices = np.argsort(-top3_values)  # Use a negative sign for descending order
+        sorted_top3_indices = [tuple(zip(top3_indices_2d[0], top3_indices_2d[1]))[i] for i in sorted_indices]
+        sorted_top3_values = top3_values[sorted_indices]
+        return sorted_top3_indices, sorted_top3_values
+
+    result = Parallel(n_jobs=100, verbose=0)(delayed(find_overlap)(arg) for arg in eket_tot)
+    top3_index = [result[i][0] for i in range(eval_tot.shape[0])]
+    top3_overlap = [result[i][1] for i in range(eval_tot.shape[0])]
+    # print(top3_index)
+    # print(top3_overlap)
+
+    index_array = [] # array index in each qubit (# in hspace_0, hspace_1)
+    for top3 in top3_index:
+        if top3[0] not in index_array:
+            index_array.append(top3[0])
+        elif top3[1] not in index_array:
+            index_array.append(top3[1])
+        else:
+            print('need to further compare 3rd overlap')
+    index_state = [(str(hspace_0[idx[0]])+'-'+str(hspace_1[idx[1]])) for idx in index_array] # actual state index in each qubit
+
+    n_theta0_dress = ssp.kron(n_theta0_truc, ssp.identity(len(hspace_1)))
+    n_theta0_dress = np.round(eket_tot @ n_theta0_dress @ eket_tot.conj().T, 8).todense()
+
+    n_theta1_dress = ssp.kron(ssp.identity(len(hspace_0)), n_theta1_truc)
+    n_theta1_dress = np.round(eket_tot @ n_theta1_dress @ eket_tot.conj().T, 8).todense()
+
+
+    # hspace_logi = ['0-0', '0-2', '2-0', '2-2']
+    # hspace_index = [index_state.index(i) for i in hspace_logi]
+    # for s in hspace_index:
+    #     for i in range(truc_optimize):
+    #         if np.abs(n_theta1_dress[s, i]) > thresh_matrix_element and i not in hspace_index:
+    #             hspace_index.append(i)
+    # hspace_index.sort()
+
+
+    return [hspace_0, hspace_1, top3_index, top3_overlap, 
+            n_theta0_dress, n_theta1_dress, eval_tot, index_state]
+
+def cz_fidelity(prop, state_logi):
+    ''' Compute fidelity to controlled Z gate (CZ) including the folloiwng steps:
+
+    1. remove global phase
+    2. perform two local Rz(phi) corrections
+
+    '''
+    Uz = remove_global_phase(qt.tensor( rz(dphi(prop, (2,2))),
+                                        rz(dphi(prop, (1,1)))))
+
+    Uc = qt.Qobj([ [prop.matrix_element(s1, s2) for s1 in state_logi]
+            for s2 in state_logi  ])
+    Uc_reshaped = qt.Qobj(Uc.data, dims=[[2, 2], [2, 2]])
+    Ucprime = remove_global_phase(Uz * Uc_reshaped)
+
+    #fidelity measure given on page 3 of Nesterov et al.
+    # fidelity = gate_fidelity( cz_gate(), Ucprime)
+    fidelity = qt.average_gate_fidelity(Ucprime, target=cz_gate())
+    return fidelity
+
+
+def cz_fidelity_optimize(arg, *args):
+    detune, drive_amp = arg # Independent arguments that can be optimized over
+    [H_qbt_drive, W_target, state_logi, tg] = args # System arguments
     pulse_args = {'drive_amp_A': drive_amp,
                 'drive_freq_A': W_target + 2*np.pi*detune,
                 'gate_time': tg}
-    tlist = np.linspace(0, tg, num=int(tg))  # total time
+    tlist = np.linspace(0, tg, num=int(3*tg))  # total time
     prop = qt.propagator( H=H_qbt_drive,
                           t=tlist,
                           args=pulse_args,)[-1]  # get the propagator at the final time step
-    fidelity = cz_fidelity( prop, state_tot )
+    fidelity = cz_fidelity( prop, state_logi )
     return np.log10(1-fidelity)
 
 
-def get_fidelity_cz_dark(args_indep, *args):
-    detune, drive_amp, d_eta = args_indep # Independent arguments that can be optimized over
-    [H0, n_theta1_truc, n_theta2_truc, eta, W_target, tg, state_tot, drive_ab] = args # System arguments
-
-    drive_term = n_theta2_truc + (eta+d_eta) * n_theta1_truc  if drive_ab else n_theta2_truc
-    H_qbt_drive = [H0, [2*np.pi* drive_term, drive_gauss_A] ]
+def cz_fidelity_parallel(arg, *args):
+    tg, detune, drive_amp = arg # Independent arguments that can be optimized over
+    [n_cpu, H_qbt_drive, W_target, state_logi] = args # System arguments
 
     pulse_args = {'drive_amp_A': drive_amp,
                 'drive_freq_A': W_target + 2*np.pi*detune,
                 'gate_time': tg}
-    tlist = np.linspace(0, tg, num=int(tg))  # total time
+    tlist = np.linspace(0, tg, num=int(3*tg))  # total time
     prop = qt.propagator( H=H_qbt_drive,
-                          t=tlist,
-                          args=pulse_args,)[-1]  # get the propagator at the final time step
-    fidelity = cz_fidelity( prop, state_tot )
+                        t=tlist,
+                        args=pulse_args,
+                        options=qt.Options( num_cpus=1 ),
+                        num_cpus=n_cpu,
+                        parallel=True,
+                        )[-1]  # get the propagator at the final time step
+    fidelity = cz_fidelity( prop, state_logi )
     return np.log10(1-fidelity)
 
 
-def get_fidelity_cz_dark_print(args_indep, *args):
-    tg, detune, drive_amp, d_eta = args_indep # Independent arguments that can be optimized over
-    [H0, n_theta1_truc, n_theta2_truc, eta, W_target, state_tot, drive_ab] = args # System arguments
+# def get_fidelity_cz_dark(args_indep, *args):
+#     detune, drive_amp, d_eta = args_indep # Independent arguments that can be optimized over
+#     [H0, n_theta1_truc, n_theta2_truc, eta, W_target, tg, state_tot, drive_ab] = args # System arguments
 
-    drive_term = n_theta2_truc + (eta+d_eta) * n_theta1_truc  if drive_ab else n_theta2_truc
-    # drive_term = n_theta1_truc + (eta+d_eta) * n_theta2_truc  if drive_ab else n_theta2_truc
-    H_qbt_drive = [H0, [2*np.pi* drive_term, drive_gauss_A] ]
+#     drive_term = n_theta2_truc + (eta+d_eta) * n_theta1_truc  if drive_ab else n_theta2_truc
+#     H_qbt_drive = [H0, [2*np.pi* drive_term, drive_gauss_A] ]
 
-    pulse_args = {'drive_amp_A': drive_amp,
-                'drive_freq_A': W_target + 2*np.pi*detune,
-                'gate_time': tg}
-    tlist = np.linspace(0, tg, num=int(tg))  # total time
-    prop = qt.propagator( H=H_qbt_drive,
-                          t=tlist,
-                          args=pulse_args,)[-1]  # get the propagator at the final time step
-    fidelity = cz_fidelity( prop, state_tot )
-    return np.log10(1-fidelity)
+#     pulse_args = {'drive_amp_A': drive_amp,
+#                 'drive_freq_A': W_target + 2*np.pi*detune,
+#                 'gate_time': tg}
+#     tlist = np.linspace(0, tg, num=int(tg))  # total time
+#     prop = qt.propagator( H=H_qbt_drive,
+#                           t=tlist,
+#                           args=pulse_args,)[-1]  # get the propagator at the final time step
+#     fidelity = cz_fidelity( prop, state_tot )
+#     return np.log10(1-fidelity)
+
+
+# def get_fidelity_cz_dark_print(args_indep, *args):
+#     tg, detune, drive_amp, d_eta = args_indep # Independent arguments that can be optimized over
+#     [H0, n_theta1_truc, n_theta2_truc, eta, W_target, state_tot, drive_ab] = args # System arguments
+
+#     drive_term = n_theta2_truc + (eta+d_eta) * n_theta1_truc  if drive_ab else n_theta2_truc
+#     # drive_term = n_theta1_truc + (eta+d_eta) * n_theta2_truc  if drive_ab else n_theta2_truc
+#     H_qbt_drive = [H0, [2*np.pi* drive_term, drive_gauss_A] ]
+
+#     pulse_args = {'drive_amp_A': drive_amp,
+#                 'drive_freq_A': W_target + 2*np.pi*detune,
+#                 'gate_time': tg}
+#     tlist = np.linspace(0, tg, num=int(tg))  # total time
+#     prop = qt.propagator( H=H_qbt_drive,
+#                           t=tlist,
+#                           args=pulse_args,)[-1]  # get the propagator at the final time step
+#     fidelity = cz_fidelity( prop, state_tot )
+#     return np.log10(1-fidelity)
 
 
 def get_fidelity_noise_cz(args_indep, *args):
@@ -593,27 +760,7 @@ def cnot_phase_correct(U_kraus):
     return U_final
 
 
-def cz_fidelity(prop, state_tot):
-    ''' Compute fidelity to controlled Z gate (CZ) including the folloiwng steps:
 
-    1. remove global phase
-    2. perform two local Rz(phi) corrections
-
-    '''
-    state_logi = state_tot[:4]
-    Uz = remove_global_phase(qt.tensor( rz(dphi(prop, (2,2))),
-                                        rz(dphi(prop, (1,1)))))
-
-    Uc = qt.Qobj([ [prop.matrix_element(s1, s2) for s1 in state_logi]
-            for s2 in state_logi  ])
-    Uc_reshaped = qt.Qobj(Uc.data, dims=[[2, 2], [2, 2]])
-    Ucprime = remove_global_phase(Uz * Uc_reshaped)
-
-    #fidelity measure given on page 3 of Nesterov et al.
-    # fidelity = gate_fidelity( cz_gate(), Ucprime)
-    fidelity = qt.average_gate_fidelity(Ucprime, target=cz_gate())
-
-    return fidelity
 
 
 def cz_phase_correct(U_kraus):
@@ -660,6 +807,7 @@ def cz_phase_correct(U_kraus):
 #     fidelity = get_fidelity_x(arg_de, *args)
 #     return fidelity
 
+
 def xgate_fidelity_optimize(arg, *args):
     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg, drag] = args
     alpha_B = 0
@@ -675,7 +823,7 @@ def xgate_fidelity_optimize(arg, *args):
     return xgate_fidelity(argz)
 
 
-def xgate_fidelity_parallel(arg, args):
+def xgate_fidelity_parallel(arg, *args):
     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, drag] = args
 
     if drag == 0:
@@ -773,3 +921,12 @@ def zero_pi_initialize(drive_phi, drive_theta, truncation=10):
     hspace_charge.sort()
 
     return H0, drive_term, w_trans_1, w_trans_2, hspace_charge
+
+
+def is_sparse(matrix):
+    non_zero = np.count_nonzero(matrix)  # 非零元素数量
+    total_elements = matrix.size  # 总元素数量
+    sparsity = 1 - (non_zero / total_elements)  # 稀疏度
+    return sparsity  # 如果稀疏度 > 0.7，认为是稀疏矩阵
+# 判断是否为稀疏矩阵
+# print(is_sparse(np.round(Hint, 8)))  # 输出: True
