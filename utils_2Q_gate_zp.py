@@ -760,9 +760,6 @@ def cnot_phase_correct(U_kraus):
     return U_final
 
 
-
-
-
 def cz_phase_correct(U_kraus):
     U_final = []
     for u in U_kraus:
@@ -857,13 +854,26 @@ def xgate_fidelity(argz):
             'gate_time': tg,
              'alpha_A': alpha_A,
              'alpha_B': alpha_B }
-    tlist = np.linspace(0, tg,  num=100* int(np.max([tg, len(hilbert_space) ]) ) )  # total time
+    tlist = np.linspace(0, tg,  num=3* int(np.max([tg, len(hilbert_space) ]) ) )  # total time
     if n_cpu==1:
         prop = qt.propagator( H=H_qbt_drive,
                             t=tlist,
                             args=pulse_args,
                             )[-1]  # get the propagator at the final time step
+
+        # num=100* int(np.max([tg, len(hilbert_space) ]))
+        # options =qt.Options( nsteps=100*num)
+        # prop = qt.propagator( H=H_qbt_drive,
+        #                         t=tg,
+        #                         args=pulse_args,
+        #                         options=options,
+        #                         # num_cpus=n_cpu,
+        #                         # parallel=True,
+        #                         )  # get the propagator at the final time step
+
+
     else:
+    
         options =qt.Options( num_cpus=1 )
         prop = qt.propagator( H=H_qbt_drive,
                             t=tlist,
@@ -878,6 +888,11 @@ def xgate_fidelity(argz):
             for s2 in state_logi  ])
     fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
     return np.log10(1-fidelity)
+
+
+
+
+
 
 
 def zero_pi_initialize(drive_phi, drive_theta, truncation=10):
