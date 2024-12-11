@@ -19,7 +19,7 @@ def set_fig_font():
     plt.rc('figure', titlesize=SMALL_SIZE)  # fontsize of the figure title
 
 def print_soln(xk, convergence=0):
-    print("Best Soln:", xk)
+    print("Best Soln:", list(xk))
     print("convergence", np.round(convergence,4))
     print("----------------------------")
 

@@ -110,10 +110,18 @@ if __name__ == '__main__':
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     drive_phi, drive_theta, drag = True, False, 1
-    tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 0.25), (-0.1, 0.1), (0, 0)]
+    
+    # Phi
+    if drive_phi:
+        tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 0.05), (-0.01, 0.01), (0, 0)]
+    # Theta
+    elif drive_theta:
+        tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 0.1), (-0.01, 0.01), (0, 0)]
+    
     # tg_vec = [20] # + np.arange(40, 62.5, step=2.5).tolist()
     # tg_vec = [40, 45, 50, 55]
-    tg_vec = [100]
+    # tg_vec = [40]
+    tg_vec = [500]
     # x0_vec = np.array([
     #     [25.0,-2.17368,-2.36741531, 0, 0.179494,0.046241,-0.003228,-0.000476,0],
     #     [30.0,-2.876481,-3.07440094,0, 0.144862,0.038029,0.000865,0.003487,0],
@@ -129,9 +137,9 @@ if __name__ == '__main__':
     # ])
 
     
-    workers, popsize = 120, 40
+    workers, popsize = 100, 20
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
-    truc1 = 80
+    truc1 = 150
     print('drive_phi=', drive_phi, ', drive_theta = ', drive_theta, ', Drag=', drag)
     print('tg_bounds', tg_bounds, 'amp_bounds=',amp_bounds,', detune_bounds=',detune_bounds, ', alpha_bounds=',alpha_bounds)
     print('workers=',workers, ', popsize=',popsize)
@@ -152,11 +160,10 @@ if __name__ == '__main__':
     # Theta
     elif drive_theta:
         hspace_charge = [0, 1, 2, 4, 5, 7, 8, 11, 12, 16, 17, 18, 23, 25, 30, 32, 38, 45, 46]
-    print("hspace:", hspace_charge, f"({len(hspace_charge)})")
 
 
-    [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=truc1,)
-    [H0_300, drive_300, _, _, hspace_300] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,)
+    [H0, drive_term, w_trans_1, w_trans_2, _] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,thresh=0)
+    [H0_300, drive_300, _, _, hspace_300] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,thresh=0)
     # print('truncation_1 =', truc1, ', truncation_2 (in optimization) =', len(hspace_charge))
 
     if drag == 0:
@@ -164,6 +171,7 @@ if __name__ == '__main__':
     else:
         bounds = (tg_bounds, amp_bounds, amp_bounds, detune_bounds, detune_bounds, alpha_bounds)
 
+    print("hspace:", hspace_charge, f"({len(hspace_charge)})")
     argss = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, drag, bounds]
     fidelity_de(argss, t0_vec=tg_vec)
 
