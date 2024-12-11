@@ -16,38 +16,59 @@ import pytz
 
 
 
+
 ###################################################################
 ## Optimize fidelity with differential evolution and sweep
 ###################################################################
-def fidelity_de(argss, x0_vec):
+def fidelity_de(argss, x0_vec=[], t0_vec=[]):
     [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, drag, bounds] = argss
     fidelity = []
     drive_param = []
     f300 = []
     # hspace_4 = [0,2,7,25]
-    for jdx, tg_base in tqdm(enumerate(x0_vec[:,0])):
+    if t0_vec:
+        times = t0_vec
+    else:
+        times = x0_vec[:,0]
+    for jdx, tg_base in tqdm(enumerate(times)):
         args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, tg_base, drag]
-        res = sp.optimize.differential_evolution(
-            func=ut.xgate_fidelity_optimize,
-            bounds=bounds,
-            args=args,
-            disp=True,
-            callback=ut.print_soln,
-            init="halton",
-            workers=workers,
-            popsize=popsize,
-            mutation=mutation,
-            recombination=recombination,
-            tol=tol,
-            x0=x0_vec[jdx,3:],
-            polish=False, # 'True' will make the for-loop break
-            )
+        if x0_vec:
+            res = sp.optimize.differential_evolution(
+                func=ut.xgate_fidelity_optimize_tg_wiggle,
+                bounds=bounds,
+                args=args,
+                disp=True,
+                callback=ut.print_soln,
+                init="halton",
+                workers=workers,
+                popsize=popsize,
+                mutation=mutation,
+                recombination=recombination,
+                tol=tol,
+                x0=x0_vec[jdx,3:],
+                polish=False, # 'True' will make the for-loop break
+                )
+        else:
+            res = sp.optimize.differential_evolution(
+                func=ut.xgate_fidelity_optimize_tg_wiggle,
+                bounds=bounds,
+                args=args,
+                disp=True,
+                callback=ut.print_soln,
+                init="halton",
+                workers=workers,
+                popsize=popsize,
+                mutation=mutation,
+                recombination=recombination,
+                tol=tol,
+                polish=False, # 'True' will make the for-loop break
+                )
         fidelity.append(res.fun)
         drive_param.append(res.x)
 
         ### print fidelity for truc=44
         print(res, '\n')
-        print('\ntg = ', np.array((x0_vec[:,0])[:jdx+1]).tolist())
+        print('\ntg = ', times[:jdx+1])
 
         print('\nlog of gate error (truc2=44) = ')
         for i in range(0, len(fidelity), 4):
@@ -60,9 +81,9 @@ def fidelity_de(argss, x0_vec):
 
         print('\ndrive_param = ')
         for i in drive_param:
-            print(np.round(i,6).tolist(),',')
+            print(np.round(i,6),',')
 
-        ## get fidelity for truc=157
+        ## get fidelity for truc=300
         if drag == 0:
             [alpha_A, alpha_B] = [0, 0]
             [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B] = drive_param[jdx]
@@ -75,7 +96,7 @@ def fidelity_de(argss, x0_vec):
         argz = [H0_300, drive_300, w_trans_1, w_trans_2, hspace_300, n_cpu, tg_base+tg_mod,
                 drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
         f300.append(ut.xgate_fidelity(argz))
-        print('\nlog of gate error (truc2=157) = ')
+        print('\nlog of gate error (truc2=300) = ')
         for i in range(0, len(f300), 4):
             print(', '.join(map(str, np.round(f300[i:i+4], 8))), ',')
 
@@ -89,26 +110,26 @@ if __name__ == '__main__':
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     drive_phi, drive_theta, drag = True, False, 1
-    tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 2.0), (-0.5, 0.5), (-20, 20)]
+    tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 0.25), (-0.1, 0.1), (0, 0)]
     # tg_vec = [20] # + np.arange(40, 62.5, step=2.5).tolist()
     # tg_vec = [40, 45, 50, 55]
-    # tg_vec = [40]
-    x0_vec = np.array([
-        [25.0,-2.17368,-2.36741531, 0, 0.179494,0.046241,-0.003228,-0.000476,0],
-        [30.0,-2.876481,-3.07440094,0, 0.144862,0.038029,0.000865,0.003487,0],
-        [35.0,-3.688729,-3.79677893,0, 0.121768,0.032286,0.001859,0.004392,0],
-        [40.0,-3.301470,-3.302673,0, 0.105147,0.028068,0.001898,0.00438,0],
-        [45.0,-2.453880,-1.532119,0, 0.154128,0.091293,-0.295173,-0.270381,0],
-        [50.0,-3.77945,-2.803664,0, 0.10746657,0.10323223,-0.30225871,-0.25967603,0],
-        [55.0,-3.052643,-1.884744,0, 0.157689,0.052548,0.034872,0.037391,0],
-        [60.0,-3.409958,-3.348597,0,  0.081606,0.106285,-0.299703,-0.247238,0],
-        [65.0,-3.36216,-2.18657946,0, 0.139866,0.041224,0.035288,0.0378,0],
-        [70.0,-3.442062,-2.453763,0, 0.069316, 0.109747, -0.311983, -0.252449,0],
-        [80.0,-3.907725,-3.11743643,0, 0.143017,0.046456,0.050847,0.053381,0],
-    ])
+    tg_vec = [100]
+    # x0_vec = np.array([
+    #     [25.0,-2.17368,-2.36741531, 0, 0.179494,0.046241,-0.003228,-0.000476,0],
+    #     [30.0,-2.876481,-3.07440094,0, 0.144862,0.038029,0.000865,0.003487,0],
+    #     [35.0,-3.688729,-3.79677893,0, 0.121768,0.032286,0.001859,0.004392,0],
+    #     [40.0,-3.301470,-3.302673,0, 0.105147,0.028068,0.001898,0.00438,0],
+    #     [45.0,-2.453880,-1.532119,0, 0.154128,0.091293,-0.295173,-0.270381,0],
+    #     [50.0,-3.77945,-2.803664,0, 0.10746657,0.10323223,-0.30225871,-0.25967603,0],
+    #     [55.0,-3.052643,-1.884744,0, 0.157689,0.052548,0.034872,0.037391,0],
+    #     [60.0,-3.409958,-3.348597,0,  0.081606,0.106285,-0.299703,-0.247238,0],
+    #     [65.0,-3.36216,-2.18657946,0, 0.139866,0.041224,0.035288,0.0378,0],
+    #     [70.0,-3.442062,-2.453763,0, 0.069316, 0.109747, -0.311983, -0.252449,0],
+    #     [80.0,-3.907725,-3.11743643,0, 0.143017,0.046456,0.050847,0.053381,0],
+    # ])
 
     
-    workers, popsize = 200, 40
+    workers, popsize = 120, 40
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     truc1 = 80
     print('drive_phi=', drive_phi, ', drive_theta = ', drive_theta, ', Drag=', drag)
@@ -124,20 +145,27 @@ if __name__ == '__main__':
         for i in range(0, len(tg_vec), 4):
             print(', '.join(map(str, tg_vec[i:i+4])), ',')
 
+     ### optimize
+    # # Phi
+    if drive_phi:
+        hspace_charge = [0, 2, 9, 10, 11, 16, 18, 19, 31, 33, 37, 46, 53, 55, 69, 76, 92, 100, 126]
+    # Theta
+    elif drive_theta:
+        hspace_charge = [0, 1, 2, 4, 5, 7, 8, 11, 12, 16, 17, 18, 23, 25, 30, 32, 38, 45, 46]
+    print("hspace:", hspace_charge, f"({len(hspace_charge)})")
+
 
     [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=truc1,)
     [H0_300, drive_300, _, _, hspace_300] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,)
-    print('truncation_1 =', truc1, ', truncation_2 (in optimization) =', len(hspace_charge))
+    # print('truncation_1 =', truc1, ', truncation_2 (in optimization) =', len(hspace_charge))
 
     if drag == 0:
         bounds = (tg_bounds, amp_bounds, amp_bounds, detune_bounds, detune_bounds)
     else:
         bounds = (tg_bounds, amp_bounds, amp_bounds, detune_bounds, detune_bounds, alpha_bounds)
 
-
-    ### optimize
     argss = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, drag, bounds]
-    fidelity_de(argss, x0_vec[4:5])
+    fidelity_de(argss, t0_vec=tg_vec)
 
 
     #### PROFILING FIDELITY FUNCTION

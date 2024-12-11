@@ -88,24 +88,24 @@ if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    drive_phi, drive_theta, drag = False, True, 1
+    drive_phi, drive_theta, drag = True, False, 1
     tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 2.0), (-0.5, 0.5), (-20, 20)]
     # tg_vec = [20] # + np.arange(40, 62.5, step=2.5).tolist()
     # tg_vec = [40, 45, 50, 55]
-    # tg_vec = [40]
-    x0_vec = np.array([
-        [25.0,-2.17368,-2.36741531, 0, 0.179494,0.046241,-0.003228,-0.000476,0],
-        [30.0,-2.876481,-3.07440094,0, 0.144862,0.038029,0.000865,0.003487,0],
-        [35.0,-3.688729,-3.79677893,0, 0.121768,0.032286,0.001859,0.004392,0],
-        [40.0,-3.301470,-3.302673,0, 0.105147,0.028068,0.001898,0.00438,0],
-        [45.0,-2.453880,-1.532119,0, 0.154128,0.091293,-0.295173,-0.270381,0],
-        [50.0,-3.77945,-2.803664,0, 0.10746657,0.10323223,-0.30225871,-0.25967603,0],
-        [55.0,-3.052643,-1.884744,0, 0.157689,0.052548,0.034872,0.037391,0],
-        [60.0,-3.409958,-3.348597,0,  0.081606,0.106285,-0.299703,-0.247238,0],
-        [65.0,-3.36216,-2.18657946,0, 0.139866,0.041224,0.035288,0.0378,0],
-        [70.0,-3.442062,-2.453763,0, 0.069316, 0.109747, -0.311983, -0.252449,0],
-        [80.0,-3.907725,-3.11743643,0, 0.143017,0.046456,0.050847,0.053381,0],
-    ])
+    tg_vec = [50]
+    # x0_vec = np.array([
+    #     [25.0,-2.17368,-2.36741531, 0, 0.179494,0.046241,-0.003228,-0.000476,0],
+    #     [30.0,-2.876481,-3.07440094,0, 0.144862,0.038029,0.000865,0.003487,0],
+    #     [35.0,-3.688729,-3.79677893,0, 0.121768,0.032286,0.001859,0.004392,0],
+    #     [40.0,-3.301470,-3.302673,0, 0.105147,0.028068,0.001898,0.00438,0],
+    #     [45.0,-2.453880,-1.532119,0, 0.154128,0.091293,-0.295173,-0.270381,0],
+    #     [50.0,-3.77945,-2.803664,0, 0.10746657,0.10323223,-0.30225871,-0.25967603,0],
+    #     [55.0,-3.052643,-1.884744,0, 0.157689,0.052548,0.034872,0.037391,0],
+    #     [60.0,-3.409958,-3.348597,0,  0.081606,0.106285,-0.299703,-0.247238,0],
+    #     [65.0,-3.36216,-2.18657946,0, 0.139866,0.041224,0.035288,0.0378,0],
+    #     [70.0,-3.442062,-2.453763,0, 0.069316, 0.109747, -0.311983, -0.252449,0],
+    #     [80.0,-3.907725,-3.11743643,0, 0.143017,0.046456,0.050847,0.053381,0],
+    # ])
 
     
     workers, popsize = 1, 1
@@ -124,10 +124,13 @@ if __name__ == '__main__':
     #     for i in range(0, len(tg_vec), 4):
     #         print(', '.join(map(str, tg_vec[i:i+4])), ',')
 
+    
 
     [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=truc1,)
     # [H0_300, drive_300, _, _, hspace_300] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,)
     # print('truncation_1 =', truc1, ', truncation_2 (in optimization) =', len(hspace_charge))
+
+    hspace_charge = [0, 2, 9, 10, 11, 16, 19, 23, 25, 31, 33]
 
     if drag == 0:
         bounds = (tg_bounds, amp_bounds, amp_bounds, detune_bounds, detune_bounds)
@@ -142,12 +145,12 @@ if __name__ == '__main__':
     import time
     t0 = time.time()
 
-    [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = x0_vec[3, 3:]
-    tg_base = x0_vec[3, 0]
+    # [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = x0_vec[3, 3:]
+    # tg_base = x0_vec[3, 0]
     n_cpu = 1
-    xgate_fidelity_args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, tg_base,
-                            drive_amp_A, drive_amp_B, detune_A, detune_B, 0, 0]
-    print("fidelity", ut.xgate_fidelity(xgate_fidelity_args))
+    # xgate_fidelity_args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, tg_vec[0],
+    #                         drive_amp_A, drive_amp_B, detune_A, detune_B, 0, 0]
+    # print("fidelity", ut.xgate_fidelity(xgate_fidelity_args))
 
     tf = time.time()
     print(np.round(tf-t0, 1), "s to run")

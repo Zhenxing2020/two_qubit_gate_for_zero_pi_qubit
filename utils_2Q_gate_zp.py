@@ -819,6 +819,20 @@ def xgate_fidelity_optimize(arg, *args):
             drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
     return xgate_fidelity(argz)
 
+def xgate_fidelity_optimize_tg_wiggle(arg, *args):
+    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg_base, drag] = args
+    alpha_B = 0
+    if drag == 0:
+        alpha_A = 0
+        [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg
+    else:
+        [tg_mod, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = arg
+
+    n_cpu = 1
+    argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, tg_base+tg_mod,
+            drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
+    return xgate_fidelity(argz)
+
 
 def xgate_fidelity_parallel(arg, *args):
     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, drag] = args
@@ -854,12 +868,14 @@ def xgate_fidelity(argz):
             'gate_time': tg,
              'alpha_A': alpha_A,
              'alpha_B': alpha_B }
-    tlist = np.linspace(0, tg,  num=3* int(np.max([tg, len(hilbert_space) ]) ) )  # total time
+    tlist = np.linspace(0, tg,  num=100)  # total time
+    options =qt.Options(num_cpus=1, nsteps=1e09)
     if n_cpu==1:
-        prop = qt.propagator( H=H_qbt_drive,
+        props = qt.propagator(options=options,
+                             H=H_qbt_drive,
                             t=tlist,
                             args=pulse_args,
-                            )[-1]  # get the propagator at the final time step
+                            )  # get the propagator at the final time step
 
         # num=100* int(np.max([tg, len(hilbert_space) ]))
         # options =qt.Options( nsteps=100*num)
@@ -873,15 +889,20 @@ def xgate_fidelity(argz):
 
 
     else:
+        props = qt.propagator( H=H_qbt_drive,
+                                t=tlist,
+                                args=pulse_args,
+                                options=options,
+                                num_cpus=n_cpu,
+                                parallel=True,
+                                )  # get the propagator at the final time step
     
-        options =qt.Options( num_cpus=1 )
-        prop = qt.propagator( H=H_qbt_drive,
-                            t=tlist,
-                            args=pulse_args,
-                            options=options,
-                            num_cpus=n_cpu,
-                            parallel=True,
-                            )[-1]  # get the propagator at the final time step
+    prop = props[-1]
+
+    # Max non logical + intermediate state population
+
+
+
     index_2 = hilbert_space.index(2)
     state_logi = [states[0], states[index_2]]
     Uc = qt.Qobj([ [prop.matrix_element(s1, s2) for s1 in state_logi]
@@ -890,12 +911,70 @@ def xgate_fidelity(argz):
     return np.log10(1-fidelity)
 
 
+def to_rot_frame(H, U, Udot):
+    return U*H*U.dag() + 1.0j*Udot*U.dag()
+
+def xgate_propagator(argz, num=100, rot_frame=None):
+    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, tg,
+    drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B] = argz
+
+    states = [qt.basis(len(hilbert_space), i) for i in range(len(hilbert_space))]
+    H0_truc = truncate_2(H0, hilbert_space)
+    drive_truc = truncate_2(drive_term, hilbert_space)
+
+    if rot_frame is None:
+        H_qbt_drive = [H0_truc, [drive_truc, drag_A],
+                                [drive_truc, drag_B],]
+    else:
+        H_qbt_drive = [H0_truc, [drive_truc, drag_A],
+                                [drive_truc, drag_B],]
+
+    pulse_args = {'drive_amp_A': drive_amp_A ,
+            'drive_freq_A': w_trans_1 + 2*np.pi*detune_A,
+            'drive_amp_B': drive_amp_B ,
+            'drive_freq_B': w_trans_2 + 2*np.pi*detune_B,
+            'gate_time': tg,
+             'alpha_A': alpha_A,
+             'alpha_B': alpha_B }
+    tlist = np.linspace(0, tg,  num=num)  # total time
+    options =qt.Options(num_cpus=1, nsteps=1e09)
+    if n_cpu==1:
+        prop = qt.propagator(options=options,
+                             H=H_qbt_drive,
+                            t=tlist,
+                            args=pulse_args,
+                            )  # get the propagator at the final time step
+
+        # num=100* int(np.max([tg, len(hilbert_space) ]))
+        # options =qt.Options( nsteps=100*num)
+        # prop = qt.propagator( H=H_qbt_drive,
+        #                         t=tg,
+        #                         args=pulse_args,
+        #                         options=options,
+        #                         # num_cpus=n_cpu,
+        #                         # parallel=True,
+        #                         )  # get the propagator at the final time step
+
+
+    else:
+        prop = qt.propagator( H=H_qbt_drive,
+                                t=tlist,
+                                args=pulse_args,
+                                options=options,
+                                num_cpus=n_cpu,
+                                parallel=True,
+                                )  # get the propagator at the final time step
+    return tlist, prop
 
 
 
 
 
-def zero_pi_initialize(drive_phi, drive_theta, truncation=10):
+
+
+
+
+def zero_pi_initialize(drive_phi, drive_theta, truncation=10, thresh=0.01):
     EL        = 0.377 # GHz
     EJ        = 6.013 # Soft Zero Pi (Gyenis)
     EC_phi    = 1.142
