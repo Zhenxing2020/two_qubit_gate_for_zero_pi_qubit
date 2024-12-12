@@ -32,7 +32,7 @@ def fidelity_de(argss, x0_vec=[], t0_vec=[]):
         times = x0_vec[:,0]
     for jdx, tg_base in tqdm(enumerate(times)):
         args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, tg_base, drag]
-        if x0_vec:
+        if len(x0_vec) > 0:
             res = sp.optimize.differential_evolution(
                 func=ut.xgate_fidelity_optimize_tg_wiggle,
                 bounds=bounds,
@@ -113,15 +113,18 @@ if __name__ == '__main__':
     
     # Phi
     if drive_phi:
-        tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 0.05), (-0.01, 0.01), (0, 0)]
+        tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 0.15), (-0.03, 0.03), (0, 0)]
     # Theta
     elif drive_theta:
-        tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 0.1), (-0.01, 0.01), (0, 0)]
+        tg_bounds, amp_bounds, detune_bounds, alpha_bounds = [(-2.5, 2.5), (0, 0.1), (-0.03, 0.03), (0, 0)]
     
     # tg_vec = [20] # + np.arange(40, 62.5, step=2.5).tolist()
     # tg_vec = [40, 45, 50, 55]
     # tg_vec = [40]
     tg_vec = [500]
+    x0_vec = np.array([
+        [500.0,0, 0, 0.17210174360195618, 0.01469954169804958, 0.041345842433731385, 0.007670946255372147, 0.007379191702328314, 0.0]
+    ])
     # x0_vec = np.array([
     #     [25.0,-2.17368,-2.36741531, 0, 0.179494,0.046241,-0.003228,-0.000476,0],
     #     [30.0,-2.876481,-3.07440094,0, 0.144862,0.038029,0.000865,0.003487,0],
@@ -153,17 +156,21 @@ if __name__ == '__main__':
         for i in range(0, len(tg_vec), 4):
             print(', '.join(map(str, tg_vec[i:i+4])), ',')
 
+    # Guess for 500 larger model
+    # [-1.8656803662235557, 0.01784602784413112, 0.08356733494706022, -0.004047598319364814, -0.0040671495487280005, 0.0]
+
      ### optimize
     # # Phi
     if drive_phi:
-        hspace_charge = [0, 2, 9, 10, 11, 16, 18, 19, 31, 33, 37, 46, 53, 55, 69, 76, 92, 100, 126]
+        # hspace_charge = [0, 2, 9, 10, 11, 16, 18, 19, 31, 33, 37, 46, 53, 55, 69, 76, 92, 100, 126]
+        hspace_charge = [0, 2, 9, 10, 11, 15, 16, 18, 19, 25, 31, 33, 37, 46, 53, 55, 57, 69, 76, 77, 83, 91, 92, 95, 100, 121, 126, 154]
     # Theta
     elif drive_theta:
         hspace_charge = [0, 1, 2, 4, 5, 7, 8, 11, 12, 16, 17, 18, 23, 25, 30, 32, 38, 45, 46]
 
 
-    [H0, drive_term, w_trans_1, w_trans_2, _] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,thresh=0)
-    [H0_300, drive_300, _, _, hspace_300] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,thresh=0)
+    [H0, drive_term, w_trans_1, w_trans_2, _] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,thresh=-0.1)
+    [H0_300, drive_300, _, _, hspace_300] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,thresh=-0.1)
     # print('truncation_1 =', truc1, ', truncation_2 (in optimization) =', len(hspace_charge))
 
     if drag == 0:
@@ -173,7 +180,10 @@ if __name__ == '__main__':
 
     print("hspace:", hspace_charge, f"({len(hspace_charge)})")
     argss = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, drag, bounds]
-    fidelity_de(argss, t0_vec=tg_vec)
+    if 'x0_vec' in globals():
+        fidelity_de(argss, x0_vec=x0_vec)
+    else:
+        fidelity_de(argss, t0_vec=tg_vec)
 
 
     #### PROFILING FIDELITY FUNCTION
