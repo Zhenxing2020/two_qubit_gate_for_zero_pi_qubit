@@ -7,6 +7,7 @@ import cmath
 import scipy.sparse as ssp
 from sympy import symbols
 from joblib import Parallel, delayed
+from multiprocessing import Pool
 
 def set_fig_font():
     SMALL_SIZE = 8
@@ -849,6 +850,55 @@ def xgate_fidelity_parallel(arg, *args):
     argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, tg,
             drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
     return xgate_fidelity(argz)
+
+
+
+
+def sesolve_parallel(argz):
+
+    H, psi0, tlist, pulse_args, options = argz
+
+    return psi0, qt.sesolve(H, qt.basis(H[0].shape[0], psi0), tlist, options=options, args=pulse_args)
+
+def xgate_fidelity_fast(argz):
+    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, tg,
+    drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B] = argz
+
+    states = [qt.basis(len(hilbert_space), i) for i in range(len(hilbert_space))]
+    H0_truc = truncate_2(H0, hilbert_space)
+    drive_truc = truncate_2(drive_term, hilbert_space)
+    H_qbt_drive = [H0_truc, [drive_truc,drag_A],
+                            [drive_truc,drag_B],]
+
+    pulse_args = {'drive_amp_A': drive_amp_A ,
+            'drive_freq_A': w_trans_1 + 2*np.pi*detune_A,
+            'drive_amp_B': drive_amp_B ,
+            'drive_freq_B': w_trans_2 + 2*np.pi*detune_B,
+            'gate_time': tg,
+             'alpha_A': alpha_A,
+             'alpha_B': alpha_B }
+    tlist = np.linspace(0, tg,  num=100)  # total time
+    options = qt.Options(num_cpus=1, nsteps=1e09)
+
+    sesolve_args = []
+    logical_states = [0, 2]
+    logical_idx = [hilbert_space.index(s) for s in logical_states]
+    for i in logical_idx:
+        sesolve_args.append([H_qbt_drive, i, tlist, pulse_args, options])
+
+    prop = np.zeros((len(hilbert_space), len(logical_states)), dtype=np.complex128)
+    if n_cpu > 1:
+        pool = Pool(processes=n_cpu)
+        for i, res in pool.imap_unordered(sesolve_parallel, sesolve_args):
+            prop[:, logical_idx.index(i)] = res.states[-1].full().flatten()
+    for se_arg in sesolve_args:
+        i, res = sesolve_parallel(se_arg)
+        prop[:, logical_idx.index(i)] = res.states[-1].full().flatten()
+    prop = qt.Qobj(prop)
+  
+    Uc = truncate_2(prop, [hilbert_space.index(psi) for psi in logical_states])
+    fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
+    return np.log10(1-fidelity)
 
 
 def xgate_fidelity(argz):
