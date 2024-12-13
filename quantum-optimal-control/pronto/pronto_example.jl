@@ -6,6 +6,8 @@ using LinearAlgebra
 using StaticArrays
 using Base: @kwdef
 
+## ----------------------------------- define helper functions ----------------------------------- ##
+
 function mprod(x)
     Re = I(2)
     Im = [0 -1;
@@ -14,12 +16,12 @@ function mprod(x)
     return M
 end
 
+## ----------------------------------- define the model ----------------------------------- ##
 
 @kwdef struct XGate3 <: PRONTO.Model{12,1}
     kl::Float64 = 0.01
     kq::Float64 = 0.5
 end
-
 
 @define_f XGate3 begin
     E0 = 0.0
@@ -55,6 +57,7 @@ PRONTO.Pf(θ::XGate3,α,μ,tf) = SMatrix{12,12,Float64}(I(12))
 
 resolve_model(XGate3)
 
+## ----------------------------------- run optimization ----------------------------------- ##
 
 θ = XGate3()
 τ = t0,tf = 0,10
@@ -65,6 +68,7 @@ x0 = SVector{12}(vec([ψ1;ψ2;0*ψ1;0*ψ2]))
 η = open_loop(θ, x0, μ, τ) # guess trajectory
 ξ,data = pronto(θ, x0, η, τ;tol=1e-4); # optimal trajectory
 
+## ----------------------------------- plot results ----------------------------------- ##
 using GLMakie
 
 fig = Figure()
