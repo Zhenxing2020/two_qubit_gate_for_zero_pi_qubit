@@ -1,19 +1,17 @@
 using Pkg
 Pkg.activate(".")
 
-
 # Will have to run once
 # ENV["PYTHON"] = "./anaconda3/bin/python"
 # Pkg.build("PyCall")
 
 using QuantumOptics, NPZ, PyPlot
 include("gate_utils.jl")
-
-
 # Truncate Hamiltonian Function
 function truncate(H0, hspace)
     H0[hspace .+ 1, hspace .+ 1]
 end
+
 
 
 drive = "theta"

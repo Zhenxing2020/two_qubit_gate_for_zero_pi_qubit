@@ -32,6 +32,11 @@ function batch_evol(Ht, logical_states, tlist)
     res, times
 end
 
+# Truncate Hamiltonian Function
+function truncate(H0, hspace)
+    H0[hspace .+ 1, hspace .+ 1]
+end
+
 function plot_evolution(hspace, tlist, props, logical, intermediate; divide=11, suptitle="", savename="")
     
     # Get population of logical states, intermediate states, and other states < or >= divide
