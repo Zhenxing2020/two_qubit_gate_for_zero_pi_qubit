@@ -18,9 +18,24 @@ function mprod(x)
     return M
 end
 
+## ----------------------------------- Load data from python ----------------------------------- ##
+drive = "theta"
+params = npzread("H_$drive.npz")
+
+# The .+ 1 is elementwise addition to an array/vector
+# Must do .+ 1 because Julia indexes from 1
+hspace_full = params["hspace_full"] 
+hspace_reduced = params["hspace_reduced"] 
+w_trans_1 = params["w_trans_1"]
+w_trans_2 = params["w_trans_2"]
+drive_term = params["drive"]
+H0 = params["H0"]
+
+
 ## ----------------------------------- define the model ----------------------------------- ##
 
-@kwdef struct XGate3 <: PRONTO.Model{12,1}
+# 
+@kwdef struct XGateZP <: PRONTO.Model{12,1}
     kl::Float64 = 0.01
     kq::Float64 = 0.5
 end

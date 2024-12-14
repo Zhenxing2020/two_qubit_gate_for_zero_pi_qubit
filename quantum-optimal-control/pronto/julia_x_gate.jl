@@ -3,7 +3,7 @@ Pkg.activate(".")
 
 
 # Will have to run once
-ENV["PYTHON"] = "./anaconda3/bin/python"
+# ENV["PYTHON"] = "./anaconda3/bin/python"
 # Pkg.build("PyCall")
 
 using QuantumOptics, NPZ, PyPlot
