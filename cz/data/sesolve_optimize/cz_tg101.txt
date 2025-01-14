@@ -1,0 +1,64 @@
+cz_fidelity_optimize_sesolve.py
+Start Mountain Time: 2024-12-30 09:09:20.237433-07:00
+
+truc1= 80 , truc_tot= 400 , charge_pick= True
+amp_bounds= (0.013, 0.017) , detune_bounds= (0.02, 0.025) , tg_bound= (-0.05, 0.05)
+W_20_50 =  15.984 , drive_ab= False
+gate_time_vector: [101]
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387differential_evolution step 1: f(x)= -2.13862
+Best Soln: [1.00977976e+02 1.51527082e-02 2.22842102e-02]
+convergence 0.0851
+----------------------------
+differential_evolution step 2: f(x)= -2.16537
+Best Soln: [1.00966950e+02 1.49550028e-02 2.28657410e-02]
+convergence 0.1135
+----------------------------
+differential_evolution step 3: f(x)= -2.16754
+Best Soln: [1.00973946e+02 1.49974041e-02 2.26362244e-02]
+convergence 0.2284
+----------------------------
+differential_evolution step 4: f(x)= -2.16754
+Best Soln: [1.00973946e+02 1.49974041e-02 2.26362244e-02]
+convergence 0.2687
+----------------------------
+differential_evolution step 5: f(x)= -2.16766
+Best Soln: [1.01045664e+02 1.50274944e-02 2.28944001e-02]
+convergence 0.4764
+----------------------------
+differential_evolution step 6: f(x)= -2.16842
+Best Soln: [1.00988849e+02 1.50036568e-02 2.26898727e-02]
+convergence 0.8785
+----------------------------
+differential_evolution step 7: f(x)= -2.16844
+Best Soln: [1.00962476e+02 1.50013292e-02 2.28152332e-02]
+convergence 1.5299
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -2.1684423403733697
+       x: [ 1.010e+02  1.500e-02  2.282e-02]
+     nit: 7
+    nfev: 256 
+
+
+tg =  [101]
+
+log of gate error (truc=200) = 
+-2.16844234 ,
+
+drive_param (truc=200) = 
+[100.962476, 0.015001, 0.022815] ,
+1it [01:46, 106.58s/it]1it [01:46, 106.58s/it]
+
+log of gate error (truc=400) = 
+-2.16852977 ,
+
+amp_bounds= (0.013, 0.017) , detune_bounds= (0.02, 0.025) , tg_bound= (-0.05, 0.05)
+Current Mountain Time: 2024-12-30 09:12:43.056531-07:00
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+4153.45user 147.81system 3:25.28elapsed 2095%CPU (0avgtext+0avgdata 534120maxresident)k
+0inputs+32outputs (11major+2796404minor)pagefaults 0swaps

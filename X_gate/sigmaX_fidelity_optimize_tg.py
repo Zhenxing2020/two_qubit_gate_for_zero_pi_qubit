@@ -22,14 +22,15 @@ import pytz
 def fidelity_de():
     fidelity = []
     drive_param = []
-    f300 = []
+    fidelity_full = []
+    fidelity_300 = []
     # hspace_4 = [0,2,7,25]
-    # for jdx, tg in tqdm(enumerate(tg_vec)):
     n_cpu = 1
     args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, drag]
-    for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
-        tg_bounds = (tg-1, tg+1)
-        bounds = (tg_bounds, amp_bounds, amp_bounds, detune_bounds, detune_bounds)
+    for jdx, tg in tqdm(enumerate(tg_vec)):
+    # for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
+        tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
+        bounds = (tg_bounds, amp1_bounds, amp2_bounds, detune1_bounds, detune2_bounds)
         res = sp.optimize.differential_evolution(
             func=ut.xgate_fidelity_parallel,
             bounds=bounds,
@@ -42,7 +43,7 @@ def fidelity_de():
             mutation=mutation,
             recombination=recombination,
             tol=tol,
-            x0=x0_vec[jdx],
+            # x0=x0_vec[jdx],
             polish=False, # 'True' will make the for-loop break
             )
         fidelity.append(res.fun)
@@ -50,18 +51,19 @@ def fidelity_de():
 
         ### print fidelity for truc=44
         print(res, '\n')
-        print('\ntg = ', np.array((x0_vec[:,0])[:jdx+1]).tolist())
+        print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
+        # print('\ntg = ', np.array((x0_vec[:,0])[:jdx+1]).tolist())
 
-        print('\nlog of gate error (truc2=44) = ')
+        print(f'\nlog of gate error (truc1={len(hspace_charge)}) = ')
         for i in range(0, len(fidelity), 4):
             print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
 
-        fidelity_real = 1-10**np.array(fidelity)
-        print('\nfidelity =  (truc2=44) ')
-        for i in range(0, len(fidelity), 4):
-            print(', '.join(map(str, np.round(fidelity_real[i:i+4], 8))), ',')
+        # fidelity_real = 1-10**np.array(fidelity)
+        # print('\nfidelity (truc1) = ')
+        # for i in range(0, len(fidelity), 4):
+        #     print(', '.join(map(str, np.round(fidelity_real[i:i+4], 8))), ',')
 
-        print('\ndrive_param = ')
+        print(f'\ndrive_param (truc1={len(hspace_charge)}) = ')
         for i in drive_param:
             print(np.round(i,6).tolist(),',')
 
@@ -74,56 +76,69 @@ def fidelity_de():
             [tg, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = drive_param[jdx]
         else:
             [tg, drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B] = drive_param[jdx]
+
         n_cpu2 = 30
-        argz = [H0_300, drive_300, w_trans_1, w_trans_2, hspace_300, n_cpu2, tg,
+        argz = [H0_full, drive_full, w_trans_1, w_trans_2, hspace_full, n_cpu2, tg,
                 drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
-        f300.append(ut.xgate_fidelity(argz))
-        print('\nlog of gate error (truc2=157) = ')
-        for i in range(0, len(f300), 4):
-            print(', '.join(map(str, np.round(f300[i:i+4], 8))), ',')
+        fidelity_full.append(ut.xgate_fidelity_fast(argz))
+        print(f'\nlog of gate error (truc_full={truc_full}) = ')
+        for i in range(0, len(fidelity_full), 4):
+            print(', '.join(map(str, np.round(fidelity_full[i:i+4], 8))), ',')
+
+        truc3 = 300
+        hspace_300 = np.arange(truc3).tolist()
+        argz = [H0_full, drive_full, w_trans_1, w_trans_2, hspace_300, n_cpu2, tg,
+                drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
+        fidelity_300.append(ut.xgate_fidelity_fast(argz))
+        print(f'\nlog of gate error (truc_full={truc3}) = ')
+        for i in range(0, len(fidelity_300), 4):
+            print(', '.join(map(str, np.round(fidelity_300[i:i+4], 8))), ',')
+
 
         print("\n***Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')), '\n')
-    print('\namp_bounds=',amp_bounds)
-    print('detune_bounds=',detune_bounds)
+    print('amp1_bounds=',amp1_bounds, ', amp2_bounds=',amp2_bounds,)
+    print('detune1_bounds=',detune1_bounds, ', detune2_bounds=', detune2_bounds)
 
 
 if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    drive_phi, drive_theta, drag = True, False, 0
-    amp_bounds, detune_bounds, alpha_bounds = [(0, 0.8), (-0.8, 0.8), (-20, 20)]
-    # tg_vec = [20] # + np.arange(40, 62.5, step=2.5).tolist()
-    # tg_vec = [37.5, 42.5, 47.5, 52.5 , 57.5, 62.5]
-    params = np.array([
-[ 20.      ,  -0.840893,  -0.297285,   0.236014,   0.210179,
-          0.325496,   0.377853],
-       [ 25.      ,  -1.311848,  -0.345414,   0.221721,   0.211883,
-          0.329296,   0.371963],
-       [ 30.      ,  -1.786595,  -0.391148,   0.213381,   0.20848 ,
-          0.33484 ,   0.370759],
-       [ 35.      ,  -2.165116,  -0.440385,   0.23764 ,   0.174945,
-          0.323456,   0.383149],
-       [ 40.      ,  -2.449442,  -0.525286,   0.198725,   0.196598,
-          0.322698,   0.35027 ],
-       [ 45.      ,  -2.831378,  -0.703973,   0.191642,   0.193185,
-          0.312935,   0.337679],
-    #    [ 50.      ,  -2.79914 ,  -0.348502,   0.229852,   0.152328,
-    #       0.301876,   0.364361],
-    #    [ 55.      ,  -2.82329 ,  -0.432485,   0.225624,   0.147674,
-    #       0.300016,   0.3569  ],
-    #    [ 75.      ,  -3.63606 ,  -0.301651,   0.171833,   0.172007,
-    #       0.284062,   0.299904],
-    #    [100.      ,  -5.627182,  -0.506612,   0.202817,   0.123664,
-    #       0.275593,   0.31813 ]
-    ])
-    x0_vec = params[:, [0, 3, 4, 5, 6]] # extract col=0 and col=3,4,5,6
-    
-    workers, popsize = 150, 20
+    drive_phi, drive_theta, drag = False, True,  0
+    # amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0, 0.1), (0, 0.04), (0, 0.005), (0, 0.005)] # theta
+    amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.1, 0.2), (0.02, 0.04), (-0.1, 0.005), (-0.005, 0.005)] # phi
+    tg_bound = (-0.1, 0.1)
+    # tg_vec = [400, 1000] + np.arange(500, 1000, step=100).tolist()
+    tg_vec = [30, 35]
+    # params = np.array([
+# [110, 0.134365, 0.261486, 0.212833, 0.206275] ,
+# [120, 0.1772, 0.109632, 0.356868, 0.351128] ,
+# [130, 0.078378, 0.193147, -0.206274, -0.211425] ,
+# [140, 0.29241, 0.071924, 0.3484, 0.486637] ,
+# [40.0,-3.301470,-3.302673,0.105147,0.028068,0.001898,0.00438] ,
+# [50.0,-3.77945,-2.803664,0.10746657,0.10323223,-0.30225871,-0.25967603] ,
+# [60.0,-3.409958,-3.348597, 0.081606,0.106285,-0.299703,-0.247238] ,
+# [70.0,-3.442062,-2.453763,0.069316, 0.109747, -0.311983, -0.252449] ,
+# [20, 0.20939, 0.23914, 0.464705, 0.468903] ,
+# [30, 0.220554, 0.202162, 0.388947, 0.424067] ,
+# [40, 0.200606, 0.16824, 0.38813, 0.390683] ,
+# [50, 0.215363, 0.150406, 0.353257, 0.37547] ,
+# [60, 0.213582, 0.143426, 0.35721, 0.376478] ,
+# [70, 0.208837, 0.134152, 0.352139, 0.36885] ,
+# [80, 0.220351, 0.12167, 0.347189, 0.374815] ,
+# [90, 0.205536, 0.116973, 0.346827, 0.360525] ,
+# [100, 0.202994, 0.113049, 0.343961, 0.356533] ,
+    # ])
+    # x0_vec = params # extract col=0 and col=3,4,5,6
+    # x0_vec = params[:,[0,3,4,5,6]] # extract col=0 and col=3,4,5,6
+
+    workers, popsize = 100, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
-    truc1 = 80
+    truc1, truc_full = 300, 500 # theta
+    # truc1, truc_full = 300, 500 # phi
     print('drive_phi=', drive_phi, ', drive_theta = ', drive_theta, ', Drag=', drag)
-    print('amp_bounds=',amp_bounds,', detune_bounds=',detune_bounds, ', alpha_bounds=',alpha_bounds)
+    print('amp1_bounds=',amp1_bounds, ', amp2_bounds=',amp2_bounds, ', tg_bound=', tg_bound)
+    print('detune1_bounds=',detune1_bounds, ', detune2_bounds=', detune2_bounds)
     print('workers=',workers, ', popsize=',popsize)
     print('recombination=',recombination, ', tol=',tol, ', mutation=',mutation)
     if 'params' in globals():
@@ -137,8 +152,10 @@ if __name__ == '__main__':
 
 
     [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=truc1,)
-    [H0_300, drive_300, _, _, hspace_300] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=300,)
-    print('truncation_1 =', truc1, ', truncation_2 (in optimization) =', len(hspace_charge))   
+    [H0_full, drive_full, _, _, _] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=truc_full,)
+    hspace_full = np.arange(truc_full).tolist()
+    print('truc1 =', truc1, ', truc2 (in optimization) =', len(hspace_charge))
+    print('truc1_full =', truc_full, ', truc2_full =', len(hspace_full))
 
     ### optimize
     fidelity_de()
@@ -147,70 +164,3 @@ if __name__ == '__main__':
 
 
 
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-# def fidelity_alpha(tg_vec, argss):
-#     [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = argss
-#     x0_vec = np.array([
-#     [0.248363, 0.060381, -0.016372, -0.013767, -0.995504] ,
-#     [0.283221, 0.051568, -0.038113, -0.035568, 0.177783] ,
-#     [0.209667, 0.045522, -0.025267, -0.022739, -0.666255] ,
-#     ])
-#     recombination = 0.7
-#     tol = 0.01
-#     print('x0=', x0_vec)
-#     print('\namp_bounds=',amp_bounds)
-#     print('detune_bounds=',detune_bounds)
-#     print('detune_bounds=',alpha_bounds)
-#     print('\nworkers=',workers)
-#     print('popsize=',popsize)
-#     print('mutation=',mutation)
-#     print('recombination=',recombination)
-#     print('tol=',tol)
-
-#     d = 1e-18
-#     fidelity = []
-#     drive_param = []
-#     for i, tg in tqdm(enumerate(tg_vec)):
-#         x = x0_vec[i]
-#         bounds = ((x[0]-d,x[0]+d), (x[1]-d,x[1]+d), (x[2]-d,x[2]+d), (x[3]-d,x[3]+d), alpha_bounds)
-#         args = [tg, H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu]
-#         res = sp.optimize.differential_evolution(
-#             func=ut.xgate_fidelity_optimize,
-#             bounds=bounds,
-#             args=args,
-#             disp=True,
-#             callback=ut.print_soln,
-#             init="sobol",
-#             workers=workers,
-#             popsize=popsize,
-#             mutation=mutation,
-#             recombination=recombination,
-#             tol=tol,
-#             x0=x0_vec[i],
-#             polish=False, # 'True' will make the for-loop break
-#             )
-#         fidelity.append(res.fun)
-#         drive_param.append(res.x)
-
-#         print(res, '\n')
-#         print('\ntg = ', np.array(tg_vec[:i+1]).tolist())
-
-#         print('\nlog of gate error = ')
-#         for i in range(0, len(fidelity), 4):
-#             print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
-
-#         fidelity_real = 1-10**np.array(fidelity)
-#         print('\nfidelity = ')
-#         for i in range(0, len(fidelity), 4):
-#             print(', '.join(map(str, np.round(fidelity_real[i:i+4], 8))), ',')
-
-#         print('\ndrive_param = ')
-#         for i in drive_param:
-#             print(np.round(i,6).tolist(),',')
-
-#         print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
-#     print('\namp_bounds=',amp_bounds)
-#     print('detune_bounds=',detune_bounds)

@@ -1,0 +1,337 @@
+cz_fidelity_optimize_sesolve.py
+Start Mountain Time: 2024-12-30 08:20:59.522712-07:00
+
+truc1= 80 , truc_tot= 400 , charge_pick= True
+amp_bounds= (0.005, 0.015) , detune_bounds= (0.01, 0.025) , tg_bound= (-0.1, 0.1)
+W_20_50 =  15.984 , drive_ab= False
+gate_time_vector: [171, 173, 176]
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387differential_evolution step 1: f(x)= -3.21301
+Best Soln: [1.70995257e+02 9.79964828e-03 2.07330410e-02]
+convergence 0.0183
+----------------------------
+differential_evolution step 2: f(x)= -3.21301
+Best Soln: [1.70995257e+02 9.79964828e-03 2.07330410e-02]
+convergence 0.0235
+----------------------------
+differential_evolution step 3: f(x)= -3.4637
+Best Soln: [1.71037491e+02 9.70497121e-03 2.04486239e-02]
+convergence 0.0313
+----------------------------
+differential_evolution step 4: f(x)= -3.47575
+Best Soln: [1.70986033e+02 9.70497121e-03 2.04486239e-02]
+convergence 0.0385
+----------------------------
+differential_evolution step 5: f(x)= -3.47575
+Best Soln: [1.70986033e+02 9.70497121e-03 2.04486239e-02]
+convergence 0.0543
+----------------------------
+differential_evolution step 6: f(x)= -3.47575
+Best Soln: [1.70986033e+02 9.70497121e-03 2.04486239e-02]
+convergence 0.0658
+----------------------------
+differential_evolution step 7: f(x)= -3.69974
+Best Soln: [1.71041008e+02 9.63363841e-03 2.03454271e-02]
+convergence 0.0836
+----------------------------
+differential_evolution step 8: f(x)= -3.69974
+Best Soln: [1.71041008e+02 9.63363841e-03 2.03454271e-02]
+convergence 0.0854
+----------------------------
+differential_evolution step 9: f(x)= -3.73923
+Best Soln: [1.71039394e+02 9.65536994e-03 2.06229534e-02]
+convergence 0.1002
+----------------------------
+differential_evolution step 10: f(x)= -3.7693
+Best Soln: [1.71017417e+02 9.64129263e-03 2.05148955e-02]
+convergence 0.1364
+----------------------------
+differential_evolution step 11: f(x)= -3.7693
+Best Soln: [1.71017417e+02 9.64129263e-03 2.05148955e-02]
+convergence 0.1694
+----------------------------
+differential_evolution step 12: f(x)= -3.7693
+Best Soln: [1.71017417e+02 9.64129263e-03 2.05148955e-02]
+convergence 0.2597
+----------------------------
+differential_evolution step 13: f(x)= -3.7706
+Best Soln: [1.71009065e+02 9.64075804e-03 2.04784634e-02]
+convergence 0.3897
+----------------------------
+differential_evolution step 14: f(x)= -3.7706
+Best Soln: [1.71009065e+02 9.64075804e-03 2.04784634e-02]
+convergence 0.386
+----------------------------
+differential_evolution step 15: f(x)= -3.7706
+Best Soln: [1.71009065e+02 9.64075804e-03 2.04784634e-02]
+convergence 0.493
+----------------------------
+differential_evolution step 16: f(x)= -3.7706
+Best Soln: [1.71009065e+02 9.64075804e-03 2.04784634e-02]
+convergence 0.8763
+----------------------------
+differential_evolution step 17: f(x)= -3.77088
+Best Soln: [1.71064085e+02 9.63475792e-03 2.04878092e-02]
+convergence 1.4793
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.770879441949373
+       x: [ 1.711e+02  9.635e-03  2.049e-02]
+     nit: 17
+    nfev: 576 
+
+
+tg =  [171]
+
+log of gate error (truc=200) = 
+-3.77087944 ,
+
+drive_param (truc=200) = 
+[171.064085, 0.009635, 0.020488] ,
+1it [05:51, 351.45s/it]
+log of gate error (truc=400) = 
+-3.76679237 ,
+
+amp_bounds= (0.005, 0.015) , detune_bounds= (0.01, 0.025) , tg_bound= (-0.1, 0.1)
+Current Mountain Time: 2024-12-30 08:28:08.735942-07:00
+differential_evolution step 1: f(x)= -2.47608
+Best Soln: [1.72947192e+02 9.22135718e-03 1.83096749e-02]
+convergence 0.0182
+----------------------------
+differential_evolution step 2: f(x)= -2.47608
+Best Soln: [1.72947192e+02 9.22135718e-03 1.83096749e-02]
+convergence 0.0244
+----------------------------
+differential_evolution step 3: f(x)= -3.02718
+Best Soln: [1.73008430e+02 9.80135661e-03 2.15292761e-02]
+convergence 0.0346
+----------------------------
+differential_evolution step 4: f(x)= -3.0627
+Best Soln: [1.73014052e+02 9.58208006e-03 2.11551516e-02]
+convergence 0.0421
+----------------------------
+differential_evolution step 5: f(x)= -3.58786
+Best Soln: [1.73088525e+02 9.60200487e-03 2.05384603e-02]
+convergence 0.0526
+----------------------------
+differential_evolution step 6: f(x)= -3.58786
+Best Soln: [1.73088525e+02 9.60200487e-03 2.05384603e-02]
+convergence 0.0599
+----------------------------
+differential_evolution step 7: f(x)= -3.58786
+Best Soln: [1.73088525e+02 9.60200487e-03 2.05384603e-02]
+convergence 0.0666
+----------------------------
+differential_evolution step 8: f(x)= -3.58786
+Best Soln: [1.73088525e+02 9.60200487e-03 2.05384603e-02]
+convergence 0.09
+----------------------------
+differential_evolution step 9: f(x)= -3.72376
+Best Soln: [1.73069365e+02 9.54451233e-03 2.02547119e-02]
+convergence 0.09
+----------------------------
+differential_evolution step 10: f(x)= -3.72376
+Best Soln: [1.73069365e+02 9.54451233e-03 2.02547119e-02]
+convergence 0.107
+----------------------------
+differential_evolution step 11: f(x)= -3.73581
+Best Soln: [1.73065201e+02 9.47498374e-03 2.00560446e-02]
+convergence 0.1446
+----------------------------
+differential_evolution step 12: f(x)= -3.78586
+Best Soln: [1.73053449e+02 9.51943380e-03 2.02244114e-02]
+convergence 0.1641
+----------------------------
+differential_evolution step 13: f(x)= -3.79456
+Best Soln: [1.73031403e+02 9.50106489e-03 2.02337045e-02]
+convergence 0.267
+----------------------------
+differential_evolution step 14: f(x)= -3.79988
+Best Soln: [1.73031403e+02 9.51101707e-03 2.02337045e-02]
+convergence 0.3523
+----------------------------
+differential_evolution step 15: f(x)= -3.79988
+Best Soln: [1.73031403e+02 9.51101707e-03 2.02337045e-02]
+convergence 0.5036
+----------------------------
+differential_evolution step 16: f(x)= -3.79988
+Best Soln: [1.73031403e+02 9.51101707e-03 2.02337045e-02]
+convergence 0.5915
+----------------------------
+differential_evolution step 17: f(x)= -3.79988
+Best Soln: [1.73031403e+02 9.51101707e-03 2.02337045e-02]
+convergence 0.7078
+----------------------------
+differential_evolution step 18: f(x)= -3.79988
+Best Soln: [1.73031403e+02 9.51101707e-03 2.02337045e-02]
+convergence 0.9404
+----------------------------
+differential_evolution step 19: f(x)= -3.79988
+Best Soln: [1.73031403e+02 9.51101707e-03 2.02337045e-02]
+convergence 2.0934
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.799881170831762
+       x: [ 1.730e+02  9.511e-03  2.023e-02]
+     nit: 19
+    nfev: 640 
+
+
+tg =  [171, 173]
+
+log of gate error (truc=200) = 
+-3.77087944, -3.79988117 ,
+
+drive_param (truc=200) = 
+[171.064085, 0.009635, 0.020488] ,
+[173.031403, 0.009511, 0.020234] ,
+2it [12:34, 381.91s/it]
+log of gate error (truc=400) = 
+-3.76679237, -3.79835996 ,
+
+amp_bounds= (0.005, 0.015) , detune_bounds= (0.01, 0.025) , tg_bound= (-0.1, 0.1)
+Current Mountain Time: 2024-12-30 08:34:51.974685-07:00
+differential_evolution step 1: f(x)= -2.4394
+Best Soln: [1.76026597e+02 8.08093844e-03 1.49215814e-02]
+convergence 0.0228
+----------------------------
+differential_evolution step 2: f(x)= -2.88787
+Best Soln: [1.75983267e+02 9.99414026e-03 2.38703683e-02]
+convergence 0.0233
+----------------------------
+differential_evolution step 3: f(x)= -2.88787
+Best Soln: [1.75983267e+02 9.99414026e-03 2.38703683e-02]
+convergence 0.0279
+----------------------------
+differential_evolution step 4: f(x)= -2.88787
+Best Soln: [1.75983267e+02 9.99414026e-03 2.38703683e-02]
+convergence 0.0338
+----------------------------
+differential_evolution step 5: f(x)= -2.88787
+Best Soln: [1.75983267e+02 9.99414026e-03 2.38703683e-02]
+convergence 0.0408
+----------------------------
+differential_evolution step 6: f(x)= -3.03252
+Best Soln: [1.76061027e+02 9.11913449e-03 1.89305918e-02]
+convergence 0.0489
+----------------------------
+differential_evolution step 7: f(x)= -3.23679
+Best Soln: [1.76097655e+02 8.03791774e-03 1.40994189e-02]
+convergence 0.0686
+----------------------------
+differential_evolution step 8: f(x)= -4.05638
+Best Soln: [1.76078756e+02 7.99879398e-03 1.36657905e-02]
+convergence 0.0613
+----------------------------
+differential_evolution step 9: f(x)= -4.05638
+Best Soln: [1.76078756e+02 7.99879398e-03 1.36657905e-02]
+convergence 0.0584
+----------------------------
+differential_evolution step 10: f(x)= -4.08256
+Best Soln: [1.76016416e+02 7.99879398e-03 1.36781467e-02]
+convergence 0.0576
+----------------------------
+differential_evolution step 11: f(x)= -4.08256
+Best Soln: [1.76016416e+02 7.99879398e-03 1.36781467e-02]
+convergence 0.0564
+----------------------------
+differential_evolution step 12: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.0543
+----------------------------
+differential_evolution step 13: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.0559
+----------------------------
+differential_evolution step 14: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.0544
+----------------------------
+differential_evolution step 15: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.054
+----------------------------
+differential_evolution step 16: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.0589
+----------------------------
+differential_evolution step 17: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.0626
+----------------------------
+differential_evolution step 18: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.0659
+----------------------------
+differential_evolution step 19: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.0814
+----------------------------
+differential_evolution step 20: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.1219
+----------------------------
+differential_evolution step 21: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.1696
+----------------------------
+differential_evolution step 22: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.1697
+----------------------------
+differential_evolution step 23: f(x)= -4.13438
+Best Soln: [1.76076275e+02 7.98498187e-03 1.36598223e-02]
+convergence 0.2847
+----------------------------
+differential_evolution step 24: f(x)= -4.1348
+Best Soln: [1.76057675e+02 7.98549103e-03 1.36612825e-02]
+convergence 0.3094
+----------------------------
+differential_evolution step 25: f(x)= -4.13526
+Best Soln: [1.76023361e+02 7.97694684e-03 1.36547552e-02]
+convergence 0.3733
+----------------------------
+differential_evolution step 26: f(x)= -4.13526
+Best Soln: [1.76023361e+02 7.97694684e-03 1.36547552e-02]
+convergence 0.6407
+----------------------------
+differential_evolution step 27: f(x)= -4.14071
+Best Soln: [1.76068562e+02 7.97844107e-03 1.36613047e-02]
+convergence 0.6597
+----------------------------
+differential_evolution step 28: f(x)= -4.14171
+Best Soln: [1.76074045e+02 7.97749327e-03 1.36547552e-02]
+convergence 1.8224
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.141712819851757
+       x: [ 1.761e+02  7.977e-03  1.365e-02]
+     nit: 28
+    nfev: 928 
+
+
+tg =  [171, 173, 176]
+
+log of gate error (truc=200) = 
+-3.77087944, -3.79988117, -4.14171282 ,
+
+drive_param (truc=200) = 
+[171.064085, 0.009635, 0.020488] ,
+[173.031403, 0.009511, 0.020234] ,
+[176.074045, 0.007977, 0.013655] ,
+3it [23:58, 519.95s/it]3it [23:58, 479.63s/it]
+
+log of gate error (truc=400) = 
+-3.76679237, -3.79835996, -4.16299708 ,
+
+amp_bounds= (0.005, 0.015) , detune_bounds= (0.01, 0.025) , tg_bound= (-0.1, 0.1)
+Current Mountain Time: 2024-12-30 08:46:16.191742-07:00
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+42969.07user 171.59system 25:18.63elapsed 2840%CPU (0avgtext+0avgdata 551440maxresident)k
+0inputs+72outputs (1major+4610865minor)pagefaults 0swaps

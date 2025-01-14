@@ -1,0 +1,3549 @@
+cz_fidelity_optimize_sesolve.py
+Start Mountain Time: 2025-01-12 15:08:39.401707-07:00
+
+truc1= 300 , truc_tot= 2000 , charge_pick= True
+
+truc_tot_2= 700
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+W_20_50 =  15.984 , drive_ab= False
+gate_time_vector: [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144,
+145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158,
+159, 160, 161, 162, 163, 164, 165]
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387differential_evolution step 1: f(x)= -2.8105
+Best Soln: [1.31009027e+02 1.11234064e-02 1.73243598e-02]
+convergence 0.0345
+----------------------------
+differential_evolution step 2: f(x)= -3.0325
+Best Soln: [1.31005226e+02 1.13698787e-02 1.73375861e-02]
+convergence 0.04
+----------------------------
+differential_evolution step 3: f(x)= -3.0325
+Best Soln: [1.31005226e+02 1.13698787e-02 1.73375861e-02]
+convergence 0.0453
+----------------------------
+differential_evolution step 4: f(x)= -3.04583
+Best Soln: [1.31000556e+02 1.13328059e-02 1.72936912e-02]
+convergence 0.0512
+----------------------------
+differential_evolution step 5: f(x)= -3.06468
+Best Soln: [1.31002787e+02 1.13102153e-02 1.74075254e-02]
+convergence 0.0772
+----------------------------
+differential_evolution step 6: f(x)= -3.06468
+Best Soln: [1.31002787e+02 1.13102153e-02 1.74075254e-02]
+convergence 0.0863
+----------------------------
+differential_evolution step 7: f(x)= -3.06468
+Best Soln: [1.31002787e+02 1.13102153e-02 1.74075254e-02]
+convergence 0.1144
+----------------------------
+differential_evolution step 8: f(x)= -3.06468
+Best Soln: [1.31002787e+02 1.13102153e-02 1.74075254e-02]
+convergence 0.1478
+----------------------------
+differential_evolution step 9: f(x)= -3.06635
+Best Soln: [1.31005306e+02 1.13200040e-02 1.74269843e-02]
+convergence 0.1656
+----------------------------
+differential_evolution step 10: f(x)= -3.06635
+Best Soln: [1.31005306e+02 1.13200040e-02 1.74269843e-02]
+convergence 0.7344
+----------------------------
+differential_evolution step 11: f(x)= -3.06635
+Best Soln: [1.31005306e+02 1.13200040e-02 1.74269843e-02]
+convergence 1.3455
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.066347550484133
+       x: [ 1.310e+02  1.132e-02  1.743e-02]
+     nit: 11
+    nfev: 384
+
+
+tg =  [131]
+
+log of gate error (truc=200) =
+-3.06634755 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+
+1it [06:50, 410.03s/it]
+log of gate error (truc=700) =
+-3.05514933 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 15:15:30.404955-07:00
+differential_evolution step 1: f(x)= -2.84784
+Best Soln: [1.32004142e+02 1.12781202e-02 1.79197420e-02]
+convergence 0.032
+----------------------------
+differential_evolution step 2: f(x)= -3.07427
+Best Soln: [1.32005070e+02 1.12408679e-02 1.74952911e-02]
+convergence 0.0407
+----------------------------
+differential_evolution step 3: f(x)= -3.07427
+Best Soln: [1.32005070e+02 1.12408679e-02 1.74952911e-02]
+convergence 0.0472
+----------------------------
+differential_evolution step 4: f(x)= -3.07427
+Best Soln: [1.32005070e+02 1.12408679e-02 1.74952911e-02]
+convergence 0.0558
+----------------------------
+differential_evolution step 5: f(x)= -3.08683
+Best Soln: [1.32001087e+02 1.12654898e-02 1.73308359e-02]
+convergence 0.1191
+----------------------------
+differential_evolution step 6: f(x)= -3.08683
+Best Soln: [1.32001087e+02 1.12654898e-02 1.73308359e-02]
+convergence 0.1758
+----------------------------
+differential_evolution step 7: f(x)= -3.08807
+Best Soln: [1.32001460e+02 1.12487660e-02 1.72536419e-02]
+convergence 0.2973
+----------------------------
+differential_evolution step 8: f(x)= -3.10223
+Best Soln: [1.32000664e+02 1.12379374e-02 1.73520465e-02]
+convergence 0.6241
+----------------------------
+differential_evolution step 9: f(x)= -3.10314
+Best Soln: [1.32000758e+02 1.12244195e-02 1.73567004e-02]
+convergence 0.8835
+----------------------------
+differential_evolution step 10: f(x)= -3.1036
+Best Soln: [1.32009612e+02 1.12109487e-02 1.72934016e-02]
+convergence 1.3346
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.1035955907656207
+       x: [ 1.320e+02  1.121e-02  1.729e-02]
+     nit: 10
+    nfev: 352
+
+
+tg =  [131, 132]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+
+2it [12:59, 386.07s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 15:21:39.702187-07:00
+differential_evolution step 1: f(x)= -2.83513
+Best Soln: [1.33004469e+02 1.10318886e-02 1.76519285e-02]
+convergence 0.0389
+----------------------------
+differential_evolution step 2: f(x)= -3.08122
+Best Soln: [1.33004526e+02 1.11921890e-02 1.74070896e-02]
+convergence 0.0423
+----------------------------
+differential_evolution step 3: f(x)= -3.08122
+Best Soln: [1.33004526e+02 1.11921890e-02 1.74070896e-02]
+convergence 0.0529
+----------------------------
+differential_evolution step 4: f(x)= -3.08122
+Best Soln: [1.33004526e+02 1.11921890e-02 1.74070896e-02]
+convergence 0.0554
+----------------------------
+differential_evolution step 5: f(x)= -3.08122
+Best Soln: [1.33004526e+02 1.11921890e-02 1.74070896e-02]
+convergence 0.0711
+----------------------------
+differential_evolution step 6: f(x)= -3.08308
+Best Soln: [1.33002787e+02 1.10483217e-02 1.72219624e-02]
+convergence 0.147
+----------------------------
+differential_evolution step 7: f(x)= -3.13953
+Best Soln: [1.33001325e+02 1.11247360e-02 1.71774127e-02]
+convergence 0.2265
+----------------------------
+differential_evolution step 8: f(x)= -3.14138
+Best Soln: [1.33004159e+02 1.11321606e-02 1.72215712e-02]
+convergence 0.3051
+----------------------------
+differential_evolution step 9: f(x)= -3.14138
+Best Soln: [1.33004159e+02 1.11321606e-02 1.72215712e-02]
+convergence 0.4015
+----------------------------
+differential_evolution step 10: f(x)= -3.14138
+Best Soln: [1.33004159e+02 1.11321606e-02 1.72215712e-02]
+convergence 0.9137
+----------------------------
+differential_evolution step 11: f(x)= -3.14138
+Best Soln: [1.33004159e+02 1.11321606e-02 1.72215712e-02]
+convergence 1.35
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.1413762534526946
+       x: [ 1.330e+02  1.113e-02  1.722e-02]
+     nit: 11
+    nfev: 384
+
+
+tg =  [131, 132, 133]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+
+3it [20:17, 409.73s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 15:28:57.581015-07:00
+differential_evolution step 1: f(x)= -3.15432
+Best Soln: [1.34007989e+02 1.10252889e-02 1.72529622e-02]
+convergence 0.0288
+----------------------------
+differential_evolution step 2: f(x)= -3.15432
+Best Soln: [1.34007989e+02 1.10252889e-02 1.72529622e-02]
+convergence 0.0319
+----------------------------
+differential_evolution step 3: f(x)= -3.15432
+Best Soln: [1.34007989e+02 1.10252889e-02 1.72529622e-02]
+convergence 0.0435
+----------------------------
+differential_evolution step 4: f(x)= -3.15432
+Best Soln: [1.34007989e+02 1.10252889e-02 1.72529622e-02]
+convergence 0.0591
+----------------------------
+differential_evolution step 5: f(x)= -3.16661
+Best Soln: [1.34008901e+02 1.10241409e-02 1.70371745e-02]
+convergence 0.0696
+----------------------------
+differential_evolution step 6: f(x)= -3.17133
+Best Soln: [1.34007831e+02 1.10129273e-02 1.70526960e-02]
+convergence 0.0742
+----------------------------
+differential_evolution step 7: f(x)= -3.17438
+Best Soln: [1.34007449e+02 1.10062191e-02 1.70945998e-02]
+convergence 0.0873
+----------------------------
+differential_evolution step 8: f(x)= -3.17438
+Best Soln: [1.34007449e+02 1.10062191e-02 1.70945998e-02]
+convergence 0.2453
+----------------------------
+differential_evolution step 9: f(x)= -3.17709
+Best Soln: [1.34004931e+02 1.10252889e-02 1.71424813e-02]
+convergence 0.4281
+----------------------------
+differential_evolution step 10: f(x)= -3.17709
+Best Soln: [1.34004931e+02 1.10252889e-02 1.71424813e-02]
+convergence 0.7787
+----------------------------
+differential_evolution step 11: f(x)= -3.17775
+Best Soln: [1.34008265e+02 1.10222523e-02 1.71215625e-02]
+convergence 1.1541
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.177745846041719
+       x: [ 1.340e+02  1.102e-02  1.712e-02]
+     nit: 11
+    nfev: 384
+
+
+tg =  [131, 132, 133, 134]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+
+4it [27:35, 421.15s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 15:36:16.237600-07:00
+differential_evolution step 1: f(x)= -2.94822
+Best Soln: [1.35005087e+02 1.10980247e-02 1.72112220e-02]
+convergence 0.0377
+----------------------------
+differential_evolution step 2: f(x)= -2.94822
+Best Soln: [1.35005087e+02 1.10980247e-02 1.72112220e-02]
+convergence 0.0396
+----------------------------
+differential_evolution step 3: f(x)= -3.12864
+Best Soln: [1.35007997e+02 1.08430474e-02 1.69809909e-02]
+convergence 0.0419
+----------------------------
+differential_evolution step 4: f(x)= -3.19682
+Best Soln: [1.35000046e+02 1.09577866e-02 1.70397866e-02]
+convergence 0.0538
+----------------------------
+differential_evolution step 5: f(x)= -3.19682
+Best Soln: [1.35000046e+02 1.09577866e-02 1.70397866e-02]
+convergence 0.0784
+----------------------------
+differential_evolution step 6: f(x)= -3.19682
+Best Soln: [1.35000046e+02 1.09577866e-02 1.70397866e-02]
+convergence 0.0906
+----------------------------
+differential_evolution step 7: f(x)= -3.19682
+Best Soln: [1.35000046e+02 1.09577866e-02 1.70397866e-02]
+convergence 0.12
+----------------------------
+differential_evolution step 8: f(x)= -3.19682
+Best Soln: [1.35000046e+02 1.09577866e-02 1.70397866e-02]
+convergence 0.2162
+----------------------------
+differential_evolution step 9: f(x)= -3.19871
+Best Soln: [1.35000869e+02 1.09341843e-02 1.69574119e-02]
+convergence 0.2876
+----------------------------
+differential_evolution step 10: f(x)= -3.19871
+Best Soln: [1.35000869e+02 1.09341843e-02 1.69574119e-02]
+convergence 0.327
+----------------------------
+differential_evolution step 11: f(x)= -3.20697
+Best Soln: [1.35000526e+02 1.09376151e-02 1.70615929e-02]
+convergence 0.406
+----------------------------
+differential_evolution step 12: f(x)= -3.20753
+Best Soln: [1.35000526e+02 1.09330879e-02 1.70615929e-02]
+convergence 0.4674
+----------------------------
+differential_evolution step 13: f(x)= -3.20753
+Best Soln: [1.35000526e+02 1.09330879e-02 1.70615929e-02]
+convergence 1.0901
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.207526892427586
+       x: [ 1.350e+02  1.093e-02  1.706e-02]
+     nit: 13
+    nfev: 448
+
+
+tg =  [131, 132, 133, 134, 135]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+
+5it [35:54, 449.16s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 15:44:35.070350-07:00
+differential_evolution step 1: f(x)= -2.7434
+Best Soln: [1.36005270e+02 1.08806052e-02 1.77440798e-02]
+convergence 0.0421
+----------------------------
+differential_evolution step 2: f(x)= -3.21763
+Best Soln: [1.36001693e+02 1.08255719e-02 1.70354907e-02]
+convergence 0.0409
+----------------------------
+differential_evolution step 3: f(x)= -3.21763
+Best Soln: [1.36001693e+02 1.08255719e-02 1.70354907e-02]
+convergence 0.0485
+----------------------------
+differential_evolution step 4: f(x)= -3.21763
+Best Soln: [1.36001693e+02 1.08255719e-02 1.70354907e-02]
+convergence 0.0637
+----------------------------
+differential_evolution step 5: f(x)= -3.21763
+Best Soln: [1.36001693e+02 1.08255719e-02 1.70354907e-02]
+convergence 0.0724
+----------------------------
+differential_evolution step 6: f(x)= -3.22799
+Best Soln: [1.36004314e+02 1.08112300e-02 1.68586624e-02]
+convergence 0.09
+----------------------------
+differential_evolution step 7: f(x)= -3.22799
+Best Soln: [1.36004314e+02 1.08112300e-02 1.68586624e-02]
+convergence 0.1339
+----------------------------
+differential_evolution step 8: f(x)= -3.22799
+Best Soln: [1.36004314e+02 1.08112300e-02 1.68586624e-02]
+convergence 0.1886
+----------------------------
+differential_evolution step 9: f(x)= -3.22874
+Best Soln: [1.36003447e+02 1.08445510e-02 1.70147109e-02]
+convergence 0.372
+----------------------------
+differential_evolution step 10: f(x)= -3.23497
+Best Soln: [1.36003735e+02 1.08345240e-02 1.69817383e-02]
+convergence 0.4751
+----------------------------
+differential_evolution step 11: f(x)= -3.23497
+Best Soln: [1.36003735e+02 1.08345240e-02 1.69817383e-02]
+convergence 0.5652
+----------------------------
+differential_evolution step 12: f(x)= -3.23794
+Best Soln: [1.36003496e+02 1.08271856e-02 1.69154715e-02]
+convergence 0.8915
+----------------------------
+differential_evolution step 13: f(x)= -3.23813
+Best Soln: [1.36005407e+02 1.08268150e-02 1.69193602e-02]
+convergence 1.244
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.23812703568243
+       x: [ 1.360e+02  1.083e-02  1.692e-02]
+     nit: 13
+    nfev: 448
+
+
+tg =  [131, 132, 133, 134, 135, 136]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+
+6it [43:17, 446.96s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 15:51:57.748010-07:00
+differential_evolution step 1: f(x)= -3.09453
+Best Soln: [1.37003556e+02 1.06402591e-02 1.69206101e-02]
+convergence 0.0389
+----------------------------
+differential_evolution step 2: f(x)= -3.09453
+Best Soln: [1.37003556e+02 1.06402591e-02 1.69206101e-02]
+convergence 0.0455
+----------------------------
+differential_evolution step 3: f(x)= -3.09453
+Best Soln: [1.37003556e+02 1.06402591e-02 1.69206101e-02]
+convergence 0.0741
+----------------------------
+differential_evolution step 4: f(x)= -3.25347
+Best Soln: [1.37002923e+02 1.07586564e-02 1.68065321e-02]
+convergence 0.1086
+----------------------------
+differential_evolution step 5: f(x)= -3.26013
+Best Soln: [1.37003155e+02 1.07203184e-02 1.68199798e-02]
+convergence 0.1667
+----------------------------
+differential_evolution step 6: f(x)= -3.26013
+Best Soln: [1.37003155e+02 1.07203184e-02 1.68199798e-02]
+convergence 0.232
+----------------------------
+differential_evolution step 7: f(x)= -3.26013
+Best Soln: [1.37003155e+02 1.07203184e-02 1.68199798e-02]
+convergence 0.3143
+----------------------------
+differential_evolution step 8: f(x)= -3.26013
+Best Soln: [1.37003155e+02 1.07203184e-02 1.68199798e-02]
+convergence 0.5576
+----------------------------
+differential_evolution step 9: f(x)= -3.26013
+Best Soln: [1.37003155e+02 1.07203184e-02 1.68199798e-02]
+convergence 1.4009
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.2601309357068953
+       x: [ 1.370e+02  1.072e-02  1.682e-02]
+     nit: 9
+    nfev: 320
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+
+7it [49:12, 416.84s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 15:57:52.572684-07:00
+differential_evolution step 1: f(x)= -3.18595
+Best Soln: [1.38001393e+02 1.07154986e-02 1.69796427e-02]
+convergence 0.0326
+----------------------------
+differential_evolution step 2: f(x)= -3.20723
+Best Soln: [1.38008069e+02 1.07216106e-02 1.68114944e-02]
+convergence 0.0395
+----------------------------
+differential_evolution step 3: f(x)= -3.20723
+Best Soln: [1.38008069e+02 1.07216106e-02 1.68114944e-02]
+convergence 0.0433
+----------------------------
+differential_evolution step 4: f(x)= -3.20723
+Best Soln: [1.38008069e+02 1.07216106e-02 1.68114944e-02]
+convergence 0.0708
+----------------------------
+differential_evolution step 5: f(x)= -3.25833
+Best Soln: [1.38003197e+02 1.06877349e-02 1.68431614e-02]
+convergence 0.0861
+----------------------------
+differential_evolution step 6: f(x)= -3.28455
+Best Soln: [1.38003880e+02 1.06334691e-02 1.67276701e-02]
+convergence 0.0966
+----------------------------
+differential_evolution step 7: f(x)= -3.28455
+Best Soln: [1.38003880e+02 1.06334691e-02 1.67276701e-02]
+convergence 0.1295
+----------------------------
+differential_evolution step 8: f(x)= -3.28455
+Best Soln: [1.38003880e+02 1.06334691e-02 1.67276701e-02]
+convergence 0.1781
+----------------------------
+differential_evolution step 9: f(x)= -3.28455
+Best Soln: [1.38003880e+02 1.06334691e-02 1.67276701e-02]
+convergence 0.2824
+----------------------------
+differential_evolution step 10: f(x)= -3.28455
+Best Soln: [1.38003880e+02 1.06334691e-02 1.67276701e-02]
+convergence 0.412
+----------------------------
+differential_evolution step 11: f(x)= -3.28513
+Best Soln: [1.38004642e+02 1.06554779e-02 1.67317438e-02]
+convergence 0.5478
+----------------------------
+differential_evolution step 12: f(x)= -3.28513
+Best Soln: [1.38004642e+02 1.06554779e-02 1.67317438e-02]
+convergence 0.703
+----------------------------
+differential_evolution step 13: f(x)= -3.28545
+Best Soln: [1.38004766e+02 1.06384139e-02 1.67575288e-02]
+convergence 1.1762
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.28545146287778
+       x: [ 1.380e+02  1.064e-02  1.676e-02]
+     nit: 13
+    nfev: 448
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+
+8it [57:10, 436.51s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 16:05:51.213900-07:00
+differential_evolution step 1: f(x)= -3.19049
+Best Soln: [1.39006364e+02 1.05305912e-02 1.63916835e-02]
+convergence 0.0396
+----------------------------
+differential_evolution step 2: f(x)= -3.19049
+Best Soln: [1.39006364e+02 1.05305912e-02 1.63916835e-02]
+convergence 0.0467
+----------------------------
+differential_evolution step 3: f(x)= -3.19049
+Best Soln: [1.39006364e+02 1.05305912e-02 1.63916835e-02]
+convergence 0.0581
+----------------------------
+differential_evolution step 4: f(x)= -3.19049
+Best Soln: [1.39006364e+02 1.05305912e-02 1.63916835e-02]
+convergence 0.0599
+----------------------------
+differential_evolution step 5: f(x)= -3.19049
+Best Soln: [1.39006364e+02 1.05305912e-02 1.63916835e-02]
+convergence 0.062
+----------------------------
+differential_evolution step 6: f(x)= -3.22131
+Best Soln: [1.39006106e+02 1.05358844e-02 1.68300605e-02]
+convergence 0.0868
+----------------------------
+differential_evolution step 7: f(x)= -3.25221
+Best Soln: [1.39007833e+02 1.05108322e-02 1.65047878e-02]
+convergence 0.1135
+----------------------------
+differential_evolution step 8: f(x)= -3.30162
+Best Soln: [1.39005553e+02 1.05597490e-02 1.66896763e-02]
+convergence 0.1405
+----------------------------
+differential_evolution step 9: f(x)= -3.30162
+Best Soln: [1.39005553e+02 1.05597490e-02 1.66896763e-02]
+convergence 0.1994
+----------------------------
+differential_evolution step 10: f(x)= -3.30173
+Best Soln: [1.39003871e+02 1.05597490e-02 1.66896763e-02]
+convergence 0.238
+----------------------------
+differential_evolution step 11: f(x)= -3.30173
+Best Soln: [1.39003871e+02 1.05597490e-02 1.66896763e-02]
+convergence 0.3038
+----------------------------
+differential_evolution step 12: f(x)= -3.30173
+Best Soln: [1.39003871e+02 1.05597490e-02 1.66896763e-02]
+convergence 0.3376
+----------------------------
+differential_evolution step 13: f(x)= -3.30314
+Best Soln: [1.39005945e+02 1.05587162e-02 1.66733000e-02]
+convergence 0.9846
+----------------------------
+differential_evolution step 14: f(x)= -3.30314
+Best Soln: [1.39005945e+02 1.05587162e-02 1.66733000e-02]
+convergence 1.023
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.303137386347736
+       x: [ 1.390e+02  1.056e-02  1.667e-02]
+     nit: 14
+    nfev: 480
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+
+9it [1:04:59, 446.71s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 16:13:40.348236-07:00
+differential_evolution step 1: f(x)= -2.92071
+Best Soln: [1.40007623e+02 1.05764059e-02 1.62429057e-02]
+convergence 0.0388
+----------------------------
+differential_evolution step 2: f(x)= -3.2629
+Best Soln: [1.40008540e+02 1.04843475e-02 1.67316710e-02]
+convergence 0.0387
+----------------------------
+differential_evolution step 3: f(x)= -3.28056
+Best Soln: [1.40008322e+02 1.04854383e-02 1.64657638e-02]
+convergence 0.0488
+----------------------------
+differential_evolution step 4: f(x)= -3.28056
+Best Soln: [1.40008322e+02 1.04854383e-02 1.64657638e-02]
+convergence 0.0612
+----------------------------
+differential_evolution step 5: f(x)= -3.28066
+Best Soln: [1.40007914e+02 1.04854383e-02 1.64657638e-02]
+convergence 0.0839
+----------------------------
+differential_evolution step 6: f(x)= -3.28066
+Best Soln: [1.40007914e+02 1.04854383e-02 1.64657638e-02]
+convergence 0.1251
+----------------------------
+differential_evolution step 7: f(x)= -3.30202
+Best Soln: [1.40009341e+02 1.04930734e-02 1.66067788e-02]
+convergence 0.161
+----------------------------
+differential_evolution step 8: f(x)= -3.30878
+Best Soln: [1.40006053e+02 1.04640918e-02 1.66026452e-02]
+convergence 0.2168
+----------------------------
+differential_evolution step 9: f(x)= -3.30878
+Best Soln: [1.40006053e+02 1.04640918e-02 1.66026452e-02]
+convergence 0.2996
+----------------------------
+differential_evolution step 10: f(x)= -3.30878
+Best Soln: [1.40006053e+02 1.04640918e-02 1.66026452e-02]
+convergence 0.3643
+----------------------------
+differential_evolution step 11: f(x)= -3.3134
+Best Soln: [1.40003630e+02 1.04732963e-02 1.65745464e-02]
+convergence 0.6305
+----------------------------
+differential_evolution step 12: f(x)= -3.3134
+Best Soln: [1.40003630e+02 1.04732963e-02 1.65745464e-02]
+convergence 1.0539
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.3133976216517667
+       x: [ 1.400e+02  1.047e-02  1.657e-02]
+     nit: 12
+    nfev: 416
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+
+10it [1:11:42, 433.11s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 16:20:23.007564-07:00
+differential_evolution step 1: f(x)= -3.13894
+Best Soln: [1.41004958e+02 1.02749441e-02 1.62443165e-02]
+convergence 0.0388
+----------------------------
+differential_evolution step 2: f(x)= -3.13894
+Best Soln: [1.41004958e+02 1.02749441e-02 1.62443165e-02]
+convergence 0.0467
+----------------------------
+differential_evolution step 3: f(x)= -3.13894
+Best Soln: [1.41004958e+02 1.02749441e-02 1.62443165e-02]
+convergence 0.0838
+----------------------------
+differential_evolution step 4: f(x)= -3.21297
+Best Soln: [1.41007060e+02 1.03227078e-02 1.65603914e-02]
+convergence 0.0774
+----------------------------
+differential_evolution step 5: f(x)= -3.24587
+Best Soln: [1.41008861e+02 1.03460648e-02 1.65850859e-02]
+convergence 0.0854
+----------------------------
+differential_evolution step 6: f(x)= -3.30197
+Best Soln: [1.41005639e+02 1.03876610e-02 1.65572853e-02]
+convergence 0.1058
+----------------------------
+differential_evolution step 7: f(x)= -3.30197
+Best Soln: [1.41005639e+02 1.03876610e-02 1.65572853e-02]
+convergence 0.1302
+----------------------------
+differential_evolution step 8: f(x)= -3.31324
+Best Soln: [1.41005792e+02 1.03900227e-02 1.64396759e-02]
+convergence 0.1913
+----------------------------
+differential_evolution step 9: f(x)= -3.31438
+Best Soln: [1.41004280e+02 1.03749592e-02 1.64207538e-02]
+convergence 0.276
+----------------------------
+differential_evolution step 10: f(x)= -3.31565
+Best Soln: [1.41005792e+02 1.03900227e-02 1.64949446e-02]
+convergence 0.5041
+----------------------------
+differential_evolution step 11: f(x)= -3.31805
+Best Soln: [1.41007326e+02 1.03798335e-02 1.64650243e-02]
+convergence 1.0423
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.3180522741202023
+       x: [ 1.410e+02  1.038e-02  1.647e-02]
+     nit: 11
+    nfev: 384
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+
+11it [1:18:05, 417.84s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 16:26:46.228163-07:00
+differential_evolution step 1: f(x)= -3.12857
+Best Soln: [1.42008360e+02 1.03213552e-02 1.67274142e-02]
+convergence 0.038
+----------------------------
+differential_evolution step 2: f(x)= -3.12857
+Best Soln: [1.42008360e+02 1.03213552e-02 1.67274142e-02]
+convergence 0.0467
+----------------------------
+differential_evolution step 3: f(x)= -3.12857
+Best Soln: [1.42008360e+02 1.03213552e-02 1.67274142e-02]
+convergence 0.0549
+----------------------------
+differential_evolution step 4: f(x)= -3.12857
+Best Soln: [1.42008360e+02 1.03213552e-02 1.67274142e-02]
+convergence 0.0728
+----------------------------
+differential_evolution step 5: f(x)= -3.12857
+Best Soln: [1.42008360e+02 1.03213552e-02 1.67274142e-02]
+convergence 0.0853
+----------------------------
+differential_evolution step 6: f(x)= -3.3134
+Best Soln: [1.42007265e+02 1.02939830e-02 1.63251986e-02]
+convergence 0.0989
+----------------------------
+differential_evolution step 7: f(x)= -3.3134
+Best Soln: [1.42007265e+02 1.02939830e-02 1.63251986e-02]
+convergence 0.1117
+----------------------------
+differential_evolution step 8: f(x)= -3.3134
+Best Soln: [1.42007265e+02 1.02939830e-02 1.63251986e-02]
+convergence 0.1318
+----------------------------
+differential_evolution step 9: f(x)= -3.3134
+Best Soln: [1.42007265e+02 1.02939830e-02 1.63251986e-02]
+convergence 0.1507
+----------------------------
+differential_evolution step 10: f(x)= -3.3134
+Best Soln: [1.42007265e+02 1.02939830e-02 1.63251986e-02]
+convergence 0.2313
+----------------------------
+differential_evolution step 11: f(x)= -3.3134
+Best Soln: [1.42007265e+02 1.02939830e-02 1.63251986e-02]
+convergence 0.391
+----------------------------
+differential_evolution step 12: f(x)= -3.3153
+Best Soln: [1.42008328e+02 1.02889379e-02 1.63336166e-02]
+convergence 0.649
+----------------------------
+differential_evolution step 13: f(x)= -3.31753
+Best Soln: [1.42006327e+02 1.02956467e-02 1.63616271e-02]
+convergence 1.0407
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.317531537543675
+       x: [ 1.420e+02  1.030e-02  1.636e-02]
+     nit: 13
+    nfev: 448
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+
+12it [1:25:06, 418.63s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 16:33:46.675492-07:00
+differential_evolution step 1: f(x)= -2.90154
+Best Soln: [1.43005573e+02 1.01287476e-02 1.66800228e-02]
+convergence 0.0375
+----------------------------
+differential_evolution step 2: f(x)= -2.98894
+Best Soln: [1.43004660e+02 1.03765728e-02 1.65324966e-02]
+convergence 0.0395
+----------------------------
+differential_evolution step 3: f(x)= -3.10281
+Best Soln: [1.43006158e+02 1.01437202e-02 1.59110201e-02]
+convergence 0.0556
+----------------------------
+differential_evolution step 4: f(x)= -3.21027
+Best Soln: [1.43008060e+02 1.01755391e-02 1.60277958e-02]
+convergence 0.0624
+----------------------------
+differential_evolution step 5: f(x)= -3.29458
+Best Soln: [1.43004660e+02 1.02294981e-02 1.62177719e-02]
+convergence 0.1093
+----------------------------
+differential_evolution step 6: f(x)= -3.30383
+Best Soln: [1.43004294e+02 1.02343782e-02 1.63297024e-02]
+convergence 0.1135
+----------------------------
+differential_evolution step 7: f(x)= -3.30383
+Best Soln: [1.43004294e+02 1.02343782e-02 1.63297024e-02]
+convergence 0.1604
+----------------------------
+differential_evolution step 8: f(x)= -3.31199
+Best Soln: [1.43002067e+02 1.02239599e-02 1.62776565e-02]
+convergence 0.2543
+----------------------------
+differential_evolution step 9: f(x)= -3.31199
+Best Soln: [1.43002067e+02 1.02239599e-02 1.62776565e-02]
+convergence 0.3957
+----------------------------
+differential_evolution step 10: f(x)= -3.31199
+Best Soln: [1.43002067e+02 1.02239599e-02 1.62776565e-02]
+convergence 0.5313
+----------------------------
+differential_evolution step 11: f(x)= -3.3133
+Best Soln: [1.43000590e+02 1.02004205e-02 1.62403362e-02]
+convergence 0.7528
+----------------------------
+differential_evolution step 12: f(x)= -3.31564
+Best Soln: [1.43005199e+02 1.02050440e-02 1.62689706e-02]
+convergence 0.8049
+----------------------------
+differential_evolution step 13: f(x)= -3.31564
+Best Soln: [1.43005199e+02 1.02050440e-02 1.62689706e-02]
+convergence 0.9478
+----------------------------
+differential_evolution step 14: f(x)= -3.3158
+Best Soln: [1.43004546e+02 1.02112383e-02 1.62667775e-02]
+convergence 2.8671
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.3157977031313073
+       x: [ 1.430e+02  1.021e-02  1.627e-02]
+     nit: 14
+    nfev: 480
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+
+13it [1:32:59, 435.18s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 16:41:39.934404-07:00
+differential_evolution step 1: f(x)= -2.70389
+Best Soln: [1.44009286e+02 1.02265599e-02 1.70913413e-02]
+convergence 0.0379
+----------------------------
+differential_evolution step 2: f(x)= -2.92762
+Best Soln: [1.44001253e+02 1.03142968e-02 1.65082743e-02]
+convergence 0.042
+----------------------------
+differential_evolution step 3: f(x)= -3.18014
+Best Soln: [1.44003652e+02 1.02058613e-02 1.61400949e-02]
+convergence 0.0447
+----------------------------
+differential_evolution step 4: f(x)= -3.18014
+Best Soln: [1.44003652e+02 1.02058613e-02 1.61400949e-02]
+convergence 0.062
+----------------------------
+differential_evolution step 5: f(x)= -3.19254
+Best Soln: [1.44004671e+02 1.01486196e-02 1.59661060e-02]
+convergence 0.0699
+----------------------------
+differential_evolution step 6: f(x)= -3.22236
+Best Soln: [1.44003783e+02 1.01739491e-02 1.60722909e-02]
+convergence 0.072
+----------------------------
+differential_evolution step 7: f(x)= -3.25534
+Best Soln: [1.44005077e+02 1.01739491e-02 1.61369348e-02]
+convergence 0.0983
+----------------------------
+differential_evolution step 8: f(x)= -3.27313
+Best Soln: [1.44003369e+02 1.01486196e-02 1.60808913e-02]
+convergence 0.1027
+----------------------------
+differential_evolution step 9: f(x)= -3.27313
+Best Soln: [1.44003369e+02 1.01486196e-02 1.60808913e-02]
+convergence 0.1399
+----------------------------
+differential_evolution step 10: f(x)= -3.28257
+Best Soln: [1.44004390e+02 1.01700909e-02 1.62380119e-02]
+convergence 0.1527
+----------------------------
+differential_evolution step 11: f(x)= -3.28997
+Best Soln: [1.44002246e+02 1.01647822e-02 1.62380119e-02]
+convergence 0.2271
+----------------------------
+differential_evolution step 12: f(x)= -3.29472
+Best Soln: [1.44002019e+02 1.01501533e-02 1.61369348e-02]
+convergence 0.3057
+----------------------------
+differential_evolution step 13: f(x)= -3.31363
+Best Soln: [1.44007890e+02 1.01371240e-02 1.61879777e-02]
+convergence 0.5885
+----------------------------
+differential_evolution step 14: f(x)= -3.31363
+Best Soln: [1.44007890e+02 1.01371240e-02 1.61879777e-02]
+convergence 0.9094
+----------------------------
+differential_evolution step 15: f(x)= -3.31363
+Best Soln: [1.44007890e+02 1.01371240e-02 1.61879777e-02]
+convergence 1.0364
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.313631268493093
+       x: [ 1.440e+02  1.014e-02  1.619e-02]
+     nit: 15
+    nfev: 512
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+
+14it [1:40:57, 448.09s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 16:49:37.839103-07:00
+differential_evolution step 1: f(x)= -2.56003
+Best Soln: [1.45007665e+02 1.00682757e-02 1.52116873e-02]
+convergence 0.042
+----------------------------
+differential_evolution step 2: f(x)= -2.63438
+Best Soln: [1.45002434e+02 9.79889435e-03 1.62458556e-02]
+convergence 0.0459
+----------------------------
+differential_evolution step 3: f(x)= -3.10522
+Best Soln: [1.45009328e+02 9.94679729e-03 1.61618965e-02]
+convergence 0.049
+----------------------------
+differential_evolution step 4: f(x)= -3.30685
+Best Soln: [1.45009067e+02 1.00578728e-02 1.61618965e-02]
+convergence 0.0475
+----------------------------
+differential_evolution step 5: f(x)= -3.30685
+Best Soln: [1.45009067e+02 1.00578728e-02 1.61618965e-02]
+convergence 0.0617
+----------------------------
+differential_evolution step 6: f(x)= -3.31555
+Best Soln: [1.45007766e+02 1.00578728e-02 1.60915165e-02]
+convergence 0.0693
+----------------------------
+differential_evolution step 7: f(x)= -3.31555
+Best Soln: [1.45007766e+02 1.00578728e-02 1.60915165e-02]
+convergence 0.0864
+----------------------------
+differential_evolution step 8: f(x)= -3.31555
+Best Soln: [1.45007766e+02 1.00578728e-02 1.60915165e-02]
+convergence 0.1143
+----------------------------
+differential_evolution step 9: f(x)= -3.31555
+Best Soln: [1.45007766e+02 1.00578728e-02 1.60915165e-02]
+convergence 0.1572
+----------------------------
+differential_evolution step 10: f(x)= -3.31555
+Best Soln: [1.45007766e+02 1.00578728e-02 1.60915165e-02]
+convergence 0.2234
+----------------------------
+differential_evolution step 11: f(x)= -3.31555
+Best Soln: [1.45007766e+02 1.00578728e-02 1.60915165e-02]
+convergence 0.3019
+----------------------------
+differential_evolution step 12: f(x)= -3.31555
+Best Soln: [1.45007766e+02 1.00578728e-02 1.60915165e-02]
+convergence 0.2946
+----------------------------
+differential_evolution step 13: f(x)= -3.31555
+Best Soln: [1.45007766e+02 1.00578728e-02 1.60915165e-02]
+convergence 0.404
+----------------------------
+differential_evolution step 14: f(x)= -3.31697
+Best Soln: [1.45009209e+02 1.00484156e-02 1.61155368e-02]
+convergence 0.919
+----------------------------
+differential_evolution step 15: f(x)= -3.31827
+Best Soln: [1.45007545e+02 1.00435630e-02 1.60988688e-02]
+convergence 1.436
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.318272495851757
+       x: [ 1.450e+02  1.004e-02  1.610e-02]
+     nit: 15
+    nfev: 512
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145]
+
+log of gate error (truc=200) =
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725 ,
+
+drive_param (truc=200) =
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+
+15it [1:49:04, 459.74s/it]
+log of gate error (truc=700) =
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 16:57:44.599299-07:00
+                                                            differential_evolution step 1: f(x)= -2.49989
+Best Soln: [1.46003986e+02 9.75585030e-03 1.50043405e-02]
+convergence 0.0443
+----------------------------
+differential_evolution step 2: f(x)= -2.69711
+Best Soln: [1.46006884e+02 9.96510620e-03 1.67907463e-02]
+convergence 0.0467
+----------------------------
+differential_evolution step 3: f(x)= -3.3134
+Best Soln: [1.46004050e+02 9.98178842e-03 1.60653400e-02]
+convergence 0.054
+----------------------------
+differential_evolution step 4: f(x)= -3.31436
+Best Soln: [1.46003593e+02 9.96453193e-03 1.59148206e-02]
+convergence 0.0682
+----------------------------
+differential_evolution step 5: f(x)= -3.31436
+Best Soln: [1.46003593e+02 9.96453193e-03 1.59148206e-02]
+convergence 0.077
+----------------------------
+differential_evolution step 6: f(x)= -3.31889
+Best Soln: [1.46001879e+02 9.96453193e-03 1.59298506e-02]
+convergence 0.0949
+----------------------------
+differential_evolution step 7: f(x)= -3.31889
+Best Soln: [1.46001879e+02 9.96453193e-03 1.59298506e-02]
+convergence 0.1613
+----------------------------
+differential_evolution step 8: f(x)= -3.31889
+Best Soln: [1.46001879e+02 9.96453193e-03 1.59298506e-02]
+convergence 0.3002
+----------------------------
+differential_evolution step 9: f(x)= -3.31889
+Best Soln: [1.46001879e+02 9.96453193e-03 1.59298506e-02]
+convergence 0.3294
+----------------------------
+differential_evolution step 10: f(x)= -3.32533
+Best Soln: [1.46003612e+02 9.96756233e-03 1.60104104e-02]
+convergence 0.629
+----------------------------
+differential_evolution step 11: f(x)= -3.32533
+Best Soln: [1.46003612e+02 9.96756233e-03 1.60104104e-02]
+convergence 0.9739
+----------------------------
+differential_evolution step 12: f(x)= -3.32629
+Best Soln: [1.46000607e+02 9.96638389e-03 1.59786195e-02]
+convergence 1.3464
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.3262935869190526
+       x: [ 1.460e+02  9.966e-03  1.598e-02]
+     nit: 12
+    nfev: 416 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+16it [1:55:20, 434.59s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 17:04:00.791709-07:00
+differential_evolution step 1: f(x)= -3.16705
+Best Soln: [1.47002697e+02 9.88699058e-03 1.61857268e-02]
+convergence 0.0345
+----------------------------
+differential_evolution step 2: f(x)= -3.16705
+Best Soln: [1.47002697e+02 9.88699058e-03 1.61857268e-02]
+convergence 0.0486
+----------------------------
+differential_evolution step 3: f(x)= -3.16705
+Best Soln: [1.47002697e+02 9.88699058e-03 1.61857268e-02]
+convergence 0.0704
+----------------------------
+differential_evolution step 4: f(x)= -3.16705
+Best Soln: [1.47002697e+02 9.88699058e-03 1.61857268e-02]
+convergence 0.0809
+----------------------------
+differential_evolution step 5: f(x)= -3.20561
+Best Soln: [1.47005294e+02 9.82520851e-03 1.59926120e-02]
+convergence 0.0925
+----------------------------
+differential_evolution step 6: f(x)= -3.33602
+Best Soln: [1.47006263e+02 9.87711995e-03 1.58714576e-02]
+convergence 0.1055
+----------------------------
+differential_evolution step 7: f(x)= -3.33602
+Best Soln: [1.47006263e+02 9.87711995e-03 1.58714576e-02]
+convergence 0.1404
+----------------------------
+differential_evolution step 8: f(x)= -3.33602
+Best Soln: [1.47006263e+02 9.87711995e-03 1.58714576e-02]
+convergence 0.1788
+----------------------------
+differential_evolution step 9: f(x)= -3.33602
+Best Soln: [1.47006263e+02 9.87711995e-03 1.58714576e-02]
+convergence 0.1872
+----------------------------
+differential_evolution step 10: f(x)= -3.33609
+Best Soln: [1.47008918e+02 9.87711995e-03 1.58714576e-02]
+convergence 0.2655
+----------------------------
+differential_evolution step 11: f(x)= -3.33609
+Best Soln: [1.47008918e+02 9.87711995e-03 1.58714576e-02]
+convergence 0.3445
+----------------------------
+differential_evolution step 12: f(x)= -3.33609
+Best Soln: [1.47008918e+02 9.87711995e-03 1.58714576e-02]
+convergence 0.4658
+----------------------------
+differential_evolution step 13: f(x)= -3.33717
+Best Soln: [1.47002089e+02 9.88563390e-03 1.58845369e-02]
+convergence 0.6454
+----------------------------
+differential_evolution step 14: f(x)= -3.33717
+Best Soln: [1.47002089e+02 9.88563390e-03 1.58845369e-02]
+convergence 1.8533
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.337174127567182
+       x: [ 1.470e+02  9.886e-03  1.588e-02]
+     nit: 14
+    nfev: 480 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+17it [2:02:28, 432.69s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 17:11:09.052736-07:00
+differential_evolution step 1: f(x)= -2.72515
+Best Soln: [1.48001406e+02 9.67161328e-03 1.62405426e-02]
+convergence 0.0372
+----------------------------
+differential_evolution step 2: f(x)= -2.72515
+Best Soln: [1.48001406e+02 9.67161328e-03 1.62405426e-02]
+convergence 0.0456
+----------------------------
+differential_evolution step 3: f(x)= -3.22581
+Best Soln: [1.48005572e+02 9.73869483e-03 1.58363774e-02]
+convergence 0.0514
+----------------------------
+differential_evolution step 4: f(x)= -3.34761
+Best Soln: [1.48004725e+02 9.81267354e-03 1.57787283e-02]
+convergence 0.0666
+----------------------------
+differential_evolution step 5: f(x)= -3.34761
+Best Soln: [1.48004725e+02 9.81267354e-03 1.57787283e-02]
+convergence 0.0808
+----------------------------
+differential_evolution step 6: f(x)= -3.34761
+Best Soln: [1.48004725e+02 9.81267354e-03 1.57787283e-02]
+convergence 0.0985
+----------------------------
+differential_evolution step 7: f(x)= -3.34761
+Best Soln: [1.48004725e+02 9.81267354e-03 1.57787283e-02]
+convergence 0.1206
+----------------------------
+differential_evolution step 8: f(x)= -3.34793
+Best Soln: [1.48004136e+02 9.81534900e-03 1.58129964e-02]
+convergence 0.2237
+----------------------------
+differential_evolution step 9: f(x)= -3.34793
+Best Soln: [1.48004136e+02 9.81534900e-03 1.58129964e-02]
+convergence 0.398
+----------------------------
+differential_evolution step 10: f(x)= -3.34793
+Best Soln: [1.48004136e+02 9.81534900e-03 1.58129964e-02]
+convergence 0.7484
+----------------------------
+differential_evolution step 11: f(x)= -3.34925
+Best Soln: [1.48004935e+02 9.81015636e-03 1.57896177e-02]
+convergence 1.3793
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.3492470407100865
+       x: [ 1.480e+02  9.810e-03  1.579e-02]
+     nit: 11
+    nfev: 384 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+18it [2:08:09, 405.04s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 17:16:49.725370-07:00
+differential_evolution step 1: f(x)= -2.78015
+Best Soln: [1.49005084e+02 9.96554591e-03 1.62283250e-02]
+convergence 0.0409
+----------------------------
+differential_evolution step 2: f(x)= -3.2754
+Best Soln: [1.49000831e+02 9.78158443e-03 1.56469689e-02]
+convergence 0.0467
+----------------------------
+differential_evolution step 3: f(x)= -3.2754
+Best Soln: [1.49000831e+02 9.78158443e-03 1.56469689e-02]
+convergence 0.0546
+----------------------------
+differential_evolution step 4: f(x)= -3.27683
+Best Soln: [1.49003525e+02 9.78713336e-03 1.58708354e-02]
+convergence 0.0777
+----------------------------
+differential_evolution step 5: f(x)= -3.28538
+Best Soln: [1.49007113e+02 9.69752046e-03 1.58079869e-02]
+convergence 0.1288
+----------------------------
+differential_evolution step 6: f(x)= -3.35428
+Best Soln: [1.49007319e+02 9.74968155e-03 1.57406951e-02]
+convergence 0.1363
+----------------------------
+differential_evolution step 7: f(x)= -3.36334
+Best Soln: [1.49009142e+02 9.72998682e-03 1.56803650e-02]
+convergence 0.2857
+----------------------------
+differential_evolution step 8: f(x)= -3.36334
+Best Soln: [1.49009142e+02 9.72998682e-03 1.56803650e-02]
+convergence 0.4354
+----------------------------
+differential_evolution step 9: f(x)= -3.36334
+Best Soln: [1.49009142e+02 9.72998682e-03 1.56803650e-02]
+convergence 0.5613
+----------------------------
+differential_evolution step 10: f(x)= -3.36334
+Best Soln: [1.49009142e+02 9.72998682e-03 1.56803650e-02]
+convergence 0.6462
+----------------------------
+differential_evolution step 11: f(x)= -3.36334
+Best Soln: [1.49009142e+02 9.72998682e-03 1.56803650e-02]
+convergence 0.6655
+----------------------------
+differential_evolution step 12: f(x)= -3.36334
+Best Soln: [1.49009142e+02 9.72998682e-03 1.56803650e-02]
+convergence 1.1312
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.363340640944359
+       x: [ 1.490e+02  9.730e-03  1.568e-02]
+     nit: 12
+    nfev: 416 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+19it [2:14:26, 396.54s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 17:23:06.455096-07:00
+differential_evolution step 1: f(x)= -2.79724
+Best Soln: [1.50005640e+02 9.64509840e-03 1.62685956e-02]
+convergence 0.0385
+----------------------------
+differential_evolution step 2: f(x)= -3.22123
+Best Soln: [1.50003405e+02 9.64509840e-03 1.53378134e-02]
+convergence 0.0394
+----------------------------
+differential_evolution step 3: f(x)= -3.23056
+Best Soln: [1.50004978e+02 9.63303502e-03 1.53378134e-02]
+convergence 0.044
+----------------------------
+differential_evolution step 4: f(x)= -3.33565
+Best Soln: [1.50004434e+02 9.66424527e-03 1.54899595e-02]
+convergence 0.0549
+----------------------------
+differential_evolution step 5: f(x)= -3.33565
+Best Soln: [1.50004434e+02 9.66424527e-03 1.54899595e-02]
+convergence 0.0621
+----------------------------
+differential_evolution step 6: f(x)= -3.33565
+Best Soln: [1.50004434e+02 9.66424527e-03 1.54899595e-02]
+convergence 0.0788
+----------------------------
+differential_evolution step 7: f(x)= -3.33565
+Best Soln: [1.50004434e+02 9.66424527e-03 1.54899595e-02]
+convergence 0.0951
+----------------------------
+differential_evolution step 8: f(x)= -3.33565
+Best Soln: [1.50004434e+02 9.66424527e-03 1.54899595e-02]
+convergence 0.1014
+----------------------------
+differential_evolution step 9: f(x)= -3.33565
+Best Soln: [1.50004434e+02 9.66424527e-03 1.54899595e-02]
+convergence 0.1018
+----------------------------
+differential_evolution step 10: f(x)= -3.33968
+Best Soln: [1.50003033e+02 9.66080475e-03 1.54896853e-02]
+convergence 0.1511
+----------------------------
+differential_evolution step 11: f(x)= -3.34775
+Best Soln: [1.50004765e+02 9.61675514e-03 1.55901386e-02]
+convergence 0.1646
+----------------------------
+differential_evolution step 12: f(x)= -3.35852
+Best Soln: [1.50004385e+02 9.63284030e-03 1.56457398e-02]
+convergence 0.2351
+----------------------------
+differential_evolution step 13: f(x)= -3.3782
+Best Soln: [1.50003028e+02 9.66080475e-03 1.55781537e-02]
+convergence 0.3414
+----------------------------
+differential_evolution step 14: f(x)= -3.38059
+Best Soln: [1.50004791e+02 9.65509507e-03 1.55776536e-02]
+convergence 0.5516
+----------------------------
+differential_evolution step 15: f(x)= -3.38124
+Best Soln: [1.50005047e+02 9.66097327e-03 1.56024778e-02]
+convergence 0.6979
+----------------------------
+differential_evolution step 16: f(x)= -3.3822
+Best Soln: [1.50007080e+02 9.65890275e-03 1.56127005e-02]
+convergence 1.1946
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.3822042144615216
+       x: [ 1.500e+02  9.659e-03  1.561e-02]
+     nit: 16
+    nfev: 544 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+20it [2:22:06, 415.60s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 17:30:46.476403-07:00
+differential_evolution step 1: f(x)= -2.84285
+Best Soln: [1.51001791e+02 9.36959743e-03 1.52307804e-02]
+convergence 0.0444
+----------------------------
+differential_evolution step 2: f(x)= -3.03938
+Best Soln: [1.51003144e+02 9.60868521e-03 1.59897099e-02]
+convergence 0.0523
+----------------------------
+differential_evolution step 3: f(x)= -3.34073
+Best Soln: [1.51002747e+02 9.59830508e-03 1.53930424e-02]
+convergence 0.0525
+----------------------------
+differential_evolution step 4: f(x)= -3.34073
+Best Soln: [1.51002747e+02 9.59830508e-03 1.53930424e-02]
+convergence 0.0732
+----------------------------
+differential_evolution step 5: f(x)= -3.39407
+Best Soln: [1.51002241e+02 9.58010891e-03 1.55780399e-02]
+convergence 0.0788
+----------------------------
+differential_evolution step 6: f(x)= -3.39407
+Best Soln: [1.51002241e+02 9.58010891e-03 1.55780399e-02]
+convergence 0.1098
+----------------------------
+differential_evolution step 7: f(x)= -3.39646
+Best Soln: [1.51003173e+02 9.58881980e-03 1.55780399e-02]
+convergence 0.1357
+----------------------------
+differential_evolution step 8: f(x)= -3.39646
+Best Soln: [1.51003173e+02 9.58881980e-03 1.55780399e-02]
+convergence 0.1593
+----------------------------
+differential_evolution step 9: f(x)= -3.39869
+Best Soln: [1.51001387e+02 9.57107925e-03 1.54507722e-02]
+convergence 0.1862
+----------------------------
+differential_evolution step 10: f(x)= -3.40354
+Best Soln: [1.51005933e+02 9.59170291e-03 1.55408044e-02]
+convergence 0.614
+----------------------------
+differential_evolution step 11: f(x)= -3.40595
+Best Soln: [1.51006026e+02 9.57760490e-03 1.55331059e-02]
+convergence 1.0969
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.405949671824532
+       x: [ 1.510e+02  9.578e-03  1.553e-02]
+     nit: 11
+    nfev: 384 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+21it [2:27:46, 392.96s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 17:36:26.671497-07:00
+differential_evolution step 1: f(x)= -2.84035
+Best Soln: [1.52004089e+02 9.66097322e-03 1.51999198e-02]
+convergence 0.0392
+----------------------------
+differential_evolution step 2: f(x)= -2.84035
+Best Soln: [1.52004089e+02 9.66097322e-03 1.51999198e-02]
+convergence 0.0423
+----------------------------
+differential_evolution step 3: f(x)= -3.356
+Best Soln: [1.52005644e+02 9.52006267e-03 1.52772606e-02]
+convergence 0.0415
+----------------------------
+differential_evolution step 4: f(x)= -3.40305
+Best Soln: [1.52005272e+02 9.47544687e-03 1.54380916e-02]
+convergence 0.0519
+----------------------------
+differential_evolution step 5: f(x)= -3.43696
+Best Soln: [1.52007710e+02 9.51768050e-03 1.54380916e-02]
+convergence 0.0595
+----------------------------
+differential_evolution step 6: f(x)= -3.43696
+Best Soln: [1.52007710e+02 9.51768050e-03 1.54380916e-02]
+convergence 0.0712
+----------------------------
+differential_evolution step 7: f(x)= -3.43696
+Best Soln: [1.52007710e+02 9.51768050e-03 1.54380916e-02]
+convergence 0.0828
+----------------------------
+differential_evolution step 8: f(x)= -3.43696
+Best Soln: [1.52007710e+02 9.51768050e-03 1.54380916e-02]
+convergence 0.1011
+----------------------------
+differential_evolution step 9: f(x)= -3.43696
+Best Soln: [1.52007710e+02 9.51768050e-03 1.54380916e-02]
+convergence 0.1332
+----------------------------
+differential_evolution step 10: f(x)= -3.43696
+Best Soln: [1.52007710e+02 9.51768050e-03 1.54380916e-02]
+convergence 0.2103
+----------------------------
+differential_evolution step 11: f(x)= -3.44059
+Best Soln: [1.52004598e+02 9.50821601e-03 1.54281155e-02]
+convergence 0.3287
+----------------------------
+differential_evolution step 12: f(x)= -3.44059
+Best Soln: [1.52004598e+02 9.50821601e-03 1.54281155e-02]
+convergence 0.4485
+----------------------------
+differential_evolution step 13: f(x)= -3.44059
+Best Soln: [1.52004598e+02 9.50821601e-03 1.54281155e-02]
+convergence 0.717
+----------------------------
+differential_evolution step 14: f(x)= -3.44075
+Best Soln: [1.52007024e+02 9.50474563e-03 1.54230332e-02]
+convergence 1.408
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.440754750811846
+       x: [ 1.520e+02  9.505e-03  1.542e-02]
+     nit: 14
+    nfev: 480 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+22it [2:34:36, 398.28s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 17:43:17.358882-07:00
+differential_evolution step 1: f(x)= -2.64106
+Best Soln: [1.53006785e+02 9.15249304e-03 1.50399259e-02]
+convergence 0.0386
+----------------------------
+differential_evolution step 2: f(x)= -2.86206
+Best Soln: [1.53000994e+02 9.61121030e-03 1.52469712e-02]
+convergence 0.0503
+----------------------------
+differential_evolution step 3: f(x)= -2.94869
+Best Soln: [1.53002555e+02 9.61791728e-03 1.55243335e-02]
+convergence 0.0552
+----------------------------
+differential_evolution step 4: f(x)= -3.4093
+Best Soln: [1.53004435e+02 9.48359195e-03 1.53811530e-02]
+convergence 0.0557
+----------------------------
+differential_evolution step 5: f(x)= -3.4723
+Best Soln: [1.53004334e+02 9.44952555e-03 1.53459337e-02]
+convergence 0.0723
+----------------------------
+differential_evolution step 6: f(x)= -3.4723
+Best Soln: [1.53004334e+02 9.44952555e-03 1.53459337e-02]
+convergence 0.0775
+----------------------------
+differential_evolution step 7: f(x)= -3.4723
+Best Soln: [1.53004334e+02 9.44952555e-03 1.53459337e-02]
+convergence 0.0819
+----------------------------
+differential_evolution step 8: f(x)= -3.4723
+Best Soln: [1.53004334e+02 9.44952555e-03 1.53459337e-02]
+convergence 0.1019
+----------------------------
+differential_evolution step 9: f(x)= -3.47388
+Best Soln: [1.53001517e+02 9.42328927e-03 1.53343190e-02]
+convergence 0.1241
+----------------------------
+differential_evolution step 10: f(x)= -3.47388
+Best Soln: [1.53001517e+02 9.42328927e-03 1.53343190e-02]
+convergence 0.1959
+----------------------------
+differential_evolution step 11: f(x)= -3.47388
+Best Soln: [1.53001517e+02 9.42328927e-03 1.53343190e-02]
+convergence 0.228
+----------------------------
+differential_evolution step 12: f(x)= -3.47388
+Best Soln: [1.53001517e+02 9.42328927e-03 1.53343190e-02]
+convergence 0.2587
+----------------------------
+differential_evolution step 13: f(x)= -3.47388
+Best Soln: [1.53001517e+02 9.42328927e-03 1.53343190e-02]
+convergence 0.3211
+----------------------------
+differential_evolution step 14: f(x)= -3.47881
+Best Soln: [1.53003752e+02 9.43200535e-03 1.53118356e-02]
+convergence 0.3306
+----------------------------
+differential_evolution step 15: f(x)= -3.47881
+Best Soln: [1.53003752e+02 9.43200535e-03 1.53118356e-02]
+convergence 2.1269
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.478808620073921
+       x: [ 1.530e+02  9.432e-03  1.531e-02]
+     nit: 15
+    nfev: 512 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+23it [2:41:40, 405.89s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 17:50:20.991505-07:00
+differential_evolution step 1: f(x)= -3.36783
+Best Soln: [1.54007810e+02 9.37031137e-03 1.50419600e-02]
+convergence 0.0337
+----------------------------
+differential_evolution step 2: f(x)= -3.36783
+Best Soln: [1.54007810e+02 9.37031137e-03 1.50419600e-02]
+convergence 0.0407
+----------------------------
+differential_evolution step 3: f(x)= -3.36783
+Best Soln: [1.54007810e+02 9.37031137e-03 1.50419600e-02]
+convergence 0.053
+----------------------------
+differential_evolution step 4: f(x)= -3.36783
+Best Soln: [1.54007810e+02 9.37031137e-03 1.50419600e-02]
+convergence 0.0637
+----------------------------
+differential_evolution step 5: f(x)= -3.39422
+Best Soln: [1.54008647e+02 9.35002528e-03 1.50397919e-02]
+convergence 0.0691
+----------------------------
+differential_evolution step 6: f(x)= -3.45527
+Best Soln: [1.54006460e+02 9.31910027e-03 1.51488548e-02]
+convergence 0.0811
+----------------------------
+differential_evolution step 7: f(x)= -3.52023
+Best Soln: [1.54007204e+02 9.37031137e-03 1.52543135e-02]
+convergence 0.1197
+----------------------------
+differential_evolution step 8: f(x)= -3.52023
+Best Soln: [1.54007204e+02 9.37031137e-03 1.52543135e-02]
+convergence 0.1595
+----------------------------
+differential_evolution step 9: f(x)= -3.52044
+Best Soln: [1.54006916e+02 9.35811131e-03 1.52154622e-02]
+convergence 0.2231
+----------------------------
+differential_evolution step 10: f(x)= -3.52044
+Best Soln: [1.54006916e+02 9.35811131e-03 1.52154622e-02]
+convergence 0.2684
+----------------------------
+differential_evolution step 11: f(x)= -3.52044
+Best Soln: [1.54006916e+02 9.35811131e-03 1.52154622e-02]
+convergence 0.5516
+----------------------------
+differential_evolution step 12: f(x)= -3.52064
+Best Soln: [1.54007238e+02 9.35625337e-03 1.52273011e-02]
+convergence 1.4854
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.520641433127167
+       x: [ 1.540e+02  9.356e-03  1.523e-02]
+     nit: 12
+    nfev: 416 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+24it [2:47:21, 386.38s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 17:56:01.865704-07:00
+differential_evolution step 1: f(x)= -3.09679
+Best Soln: [1.55001818e+02 9.16480298e-03 1.51736509e-02]
+convergence 0.0365
+----------------------------
+differential_evolution step 2: f(x)= -3.09679
+Best Soln: [1.55001818e+02 9.16480298e-03 1.51736509e-02]
+convergence 0.0447
+----------------------------
+differential_evolution step 3: f(x)= -3.37316
+Best Soln: [1.55002803e+02 9.36777857e-03 1.53348738e-02]
+convergence 0.0512
+----------------------------
+differential_evolution step 4: f(x)= -3.53925
+Best Soln: [1.55001692e+02 9.27242822e-03 1.51664195e-02]
+convergence 0.0586
+----------------------------
+differential_evolution step 5: f(x)= -3.53925
+Best Soln: [1.55001692e+02 9.27242822e-03 1.51664195e-02]
+convergence 0.0697
+----------------------------
+differential_evolution step 6: f(x)= -3.53925
+Best Soln: [1.55001692e+02 9.27242822e-03 1.51664195e-02]
+convergence 0.091
+----------------------------
+differential_evolution step 7: f(x)= -3.53925
+Best Soln: [1.55001692e+02 9.27242822e-03 1.51664195e-02]
+convergence 0.09
+----------------------------
+differential_evolution step 8: f(x)= -3.53925
+Best Soln: [1.55001692e+02 9.27242822e-03 1.51664195e-02]
+convergence 0.1275
+----------------------------
+differential_evolution step 9: f(x)= -3.53925
+Best Soln: [1.55001692e+02 9.27242822e-03 1.51664195e-02]
+convergence 0.1672
+----------------------------
+differential_evolution step 10: f(x)= -3.55462
+Best Soln: [1.55000269e+02 9.27679700e-03 1.51164954e-02]
+convergence 0.2188
+----------------------------
+differential_evolution step 11: f(x)= -3.55462
+Best Soln: [1.55000269e+02 9.27679700e-03 1.51164954e-02]
+convergence 0.3183
+----------------------------
+differential_evolution step 12: f(x)= -3.56392
+Best Soln: [1.55002944e+02 9.29922817e-03 1.51426303e-02]
+convergence 0.3549
+----------------------------
+differential_evolution step 13: f(x)= -3.56392
+Best Soln: [1.55002944e+02 9.29922817e-03 1.51426303e-02]
+convergence 0.3937
+----------------------------
+differential_evolution step 14: f(x)= -3.56392
+Best Soln: [1.55002944e+02 9.29922817e-03 1.51426303e-02]
+convergence 0.463
+----------------------------
+differential_evolution step 15: f(x)= -3.5659
+Best Soln: [1.55003613e+02 9.29517321e-03 1.51426303e-02]
+convergence 1.056
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.5659022663233517
+       x: [ 1.550e+02  9.295e-03  1.514e-02]
+     nit: 15
+    nfev: 512 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+25it [2:53:35, 382.59s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 18:02:15.598181-07:00
+differential_evolution step 1: f(x)= -3.00204
+Best Soln: [1.56000014e+02 9.26190634e-03 1.56231859e-02]
+convergence 0.0317
+----------------------------
+differential_evolution step 2: f(x)= -3.09832
+Best Soln: [1.56002967e+02 9.27058315e-03 1.47250151e-02]
+convergence 0.0469
+----------------------------
+differential_evolution step 3: f(x)= -3.14437
+Best Soln: [1.56001504e+02 9.09583980e-03 1.50189256e-02]
+convergence 0.0593
+----------------------------
+differential_evolution step 4: f(x)= -3.14437
+Best Soln: [1.56001504e+02 9.09583980e-03 1.50189256e-02]
+convergence 0.06
+----------------------------
+differential_evolution step 5: f(x)= -3.14437
+Best Soln: [1.56001504e+02 9.09583980e-03 1.50189256e-02]
+convergence 0.0653
+----------------------------
+differential_evolution step 6: f(x)= -3.52924
+Best Soln: [1.56004273e+02 9.23707060e-03 1.49562484e-02]
+convergence 0.0673
+----------------------------
+differential_evolution step 7: f(x)= -3.52924
+Best Soln: [1.56004273e+02 9.23707060e-03 1.49562484e-02]
+convergence 0.068
+----------------------------
+differential_evolution step 8: f(x)= -3.52924
+Best Soln: [1.56004273e+02 9.23707060e-03 1.49562484e-02]
+convergence 0.0867
+----------------------------
+differential_evolution step 9: f(x)= -3.5987
+Best Soln: [1.56003739e+02 9.22271903e-03 1.50129837e-02]
+convergence 0.1181
+----------------------------
+differential_evolution step 10: f(x)= -3.5987
+Best Soln: [1.56003739e+02 9.22271903e-03 1.50129837e-02]
+convergence 0.1634
+----------------------------
+differential_evolution step 11: f(x)= -3.5987
+Best Soln: [1.56003739e+02 9.22271903e-03 1.50129837e-02]
+convergence 0.168
+----------------------------
+differential_evolution step 12: f(x)= -3.60134
+Best Soln: [1.56004835e+02 9.21023597e-03 1.50409902e-02]
+convergence 0.2251
+----------------------------
+differential_evolution step 13: f(x)= -3.60134
+Best Soln: [1.56004835e+02 9.21023597e-03 1.50409902e-02]
+convergence 0.2588
+----------------------------
+differential_evolution step 14: f(x)= -3.60784
+Best Soln: [1.56003677e+02 9.21758122e-03 1.50603058e-02]
+convergence 0.299
+----------------------------
+differential_evolution step 15: f(x)= -3.60784
+Best Soln: [1.56003677e+02 9.21758122e-03 1.50603058e-02]
+convergence 0.3004
+----------------------------
+differential_evolution step 16: f(x)= -3.60784
+Best Soln: [1.56003677e+02 9.21758122e-03 1.50603058e-02]
+convergence 0.9768
+----------------------------
+differential_evolution step 17: f(x)= -3.60784
+Best Soln: [1.56003677e+02 9.21758122e-03 1.50603058e-02]
+convergence 1.1949
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.60783617252204
+       x: [ 1.560e+02  9.218e-03  1.506e-02]
+     nit: 17
+    nfev: 576 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+26it [3:00:38, 394.67s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 18:09:18.445233-07:00
+differential_evolution step 1: f(x)= -2.99201
+Best Soln: [1.57008841e+02 9.30333908e-03 1.48967006e-02]
+convergence 0.0348
+----------------------------
+differential_evolution step 2: f(x)= -3.34323
+Best Soln: [1.57005299e+02 9.06780719e-03 1.49522905e-02]
+convergence 0.0435
+----------------------------
+differential_evolution step 3: f(x)= -3.55947
+Best Soln: [1.57001720e+02 9.14878253e-03 1.50950238e-02]
+convergence 0.0562
+----------------------------
+differential_evolution step 4: f(x)= -3.55947
+Best Soln: [1.57001720e+02 9.14878253e-03 1.50950238e-02]
+convergence 0.0614
+----------------------------
+differential_evolution step 5: f(x)= -3.55947
+Best Soln: [1.57001720e+02 9.14878253e-03 1.50950238e-02]
+convergence 0.0688
+----------------------------
+differential_evolution step 6: f(x)= -3.55947
+Best Soln: [1.57001720e+02 9.14878253e-03 1.50950238e-02]
+convergence 0.071
+----------------------------
+differential_evolution step 7: f(x)= -3.55947
+Best Soln: [1.57001720e+02 9.14878253e-03 1.50950238e-02]
+convergence 0.0848
+----------------------------
+differential_evolution step 8: f(x)= -3.63549
+Best Soln: [1.57001307e+02 9.17035487e-03 1.50338422e-02]
+convergence 0.0839
+----------------------------
+differential_evolution step 9: f(x)= -3.63549
+Best Soln: [1.57001307e+02 9.17035487e-03 1.50338422e-02]
+convergence 0.1108
+----------------------------
+differential_evolution step 10: f(x)= -3.63549
+Best Soln: [1.57001307e+02 9.17035487e-03 1.50338422e-02]
+convergence 0.1463
+----------------------------
+differential_evolution step 11: f(x)= -3.63549
+Best Soln: [1.57001307e+02 9.17035487e-03 1.50338422e-02]
+convergence 0.1967
+----------------------------
+differential_evolution step 12: f(x)= -3.63557
+Best Soln: [1.57001527e+02 9.17035487e-03 1.50338422e-02]
+convergence 0.2481
+----------------------------
+differential_evolution step 13: f(x)= -3.6448
+Best Soln: [1.57001961e+02 9.15721705e-03 1.50140364e-02]
+convergence 0.376
+----------------------------
+differential_evolution step 14: f(x)= -3.65314
+Best Soln: [1.57009781e+02 9.15967519e-03 1.49793004e-02]
+convergence 0.6208
+----------------------------
+differential_evolution step 15: f(x)= -3.65314
+Best Soln: [1.57009781e+02 9.15967519e-03 1.49793004e-02]
+convergence 0.9049
+----------------------------
+differential_evolution step 16: f(x)= -3.65329
+Best Soln: [1.57007661e+02 9.15776082e-03 1.49706350e-02]
+convergence 1.3488
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.653289618629918
+       x: [ 1.570e+02  9.158e-03  1.497e-02]
+     nit: 16
+    nfev: 544 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617, -3.65328962 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+[157.007661, 0.009158, 0.014971] ,
+27it [3:07:16, 395.65s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674, -3.64305684 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 18:15:56.377606-07:00
+differential_evolution step 1: f(x)= -2.72578
+Best Soln: [1.58004448e+02 9.21883308e-03 1.58007463e-02]
+convergence 0.035
+----------------------------
+differential_evolution step 2: f(x)= -3.47647
+Best Soln: [1.58003955e+02 9.01956110e-03 1.47715683e-02]
+convergence 0.041
+----------------------------
+differential_evolution step 3: f(x)= -3.47647
+Best Soln: [1.58003955e+02 9.01956110e-03 1.47715683e-02]
+convergence 0.0491
+----------------------------
+differential_evolution step 4: f(x)= -3.47647
+Best Soln: [1.58003955e+02 9.01956110e-03 1.47715683e-02]
+convergence 0.0618
+----------------------------
+differential_evolution step 5: f(x)= -3.47647
+Best Soln: [1.58003955e+02 9.01956110e-03 1.47715683e-02]
+convergence 0.0777
+----------------------------
+differential_evolution step 6: f(x)= -3.60232
+Best Soln: [1.58005137e+02 9.04921928e-03 1.48751730e-02]
+convergence 0.0808
+----------------------------
+differential_evolution step 7: f(x)= -3.60232
+Best Soln: [1.58005137e+02 9.04921928e-03 1.48751730e-02]
+convergence 0.0908
+----------------------------
+differential_evolution step 8: f(x)= -3.66296
+Best Soln: [1.58004043e+02 9.07300649e-03 1.48171552e-02]
+convergence 0.1264
+----------------------------
+differential_evolution step 9: f(x)= -3.67407
+Best Soln: [1.58004521e+02 9.07921625e-03 1.48284215e-02]
+convergence 0.2161
+----------------------------
+differential_evolution step 10: f(x)= -3.68247
+Best Soln: [1.58002332e+02 9.09283425e-03 1.49388564e-02]
+convergence 0.427
+----------------------------
+differential_evolution step 11: f(x)= -3.68595
+Best Soln: [1.58000772e+02 9.09888768e-03 1.49324819e-02]
+convergence 0.706
+----------------------------
+differential_evolution step 12: f(x)= -3.69503
+Best Soln: [1.58001170e+02 9.08706744e-03 1.48822849e-02]
+convergence 0.7411
+----------------------------
+differential_evolution step 13: f(x)= -3.69503
+Best Soln: [1.58001170e+02 9.08706744e-03 1.48822849e-02]
+convergence 0.969
+----------------------------
+differential_evolution step 14: f(x)= -3.69503
+Best Soln: [1.58001170e+02 9.08706744e-03 1.48822849e-02]
+convergence 1.1408
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.695025596506435
+       x: [ 1.580e+02  9.087e-03  1.488e-02]
+     nit: 14
+    nfev: 480 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617, -3.65328962, -3.6950256 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+[157.007661, 0.009158, 0.014971] ,
+[158.00117, 0.009087, 0.014882] ,
+28it [3:13:01, 380.67s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674, -3.64305684, -3.68436075 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 18:21:42.093961-07:00
+differential_evolution step 1: f(x)= -3.24021
+Best Soln: [1.59007422e+02 9.04042808e-03 1.51887235e-02]
+convergence 0.0373
+----------------------------
+differential_evolution step 2: f(x)= -3.72682
+Best Soln: [1.59009412e+02 9.03783581e-03 1.48259736e-02]
+convergence 0.0409
+----------------------------
+differential_evolution step 3: f(x)= -3.72682
+Best Soln: [1.59009412e+02 9.03783581e-03 1.48259736e-02]
+convergence 0.0433
+----------------------------
+differential_evolution step 4: f(x)= -3.72682
+Best Soln: [1.59009412e+02 9.03783581e-03 1.48259736e-02]
+convergence 0.0463
+----------------------------
+differential_evolution step 5: f(x)= -3.72682
+Best Soln: [1.59009412e+02 9.03783581e-03 1.48259736e-02]
+convergence 0.0563
+----------------------------
+differential_evolution step 6: f(x)= -3.72682
+Best Soln: [1.59009412e+02 9.03783581e-03 1.48259736e-02]
+convergence 0.0675
+----------------------------
+differential_evolution step 7: f(x)= -3.72682
+Best Soln: [1.59009412e+02 9.03783581e-03 1.48259736e-02]
+convergence 0.0704
+----------------------------
+differential_evolution step 8: f(x)= -3.72682
+Best Soln: [1.59009412e+02 9.03783581e-03 1.48259736e-02]
+convergence 0.098
+----------------------------
+differential_evolution step 9: f(x)= -3.73573
+Best Soln: [1.59008518e+02 9.02499945e-03 1.47892757e-02]
+convergence 0.164
+----------------------------
+differential_evolution step 10: f(x)= -3.73573
+Best Soln: [1.59008518e+02 9.02499945e-03 1.47892757e-02]
+convergence 0.1888
+----------------------------
+differential_evolution step 11: f(x)= -3.73573
+Best Soln: [1.59008518e+02 9.02499945e-03 1.47892757e-02]
+convergence 0.2476
+----------------------------
+differential_evolution step 12: f(x)= -3.73573
+Best Soln: [1.59008518e+02 9.02499945e-03 1.47892757e-02]
+convergence 0.3827
+----------------------------
+differential_evolution step 13: f(x)= -3.73573
+Best Soln: [1.59008518e+02 9.02499945e-03 1.47892757e-02]
+convergence 0.5021
+----------------------------
+differential_evolution step 14: f(x)= -3.73703
+Best Soln: [1.59008523e+02 9.02863284e-03 1.48193145e-02]
+convergence 0.5093
+----------------------------
+differential_evolution step 15: f(x)= -3.73856
+Best Soln: [1.59008930e+02 9.02566098e-03 1.48094567e-02]
+convergence 0.6966
+----------------------------
+differential_evolution step 16: f(x)= -3.73866
+Best Soln: [1.59008118e+02 9.02392343e-03 1.48091122e-02]
+convergence 0.8403
+----------------------------
+differential_evolution step 17: f(x)= -3.73866
+Best Soln: [1.59008118e+02 9.02392343e-03 1.48091122e-02]
+convergence 4.8418
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.7386554031173413
+       x: [ 1.590e+02  9.024e-03  1.481e-02]
+     nit: 17
+    nfev: 576 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617, -3.65328962, -3.6950256 ,
+-3.7386554 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+[157.007661, 0.009158, 0.014971] ,
+[158.00117, 0.009087, 0.014882] ,
+[159.008118, 0.009024, 0.014809] ,
+29it [3:19:50, 389.13s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674, -3.64305684, -3.68436075 ,
+-3.72749269 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 18:28:30.958168-07:00
+differential_evolution step 1: f(x)= -3.43551
+Best Soln: [1.60005674e+02 9.03098038e-03 1.46826917e-02]
+convergence 0.0343
+----------------------------
+differential_evolution step 2: f(x)= -3.47302
+Best Soln: [1.60004919e+02 9.01596609e-03 1.49782596e-02]
+convergence 0.0426
+----------------------------
+differential_evolution step 3: f(x)= -3.47302
+Best Soln: [1.60004919e+02 9.01596609e-03 1.49782596e-02]
+convergence 0.0436
+----------------------------
+differential_evolution step 4: f(x)= -3.47302
+Best Soln: [1.60004919e+02 9.01596609e-03 1.49782596e-02]
+convergence 0.0491
+----------------------------
+differential_evolution step 5: f(x)= -3.47302
+Best Soln: [1.60004919e+02 9.01596609e-03 1.49782596e-02]
+convergence 0.0606
+----------------------------
+differential_evolution step 6: f(x)= -3.52484
+Best Soln: [1.60005674e+02 8.90439744e-03 1.47734819e-02]
+convergence 0.0697
+----------------------------
+differential_evolution step 7: f(x)= -3.64086
+Best Soln: [1.60006115e+02 8.98413369e-03 1.48835531e-02]
+convergence 0.0737
+----------------------------
+differential_evolution step 8: f(x)= -3.74472
+Best Soln: [1.60007292e+02 8.94472826e-03 1.47570726e-02]
+convergence 0.0757
+----------------------------
+differential_evolution step 9: f(x)= -3.75608
+Best Soln: [1.60009513e+02 8.94442456e-03 1.47405894e-02]
+convergence 0.0846
+----------------------------
+differential_evolution step 10: f(x)= -3.75608
+Best Soln: [1.60009513e+02 8.94442456e-03 1.47405894e-02]
+convergence 0.1075
+----------------------------
+differential_evolution step 11: f(x)= -3.76578
+Best Soln: [1.60007292e+02 8.94472826e-03 1.47176935e-02]
+convergence 0.1978
+----------------------------
+differential_evolution step 12: f(x)= -3.76578
+Best Soln: [1.60007292e+02 8.94472826e-03 1.47176935e-02]
+convergence 0.254
+----------------------------
+differential_evolution step 13: f(x)= -3.76578
+Best Soln: [1.60007292e+02 8.94472826e-03 1.47176935e-02]
+convergence 0.3998
+----------------------------
+differential_evolution step 14: f(x)= -3.76578
+Best Soln: [1.60007292e+02 8.94472826e-03 1.47176935e-02]
+convergence 0.5376
+----------------------------
+differential_evolution step 15: f(x)= -3.77406
+Best Soln: [1.60007018e+02 8.95579458e-03 1.47488273e-02]
+convergence 0.64
+----------------------------
+differential_evolution step 16: f(x)= -3.78073
+Best Soln: [1.60006834e+02 8.95560534e-03 1.47267919e-02]
+convergence 0.6805
+----------------------------
+differential_evolution step 17: f(x)= -3.78171
+Best Soln: [1.60007935e+02 8.96227916e-03 1.47261695e-02]
+convergence 0.8676
+----------------------------
+differential_evolution step 18: f(x)= -3.78171
+Best Soln: [1.60007935e+02 8.96227916e-03 1.47261695e-02]
+convergence 2.4275
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.7817051310278442
+       x: [ 1.600e+02  8.962e-03  1.473e-02]
+     nit: 18
+    nfev: 608 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617, -3.65328962, -3.6950256 ,
+-3.7386554, -3.78170513 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+[157.007661, 0.009158, 0.014971] ,
+[158.00117, 0.009087, 0.014882] ,
+[159.008118, 0.009024, 0.014809] ,
+[160.007935, 0.008962, 0.014726] ,
+30it [3:27:14, 405.59s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674, -3.64305684, -3.68436075 ,
+-3.72749269, -3.77070847 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 18:35:54.964380-07:00
+differential_evolution step 1: f(x)= -3.32889
+Best Soln: [1.61005325e+02 8.85478113e-03 1.48755168e-02]
+convergence 0.0312
+----------------------------
+differential_evolution step 2: f(x)= -3.32889
+Best Soln: [1.61005325e+02 8.85478113e-03 1.48755168e-02]
+convergence 0.0436
+----------------------------
+differential_evolution step 3: f(x)= -3.39042
+Best Soln: [1.61002321e+02 8.84169574e-03 1.43454128e-02]
+convergence 0.0559
+----------------------------
+differential_evolution step 4: f(x)= -3.39042
+Best Soln: [1.61002321e+02 8.84169574e-03 1.43454128e-02]
+convergence 0.0742
+----------------------------
+differential_evolution step 5: f(x)= -3.42293
+Best Soln: [1.61000530e+02 8.85679388e-03 1.43584775e-02]
+convergence 0.0759
+----------------------------
+differential_evolution step 6: f(x)= -3.71597
+Best Soln: [1.61002133e+02 8.85653917e-03 1.45881153e-02]
+convergence 0.0932
+----------------------------
+differential_evolution step 7: f(x)= -3.77581
+Best Soln: [1.61006019e+02 8.91420696e-03 1.46176533e-02]
+convergence 0.1057
+----------------------------
+differential_evolution step 8: f(x)= -3.81076
+Best Soln: [1.61006520e+02 8.88599692e-03 1.46021140e-02]
+convergence 0.1366
+----------------------------
+differential_evolution step 9: f(x)= -3.81584
+Best Soln: [1.61006174e+02 8.90548529e-03 1.46434460e-02]
+convergence 0.1663
+----------------------------
+differential_evolution step 10: f(x)= -3.81584
+Best Soln: [1.61006174e+02 8.90548529e-03 1.46434460e-02]
+convergence 0.1972
+----------------------------
+differential_evolution step 11: f(x)= -3.82457
+Best Soln: [1.61006187e+02 8.89770627e-03 1.46428757e-02]
+convergence 0.2193
+----------------------------
+differential_evolution step 12: f(x)= -3.82465
+Best Soln: [1.61007043e+02 8.89644188e-03 1.46491940e-02]
+convergence 0.2642
+----------------------------
+differential_evolution step 13: f(x)= -3.82475
+Best Soln: [1.61007000e+02 8.89741206e-03 1.46429777e-02]
+convergence 0.8826
+----------------------------
+differential_evolution step 14: f(x)= -3.82475
+Best Soln: [1.61007000e+02 8.89741206e-03 1.46429777e-02]
+convergence 1.6123
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.8247462728788357
+       x: [ 1.610e+02  8.897e-03  1.464e-02]
+     nit: 14
+    nfev: 480 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617, -3.65328962, -3.6950256 ,
+-3.7386554, -3.78170513, -3.82474627 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+[157.007661, 0.009158, 0.014971] ,
+[158.00117, 0.009087, 0.014882] ,
+[159.008118, 0.009024, 0.014809] ,
+[160.007935, 0.008962, 0.014726] ,
+[161.007, 0.008897, 0.014643] ,
+31it [3:33:15, 392.13s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674, -3.64305684, -3.68436075 ,
+-3.72749269, -3.77070847, -3.81352143 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 18:41:55.702872-07:00
+differential_evolution step 1: f(x)= -3.03302
+Best Soln: [1.62009382e+02 8.88387961e-03 1.41755367e-02]
+convergence 0.0415
+----------------------------
+differential_evolution step 2: f(x)= -3.31867
+Best Soln: [1.62000011e+02 8.72569349e-03 1.43462261e-02]
+convergence 0.053
+----------------------------
+differential_evolution step 3: f(x)= -3.31867
+Best Soln: [1.62000011e+02 8.72569349e-03 1.43462261e-02]
+convergence 0.0672
+----------------------------
+differential_evolution step 4: f(x)= -3.48883
+Best Soln: [1.62007554e+02 8.78986417e-03 1.43054274e-02]
+convergence 0.0609
+----------------------------
+differential_evolution step 5: f(x)= -3.48883
+Best Soln: [1.62007554e+02 8.78986417e-03 1.43054274e-02]
+convergence 0.0668
+----------------------------
+differential_evolution step 6: f(x)= -3.48883
+Best Soln: [1.62007554e+02 8.78986417e-03 1.43054274e-02]
+convergence 0.0719
+----------------------------
+differential_evolution step 7: f(x)= -3.57915
+Best Soln: [1.62009348e+02 8.84288793e-03 1.43847746e-02]
+convergence 0.0716
+----------------------------
+differential_evolution step 8: f(x)= -3.72245
+Best Soln: [1.62009704e+02 8.82248635e-03 1.46673907e-02]
+convergence 0.0815
+----------------------------
+differential_evolution step 9: f(x)= -3.72245
+Best Soln: [1.62009704e+02 8.82248635e-03 1.46673907e-02]
+convergence 0.0986
+----------------------------
+differential_evolution step 10: f(x)= -3.72245
+Best Soln: [1.62009704e+02 8.82248635e-03 1.46673907e-02]
+convergence 0.1297
+----------------------------
+differential_evolution step 11: f(x)= -3.7867
+Best Soln: [1.62003201e+02 8.83191104e-03 1.46478197e-02]
+convergence 0.145
+----------------------------
+differential_evolution step 12: f(x)= -3.82481
+Best Soln: [1.62001381e+02 8.84115516e-03 1.46286237e-02]
+convergence 0.1531
+----------------------------
+differential_evolution step 13: f(x)= -3.82481
+Best Soln: [1.62001381e+02 8.84115516e-03 1.46286237e-02]
+convergence 0.1685
+----------------------------
+differential_evolution step 14: f(x)= -3.85488
+Best Soln: [1.62005044e+02 8.82837960e-03 1.45332748e-02]
+convergence 0.2089
+----------------------------
+differential_evolution step 15: f(x)= -3.85488
+Best Soln: [1.62005044e+02 8.82837960e-03 1.45332748e-02]
+convergence 0.2503
+----------------------------
+differential_evolution step 16: f(x)= -3.85943
+Best Soln: [1.62004760e+02 8.83307670e-03 1.45477136e-02]
+convergence 0.3733
+----------------------------
+differential_evolution step 17: f(x)= -3.86117
+Best Soln: [1.62004603e+02 8.83212998e-03 1.45556739e-02]
+convergence 0.7035
+----------------------------
+differential_evolution step 18: f(x)= -3.86117
+Best Soln: [1.62004603e+02 8.83212998e-03 1.45556739e-02]
+convergence 1.4715
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.861165979532896
+       x: [ 1.620e+02  8.832e-03  1.456e-02]
+     nit: 18
+    nfev: 608 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617, -3.65328962, -3.6950256 ,
+-3.7386554, -3.78170513, -3.82474627, -3.86116598 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+[157.007661, 0.009158, 0.014971] ,
+[158.00117, 0.009087, 0.014882] ,
+[159.008118, 0.009024, 0.014809] ,
+[160.007935, 0.008962, 0.014726] ,
+[161.007, 0.008897, 0.014643] ,
+[162.004603, 0.008832, 0.014556] ,
+32it [3:40:59, 413.82s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674, -3.64305684, -3.68436075 ,
+-3.72749269, -3.77070847, -3.81352143, -3.84958974 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 18:49:40.108630-07:00
+differential_evolution step 1: f(x)= -3.12863
+Best Soln: [1.63000534e+02 8.84372720e-03 1.42145116e-02]
+convergence 0.0345
+----------------------------
+differential_evolution step 2: f(x)= -3.75157
+Best Soln: [1.63005774e+02 8.72996169e-03 1.44382320e-02]
+convergence 0.0398
+----------------------------
+differential_evolution step 3: f(x)= -3.75157
+Best Soln: [1.63005774e+02 8.72996169e-03 1.44382320e-02]
+convergence 0.043
+----------------------------
+differential_evolution step 4: f(x)= -3.75157
+Best Soln: [1.63005774e+02 8.72996169e-03 1.44382320e-02]
+convergence 0.0508
+----------------------------
+differential_evolution step 5: f(x)= -3.75157
+Best Soln: [1.63005774e+02 8.72996169e-03 1.44382320e-02]
+convergence 0.065
+----------------------------
+differential_evolution step 6: f(x)= -3.75157
+Best Soln: [1.63005774e+02 8.72996169e-03 1.44382320e-02]
+convergence 0.0676
+----------------------------
+differential_evolution step 7: f(x)= -3.83789
+Best Soln: [1.63007122e+02 8.76581247e-03 1.44064647e-02]
+convergence 0.0765
+----------------------------
+differential_evolution step 8: f(x)= -3.83797
+Best Soln: [1.63009920e+02 8.76581247e-03 1.44064647e-02]
+convergence 0.0987
+----------------------------
+differential_evolution step 9: f(x)= -3.83797
+Best Soln: [1.63009920e+02 8.76581247e-03 1.44064647e-02]
+convergence 0.1152
+----------------------------
+differential_evolution step 10: f(x)= -3.84205
+Best Soln: [1.63004845e+02 8.78958420e-03 1.45411924e-02]
+convergence 0.1389
+----------------------------
+differential_evolution step 11: f(x)= -3.84205
+Best Soln: [1.63004845e+02 8.78958420e-03 1.45411924e-02]
+convergence 0.1635
+----------------------------
+differential_evolution step 12: f(x)= -3.88243
+Best Soln: [1.63004854e+02 8.76600361e-03 1.44595741e-02]
+convergence 0.2486
+----------------------------
+differential_evolution step 13: f(x)= -3.88606
+Best Soln: [1.63009149e+02 8.77252930e-03 1.44823156e-02]
+convergence 0.505
+----------------------------
+differential_evolution step 14: f(x)= -3.88606
+Best Soln: [1.63009149e+02 8.77252930e-03 1.44823156e-02]
+convergence 0.532
+----------------------------
+differential_evolution step 15: f(x)= -3.88606
+Best Soln: [1.63009149e+02 8.77252930e-03 1.44823156e-02]
+convergence 1.7369
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.8860601412584175
+       x: [ 1.630e+02  8.773e-03  1.448e-02]
+     nit: 15
+    nfev: 512 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617, -3.65328962, -3.6950256 ,
+-3.7386554, -3.78170513, -3.82474627, -3.86116598 ,
+-3.88606014 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+[157.007661, 0.009158, 0.014971] ,
+[158.00117, 0.009087, 0.014882] ,
+[159.008118, 0.009024, 0.014809] ,
+[160.007935, 0.008962, 0.014726] ,
+[161.007, 0.008897, 0.014643] ,
+[162.004603, 0.008832, 0.014556] ,
+[163.009149, 0.008773, 0.014482] ,
+33it [3:47:27, 406.06s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674, -3.64305684, -3.68436075 ,
+-3.72749269, -3.77070847, -3.81352143, -3.84958974 ,
+-3.8747127 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 18:56:08.078532-07:00
+differential_evolution step 1: f(x)= -3.06838
+Best Soln: [1.64006266e+02 8.74751575e-03 1.49269713e-02]
+convergence 0.0352
+----------------------------
+differential_evolution step 2: f(x)= -3.55005
+Best Soln: [1.64004080e+02 8.78367540e-03 1.44881598e-02]
+convergence 0.0416
+----------------------------
+differential_evolution step 3: f(x)= -3.55005
+Best Soln: [1.64004080e+02 8.78367540e-03 1.44881598e-02]
+convergence 0.0457
+----------------------------
+differential_evolution step 4: f(x)= -3.55005
+Best Soln: [1.64004080e+02 8.78367540e-03 1.44881598e-02]
+convergence 0.0469
+----------------------------
+differential_evolution step 5: f(x)= -3.55005
+Best Soln: [1.64004080e+02 8.78367540e-03 1.44881598e-02]
+convergence 0.0554
+----------------------------
+differential_evolution step 6: f(x)= -3.66448
+Best Soln: [1.64001323e+02 8.76648818e-03 1.44850931e-02]
+convergence 0.054
+----------------------------
+differential_evolution step 7: f(x)= -3.79594
+Best Soln: [1.64004299e+02 8.67556453e-03 1.43713534e-02]
+convergence 0.0592
+----------------------------
+differential_evolution step 8: f(x)= -3.87885
+Best Soln: [1.64003786e+02 8.69432916e-03 1.43717541e-02]
+convergence 0.0658
+----------------------------
+differential_evolution step 9: f(x)= -3.89015
+Best Soln: [1.64004173e+02 8.71166352e-03 1.44315429e-02]
+convergence 0.0916
+----------------------------
+differential_evolution step 10: f(x)= -3.89015
+Best Soln: [1.64004173e+02 8.71166352e-03 1.44315429e-02]
+convergence 0.1043
+----------------------------
+differential_evolution step 11: f(x)= -3.89519
+Best Soln: [1.64003545e+02 8.71504231e-03 1.43914642e-02]
+convergence 0.155
+----------------------------
+differential_evolution step 12: f(x)= -3.89519
+Best Soln: [1.64003545e+02 8.71504231e-03 1.43914642e-02]
+convergence 0.1768
+----------------------------
+differential_evolution step 13: f(x)= -3.90008
+Best Soln: [1.64003545e+02 8.71041711e-03 1.43914642e-02]
+convergence 0.2115
+----------------------------
+differential_evolution step 14: f(x)= -3.90008
+Best Soln: [1.64003545e+02 8.71041711e-03 1.43914642e-02]
+convergence 0.2461
+----------------------------
+differential_evolution step 15: f(x)= -3.90027
+Best Soln: [1.64004109e+02 8.70725239e-03 1.44000199e-02]
+convergence 0.4515
+----------------------------
+differential_evolution step 16: f(x)= -3.90027
+Best Soln: [1.64004109e+02 8.70725239e-03 1.44000199e-02]
+convergence 0.8174
+----------------------------
+differential_evolution step 17: f(x)= -3.90027
+Best Soln: [1.64004109e+02 8.70725239e-03 1.44000199e-02]
+convergence 1.4003
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.9002695394449214
+       x: [ 1.640e+02  8.707e-03  1.440e-02]
+     nit: 17
+    nfev: 576 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617, -3.65328962, -3.6950256 ,
+-3.7386554, -3.78170513, -3.82474627, -3.86116598 ,
+-3.88606014, -3.90026954 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+[157.007661, 0.009158, 0.014971] ,
+[158.00117, 0.009087, 0.014882] ,
+[159.008118, 0.009024, 0.014809] ,
+[160.007935, 0.008962, 0.014726] ,
+[161.007, 0.008897, 0.014643] ,
+[162.004603, 0.008832, 0.014556] ,
+[163.009149, 0.008773, 0.014482] ,
+[164.004109, 0.008707, 0.0144] ,
+34it [3:54:36, 412.78s/it]
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674, -3.64305684, -3.68436075 ,
+-3.72749269, -3.77070847, -3.81352143, -3.84958974 ,
+-3.8747127, -3.88909576 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 19:03:16.523648-07:00
+differential_evolution step 1: f(x)= -2.75264
+Best Soln: [1.65001401e+02 8.83927051e-03 1.41782403e-02]
+convergence 0.0371
+----------------------------
+differential_evolution step 2: f(x)= -3.81726
+Best Soln: [1.65003586e+02 8.68089239e-03 1.43501737e-02]
+convergence 0.0346
+----------------------------
+differential_evolution step 3: f(x)= -3.81726
+Best Soln: [1.65003586e+02 8.68089239e-03 1.43501737e-02]
+convergence 0.0445
+----------------------------
+differential_evolution step 4: f(x)= -3.81726
+Best Soln: [1.65003586e+02 8.68089239e-03 1.43501737e-02]
+convergence 0.0513
+----------------------------
+differential_evolution step 5: f(x)= -3.81726
+Best Soln: [1.65003586e+02 8.68089239e-03 1.43501737e-02]
+convergence 0.0568
+----------------------------
+differential_evolution step 6: f(x)= -3.81726
+Best Soln: [1.65003586e+02 8.68089239e-03 1.43501737e-02]
+convergence 0.0604
+----------------------------
+differential_evolution step 7: f(x)= -3.81726
+Best Soln: [1.65003586e+02 8.68089239e-03 1.43501737e-02]
+convergence 0.0694
+----------------------------
+differential_evolution step 8: f(x)= -3.83995
+Best Soln: [1.65001123e+02 8.67676785e-03 1.43501737e-02]
+convergence 0.0801
+----------------------------
+differential_evolution step 9: f(x)= -3.84924
+Best Soln: [1.65007495e+02 8.62719494e-03 1.42477043e-02]
+convergence 0.0881
+----------------------------
+differential_evolution step 10: f(x)= -3.89612
+Best Soln: [1.65008179e+02 8.63687790e-03 1.43142193e-02]
+convergence 0.1106
+----------------------------
+differential_evolution step 11: f(x)= -3.90699
+Best Soln: [1.65001405e+02 8.64475617e-03 1.42963131e-02]
+convergence 0.1957
+----------------------------
+differential_evolution step 12: f(x)= -3.90997
+Best Soln: [1.65000401e+02 8.65259434e-03 1.43323822e-02]
+convergence 0.2758
+----------------------------
+differential_evolution step 13: f(x)= -3.91068
+Best Soln: [1.65001900e+02 8.65260913e-03 1.43174112e-02]
+convergence 0.4021
+----------------------------
+differential_evolution step 14: f(x)= -3.91116
+Best Soln: [1.65001102e+02 8.65260126e-03 1.43253812e-02]
+convergence 0.7227
+----------------------------
+differential_evolution step 15: f(x)= -3.91116
+Best Soln: [1.65001102e+02 8.65260126e-03 1.43253812e-02]
+convergence 1.0045
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.9111558108281215
+       x: [ 1.650e+02  8.653e-03  1.433e-02]
+     nit: 15
+    nfev: 512 
+
+
+tg =  [131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165]
+
+log of gate error (truc=200) = 
+-3.06634755, -3.10359559, -3.14137625, -3.17774585 ,
+-3.20752689, -3.23812704, -3.26013094, -3.28545146 ,
+-3.30313739, -3.31339762, -3.31805227, -3.31753154 ,
+-3.3157977, -3.31363127, -3.3182725, -3.32629359 ,
+-3.33717413, -3.34924704, -3.36334064, -3.38220421 ,
+-3.40594967, -3.44075475, -3.47880862, -3.52064143 ,
+-3.56590227, -3.60783617, -3.65328962, -3.6950256 ,
+-3.7386554, -3.78170513, -3.82474627, -3.86116598 ,
+-3.88606014, -3.90026954, -3.91115581 ,
+
+drive_param (truc=200) = 
+[131.005306, 0.01132, 0.017427] ,
+[132.009612, 0.011211, 0.017293] ,
+[133.004159, 0.011132, 0.017222] ,
+[134.008265, 0.011022, 0.017122] ,
+[135.000526, 0.010933, 0.017062] ,
+[136.005407, 0.010827, 0.016919] ,
+[137.003155, 0.01072, 0.01682] ,
+[138.004766, 0.010638, 0.016758] ,
+[139.005945, 0.010559, 0.016673] ,
+[140.00363, 0.010473, 0.016575] ,
+[141.007326, 0.01038, 0.016465] ,
+[142.006327, 0.010296, 0.016362] ,
+[143.004546, 0.010211, 0.016267] ,
+[144.00789, 0.010137, 0.016188] ,
+[145.007545, 0.010044, 0.016099] ,
+[146.000607, 0.009966, 0.015979] ,
+[147.002089, 0.009886, 0.015885] ,
+[148.004935, 0.00981, 0.01579] ,
+[149.009142, 0.00973, 0.01568] ,
+[150.00708, 0.009659, 0.015613] ,
+[151.006026, 0.009578, 0.015533] ,
+[152.007024, 0.009505, 0.015423] ,
+[153.003752, 0.009432, 0.015312] ,
+[154.007238, 0.009356, 0.015227] ,
+[155.003613, 0.009295, 0.015143] ,
+[156.003677, 0.009218, 0.01506] ,
+[157.007661, 0.009158, 0.014971] ,
+[158.00117, 0.009087, 0.014882] ,
+[159.008118, 0.009024, 0.014809] ,
+[160.007935, 0.008962, 0.014726] ,
+[161.007, 0.008897, 0.014643] ,
+[162.004603, 0.008832, 0.014556] ,
+[163.009149, 0.008773, 0.014482] ,
+[164.004109, 0.008707, 0.0144] ,
+[165.001102, 0.008653, 0.014325] ,
+35it [4:01:06, 405.90s/it]35it [4:01:06, 413.31s/it]
+
+log of gate error (truc=700) = 
+-3.05514933, -3.09085993, -3.12759842, -3.16243191 ,
+-3.19125927, -3.22061329, -3.24252071, -3.26767324 ,
+-3.2855026, -3.29569068, -3.30147262, -3.30216278 ,
+-3.30130026, -3.29984352, -3.30443943, -3.31340883 ,
+-3.32492423, -3.33727233, -3.35208299, -3.3713308 ,
+-3.39560174, -3.43029582, -3.46886851, -3.5107074 ,
+-3.55572593, -3.59685674, -3.64305684, -3.68436075 ,
+-3.72749269, -3.77070847, -3.81352143, -3.84958974 ,
+-3.8747127, -3.88909576, -3.90130273 ,
+
+amp_bounds= (0.008, 0.012) , detune_bounds= (0.012, 0.018) , tg_bound= (0, 0.01)
+Current Mountain Time: 2025-01-12 19:09:46.392636-07:00
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+369697.70user 346.97system 4:01:09elapsed 2557%CPU (0avgtext+0avgdata 399984maxresident)k
+0inputs+816outputs (39major+16336366minor)pagefaults 0swaps

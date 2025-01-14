@@ -34,6 +34,7 @@ import pytz
 if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
+
     n_cpu = 20
     n_job = 3
     max_steps = 1e-4
@@ -50,6 +51,7 @@ if __name__ == '__main__':
 
     trunc_dim = eket1.shape[0]
     truc = len(trunc_states)
+    
     eket_truc = [eket_tot[i] for i in idxs]
     eket_truc = np.reshape(eket_truc, (truc, trunc_dim**2))
     jump_t1   = []

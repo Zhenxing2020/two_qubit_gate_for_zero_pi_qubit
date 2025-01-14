@@ -1,0 +1,41 @@
+sigmaX_fidelity_optimize_tg.py
+Current Mountain Time: 2024-12-20 13:41:26.521484-07:00
+drive_phi= False , drive_theta =  True , Drag= 0
+amp1_bounds= (0, 0.005) , amp2_bounds= (0, 0.005)
+detune1_bounds= (-0.5, 0.5) , detune2_bounds= (-0.5, 0.5)
+workers= 150 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+tg_vec = 
+800, 600, 400, 1000 ,
+truc1 = 300 , truc2 (in optimization) = 157
+truc1_full = 500 , truc2_full = 500
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387differential_evolution step 1: f(x)= -0.176091
+Best Soln: [8.00056411e+02 4.27344560e-03 2.15850449e-03 2.21945764e-01
+ 2.15859767e-01]
+convergence 3530754385.5048
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.17609125905953985
+       x: [ 8.001e+02  4.273e-03  2.159e-03  2.219e-01  2.159e-01]
+     nit: 1
+    nfev: 128 
+
+
+tg =  [800]
+
+log of gate error (truc1=300) = 
+-0.17609126 ,
+
+drive_param (truc1=300) = 
+[800.056411, 0.004273, 0.002159, 0.221946, 0.21586] ,
+1it [32:28, 1948.45s/it]
+log of gate error (truc_full=500) = 
+-0.17609126 ,
+
+***Current Mountain Time: 2024-12-20 14:14:30.376707-07:00 
+
+Command terminated by signal 15
+52434.90user 62.40system 49:05.24elapsed 1782%CPU (0avgtext+0avgdata 511136maxresident)k
+0inputs+24outputs (34major+1166321minor)pagefaults 0swaps

@@ -1,0 +1,2343 @@
+sigmaX_fidelity_optimize_tg.py
+Current Mountain Time: 2024-12-15 00:07:58.640039-07:00
+drive_phi= False , drive_theta =  True , Drag= 0
+amp_bounds= (0, 0.2) , detune_bounds= (-0.4, 0.01) , alpha_bounds= (-20, 20)
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+params = 
+[40.0, -3.30147, -3.302673, 0.105147, 0.028068, 0.001898, 0.00438] ,
+[50.0, -3.77945, -2.803664, 0.107467, 0.103232, -0.302259, -0.259676] ,
+[60.0, -3.409958, -3.348597, 0.081606, 0.106285, -0.299703, -0.247238] ,
+[70.0, -3.442062, -2.453763, 0.069316, 0.109747, -0.311983, -0.252449] ,
+truncation_1 = 150 , truncation_2 (in optimization) = 78
+truc_full = 300
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387differential_evolution step 1: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0062
+----------------------------
+differential_evolution step 2: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0063
+----------------------------
+differential_evolution step 3: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0068
+----------------------------
+differential_evolution step 4: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0072
+----------------------------
+differential_evolution step 5: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0074
+----------------------------
+differential_evolution step 6: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0076
+----------------------------
+differential_evolution step 7: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.008
+----------------------------
+differential_evolution step 8: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0081
+----------------------------
+differential_evolution step 9: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0083
+----------------------------
+differential_evolution step 10: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0084
+----------------------------
+differential_evolution step 11: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0086
+----------------------------
+differential_evolution step 12: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0086
+----------------------------
+differential_evolution step 13: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0088
+----------------------------
+differential_evolution step 14: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0089
+----------------------------
+differential_evolution step 15: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.009
+----------------------------
+differential_evolution step 16: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0092
+----------------------------
+differential_evolution step 17: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0094
+----------------------------
+differential_evolution step 18: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0096
+----------------------------
+differential_evolution step 19: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0099
+----------------------------
+differential_evolution step 20: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0103
+----------------------------
+differential_evolution step 21: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0104
+----------------------------
+differential_evolution step 22: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0104
+----------------------------
+differential_evolution step 23: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0107
+----------------------------
+differential_evolution step 24: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0108
+----------------------------
+differential_evolution step 25: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.011
+----------------------------
+differential_evolution step 26: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0114
+----------------------------
+differential_evolution step 27: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0114
+----------------------------
+differential_evolution step 28: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0118
+----------------------------
+differential_evolution step 29: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0119
+----------------------------
+differential_evolution step 30: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0119
+----------------------------
+differential_evolution step 31: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0121
+----------------------------
+differential_evolution step 32: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0122
+----------------------------
+differential_evolution step 33: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0124
+----------------------------
+differential_evolution step 34: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0124
+----------------------------
+differential_evolution step 35: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0126
+----------------------------
+differential_evolution step 36: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0128
+----------------------------
+differential_evolution step 37: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0131
+----------------------------
+differential_evolution step 38: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0134
+----------------------------
+differential_evolution step 39: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0134
+----------------------------
+differential_evolution step 40: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0138
+----------------------------
+differential_evolution step 41: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0138
+----------------------------
+differential_evolution step 42: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.014
+----------------------------
+differential_evolution step 43: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0144
+----------------------------
+differential_evolution step 44: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0144
+----------------------------
+differential_evolution step 45: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0146
+----------------------------
+differential_evolution step 46: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0147
+----------------------------
+differential_evolution step 47: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0148
+----------------------------
+differential_evolution step 48: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0151
+----------------------------
+differential_evolution step 49: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0153
+----------------------------
+differential_evolution step 50: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0156
+----------------------------
+differential_evolution step 51: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0157
+----------------------------
+differential_evolution step 52: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0162
+----------------------------
+differential_evolution step 53: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0163
+----------------------------
+differential_evolution step 54: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0166
+----------------------------
+differential_evolution step 55: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0168
+----------------------------
+differential_evolution step 56: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.017
+----------------------------
+differential_evolution step 57: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0174
+----------------------------
+differential_evolution step 58: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0177
+----------------------------
+differential_evolution step 59: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0184
+----------------------------
+differential_evolution step 60: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.019
+----------------------------
+differential_evolution step 61: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0192
+----------------------------
+differential_evolution step 62: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0194
+----------------------------
+differential_evolution step 63: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0199
+----------------------------
+differential_evolution step 64: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.02
+----------------------------
+differential_evolution step 65: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0201
+----------------------------
+differential_evolution step 66: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0207
+----------------------------
+differential_evolution step 67: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0208
+----------------------------
+differential_evolution step 68: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0212
+----------------------------
+differential_evolution step 69: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0216
+----------------------------
+differential_evolution step 70: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.022
+----------------------------
+differential_evolution step 71: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0232
+----------------------------
+differential_evolution step 72: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0235
+----------------------------
+differential_evolution step 73: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0236
+----------------------------
+differential_evolution step 74: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0235
+----------------------------
+differential_evolution step 75: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0248
+----------------------------
+differential_evolution step 76: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0258
+----------------------------
+differential_evolution step 77: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0265
+----------------------------
+differential_evolution step 78: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0281
+----------------------------
+differential_evolution step 79: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0287
+----------------------------
+differential_evolution step 80: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0295
+----------------------------
+differential_evolution step 81: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0292
+----------------------------
+differential_evolution step 82: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0296
+----------------------------
+differential_evolution step 83: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.031
+----------------------------
+differential_evolution step 84: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0312
+----------------------------
+differential_evolution step 85: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.031
+----------------------------
+differential_evolution step 86: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.033
+----------------------------
+differential_evolution step 87: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0346
+----------------------------
+differential_evolution step 88: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0385
+----------------------------
+differential_evolution step 89: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0439
+----------------------------
+differential_evolution step 90: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0476
+----------------------------
+differential_evolution step 91: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0472
+----------------------------
+differential_evolution step 92: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0489
+----------------------------
+differential_evolution step 93: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0566
+----------------------------
+differential_evolution step 94: f(x)= -3.29976
+Best Soln: [4.00000e+01 1.05147e-01 2.80680e-02 1.89800e-03 4.38000e-03]
+convergence 0.0594
+----------------------------
+differential_evolution step 95: f(x)= -3.499
+Best Soln: [3.99950371e+01 1.05118480e-01 2.79259701e-02 2.44789741e-03
+ 4.49577129e-03]
+convergence 0.065
+----------------------------
+differential_evolution step 96: f(x)= -3.499
+Best Soln: [3.99950371e+01 1.05118480e-01 2.79259701e-02 2.44789741e-03
+ 4.49577129e-03]
+convergence 0.0688
+----------------------------
+differential_evolution step 97: f(x)= -3.499
+Best Soln: [3.99950371e+01 1.05118480e-01 2.79259701e-02 2.44789741e-03
+ 4.49577129e-03]
+convergence 0.0695
+----------------------------
+differential_evolution step 98: f(x)= -3.499
+Best Soln: [3.99950371e+01 1.05118480e-01 2.79259701e-02 2.44789741e-03
+ 4.49577129e-03]
+convergence 0.0774
+----------------------------
+differential_evolution step 99: f(x)= -3.499
+Best Soln: [3.99950371e+01 1.05118480e-01 2.79259701e-02 2.44789741e-03
+ 4.49577129e-03]
+convergence 0.0817
+----------------------------
+differential_evolution step 100: f(x)= -3.59992
+Best Soln: [3.99920904e+01 1.04235110e-01 2.79909135e-02 2.22891998e-03
+ 4.16048819e-03]
+convergence 0.0785
+----------------------------
+differential_evolution step 101: f(x)= -3.59992
+Best Soln: [3.99920904e+01 1.04235110e-01 2.79909135e-02 2.22891998e-03
+ 4.16048819e-03]
+convergence 0.0865
+----------------------------
+differential_evolution step 102: f(x)= -3.82871
+Best Soln: [3.99931218e+01 1.05162706e-01 2.79792271e-02 1.95865057e-03
+ 3.87838042e-03]
+convergence 0.088
+----------------------------
+differential_evolution step 103: f(x)= -3.82871
+Best Soln: [3.99931218e+01 1.05162706e-01 2.79792271e-02 1.95865057e-03
+ 3.87838042e-03]
+convergence 0.0874
+----------------------------
+differential_evolution step 104: f(x)= -3.82871
+Best Soln: [3.99931218e+01 1.05162706e-01 2.79792271e-02 1.95865057e-03
+ 3.87838042e-03]
+convergence 0.0934
+----------------------------
+differential_evolution step 105: f(x)= -3.9143
+Best Soln: [3.99930027e+01 1.04713417e-01 2.80095203e-02 2.23645980e-03
+ 4.17506619e-03]
+convergence 0.0957
+----------------------------
+differential_evolution step 106: f(x)= -3.9143
+Best Soln: [3.99930027e+01 1.04713417e-01 2.80095203e-02 2.23645980e-03
+ 4.17506619e-03]
+convergence 0.1026
+----------------------------
+differential_evolution step 107: f(x)= -3.9143
+Best Soln: [3.99930027e+01 1.04713417e-01 2.80095203e-02 2.23645980e-03
+ 4.17506619e-03]
+convergence 0.1047
+----------------------------
+differential_evolution step 108: f(x)= -3.9143
+Best Soln: [3.99930027e+01 1.04713417e-01 2.80095203e-02 2.23645980e-03
+ 4.17506619e-03]
+convergence 0.1264
+----------------------------
+differential_evolution step 109: f(x)= -3.9415
+Best Soln: [3.99939913e+01 1.04772352e-01 2.79909135e-02 2.00993281e-03
+ 4.01822968e-03]
+convergence 0.1328
+----------------------------
+differential_evolution step 110: f(x)= -3.9415
+Best Soln: [3.99939913e+01 1.04772352e-01 2.79909135e-02 2.00993281e-03
+ 4.01822968e-03]
+convergence 0.1287
+----------------------------
+differential_evolution step 111: f(x)= -4.00815
+Best Soln: [3.99921118e+01 1.04986300e-01 2.80389128e-02 2.26059202e-03
+ 4.08953090e-03]
+convergence 0.132
+----------------------------
+differential_evolution step 112: f(x)= -4.00815
+Best Soln: [3.99921118e+01 1.04986300e-01 2.80389128e-02 2.26059202e-03
+ 4.08953090e-03]
+convergence 0.1373
+----------------------------
+differential_evolution step 113: f(x)= -4.00815
+Best Soln: [3.99921118e+01 1.04986300e-01 2.80389128e-02 2.26059202e-03
+ 4.08953090e-03]
+convergence 0.1507
+----------------------------
+differential_evolution step 114: f(x)= -4.00815
+Best Soln: [3.99921118e+01 1.04986300e-01 2.80389128e-02 2.26059202e-03
+ 4.08953090e-03]
+convergence 0.1659
+----------------------------
+differential_evolution step 115: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.1668
+----------------------------
+differential_evolution step 116: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.1741
+----------------------------
+differential_evolution step 117: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.1896
+----------------------------
+differential_evolution step 118: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.191
+----------------------------
+differential_evolution step 119: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.221
+----------------------------
+differential_evolution step 120: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.2416
+----------------------------
+differential_evolution step 121: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.2742
+----------------------------
+differential_evolution step 122: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.333
+----------------------------
+differential_evolution step 123: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.3939
+----------------------------
+differential_evolution step 124: f(x)= -4.15904
+Best Soln: [3.99920269e+01 1.04973905e-01 2.80523208e-02 2.14200014e-03
+ 4.00490800e-03]
+convergence 0.4907
+----------------------------
+differential_evolution step 125: f(x)= -4.16433
+Best Soln: [3.99918855e+01 1.04908549e-01 2.80406535e-02 2.10053437e-03
+ 3.94560014e-03]
+convergence 0.6059
+----------------------------
+differential_evolution step 126: f(x)= -4.16433
+Best Soln: [3.99918855e+01 1.04908549e-01 2.80406535e-02 2.10053437e-03
+ 3.94560014e-03]
+convergence 1.0449
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.164329786370252
+       x: [ 3.999e+01  1.049e-01  2.804e-02  2.101e-03  3.946e-03]
+     nit: 126
+    nfev: 8128 
+
+
+tg =  [40.0]
+
+log of gate error (truc2=44) = 
+-4.16432979 ,
+
+fidelity =  (truc2=44) 
+0.9999315 ,
+
+drive_param = 
+[39.991886, 0.104909, 0.028041, 0.002101, 0.003946] ,
+1it [17:14, 1034.64s/it]
+log of gate error (truc2=157) = 
+-4.17799592 ,
+
+***Current Mountain Time: 2024-12-15 00:25:34.474962-07:00 
+
+differential_evolution step 1: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0076
+----------------------------
+differential_evolution step 2: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0079
+----------------------------
+differential_evolution step 3: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0085
+----------------------------
+differential_evolution step 4: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0087
+----------------------------
+differential_evolution step 5: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0089
+----------------------------
+differential_evolution step 6: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0093
+----------------------------
+differential_evolution step 7: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0098
+----------------------------
+differential_evolution step 8: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0104
+----------------------------
+differential_evolution step 9: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0107
+----------------------------
+differential_evolution step 10: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0109
+----------------------------
+differential_evolution step 11: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0113
+----------------------------
+differential_evolution step 12: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0116
+----------------------------
+differential_evolution step 13: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0122
+----------------------------
+differential_evolution step 14: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0127
+----------------------------
+differential_evolution step 15: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0137
+----------------------------
+differential_evolution step 16: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0139
+----------------------------
+differential_evolution step 17: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0143
+----------------------------
+differential_evolution step 18: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0148
+----------------------------
+differential_evolution step 19: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0166
+----------------------------
+differential_evolution step 20: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0168
+----------------------------
+differential_evolution step 21: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0174
+----------------------------
+differential_evolution step 22: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.018
+----------------------------
+differential_evolution step 23: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0172
+----------------------------
+differential_evolution step 24: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.018
+----------------------------
+differential_evolution step 25: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0183
+----------------------------
+differential_evolution step 26: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0187
+----------------------------
+differential_evolution step 27: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0198
+----------------------------
+differential_evolution step 28: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0205
+----------------------------
+differential_evolution step 29: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0214
+----------------------------
+differential_evolution step 30: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0208
+----------------------------
+differential_evolution step 31: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0216
+----------------------------
+differential_evolution step 32: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0219
+----------------------------
+differential_evolution step 33: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0229
+----------------------------
+differential_evolution step 34: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0244
+----------------------------
+differential_evolution step 35: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0254
+----------------------------
+differential_evolution step 36: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.026
+----------------------------
+differential_evolution step 37: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0264
+----------------------------
+differential_evolution step 38: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0267
+----------------------------
+differential_evolution step 39: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0271
+----------------------------
+differential_evolution step 40: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0278
+----------------------------
+differential_evolution step 41: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0273
+----------------------------
+differential_evolution step 42: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0288
+----------------------------
+differential_evolution step 43: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.029
+----------------------------
+differential_evolution step 44: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0293
+----------------------------
+differential_evolution step 45: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0303
+----------------------------
+differential_evolution step 46: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0312
+----------------------------
+differential_evolution step 47: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0319
+----------------------------
+differential_evolution step 48: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.033
+----------------------------
+differential_evolution step 49: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0344
+----------------------------
+differential_evolution step 50: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0348
+----------------------------
+differential_evolution step 51: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0356
+----------------------------
+differential_evolution step 52: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0379
+----------------------------
+differential_evolution step 53: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0371
+----------------------------
+differential_evolution step 54: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0371
+----------------------------
+differential_evolution step 55: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.039
+----------------------------
+differential_evolution step 56: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0401
+----------------------------
+differential_evolution step 57: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0426
+----------------------------
+differential_evolution step 58: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0447
+----------------------------
+differential_evolution step 59: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0464
+----------------------------
+differential_evolution step 60: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0487
+----------------------------
+differential_evolution step 61: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0476
+----------------------------
+differential_evolution step 62: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0512
+----------------------------
+differential_evolution step 63: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.05
+----------------------------
+differential_evolution step 64: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0503
+----------------------------
+differential_evolution step 65: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0497
+----------------------------
+differential_evolution step 66: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0508
+----------------------------
+differential_evolution step 67: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0522
+----------------------------
+differential_evolution step 68: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0552
+----------------------------
+differential_evolution step 69: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0571
+----------------------------
+differential_evolution step 70: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0601
+----------------------------
+differential_evolution step 71: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0626
+----------------------------
+differential_evolution step 72: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0669
+----------------------------
+differential_evolution step 73: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0698
+----------------------------
+differential_evolution step 74: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0729
+----------------------------
+differential_evolution step 75: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0786
+----------------------------
+differential_evolution step 76: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0836
+----------------------------
+differential_evolution step 77: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0826
+----------------------------
+differential_evolution step 78: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0813
+----------------------------
+differential_evolution step 79: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0887
+----------------------------
+differential_evolution step 80: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0897
+----------------------------
+differential_evolution step 81: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0898
+----------------------------
+differential_evolution step 82: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.095
+----------------------------
+differential_evolution step 83: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0953
+----------------------------
+differential_evolution step 84: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.0973
+----------------------------
+differential_evolution step 85: f(x)= -2.72109
+Best Soln: [50.          0.10746657  0.10323223 -0.30225871 -0.25967603]
+convergence 0.1059
+----------------------------
+differential_evolution step 86: f(x)= -2.76651
+Best Soln: [49.9536926   0.11095551  0.1010128  -0.29693278 -0.25741597]
+convergence 0.0996
+----------------------------
+differential_evolution step 87: f(x)= -2.76651
+Best Soln: [49.9536926   0.11095551  0.1010128  -0.29693278 -0.25741597]
+convergence 0.1063
+----------------------------
+differential_evolution step 88: f(x)= -2.78348
+Best Soln: [49.95849434  0.11078424  0.10070389 -0.29542031 -0.25551448]
+convergence 0.1082
+----------------------------
+differential_evolution step 89: f(x)= -2.78348
+Best Soln: [49.95849434  0.11078424  0.10070389 -0.29542031 -0.25551448]
+convergence 0.107
+----------------------------
+differential_evolution step 90: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.1106
+----------------------------
+differential_evolution step 91: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.1359
+----------------------------
+differential_evolution step 92: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.1544
+----------------------------
+differential_evolution step 93: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.1565
+----------------------------
+differential_evolution step 94: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.1574
+----------------------------
+differential_evolution step 95: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.1824
+----------------------------
+differential_evolution step 96: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.1797
+----------------------------
+differential_evolution step 97: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.1891
+----------------------------
+differential_evolution step 98: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.2001
+----------------------------
+differential_evolution step 99: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.2164
+----------------------------
+differential_evolution step 100: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.2177
+----------------------------
+differential_evolution step 101: f(x)= -2.8384
+Best Soln: [49.9524555   0.11220744  0.10067743 -0.29617467 -0.25679247]
+convergence 0.2454
+----------------------------
+differential_evolution step 102: f(x)= -2.8484
+Best Soln: [49.96137884  0.11123888  0.10100375 -0.29666195 -0.25670353]
+convergence 0.2425
+----------------------------
+differential_evolution step 103: f(x)= -2.8484
+Best Soln: [49.96137884  0.11123888  0.10100375 -0.29666195 -0.25670353]
+convergence 0.2809
+----------------------------
+differential_evolution step 104: f(x)= -2.8484
+Best Soln: [49.96137884  0.11123888  0.10100375 -0.29666195 -0.25670353]
+convergence 0.2829
+----------------------------
+differential_evolution step 105: f(x)= -2.8484
+Best Soln: [49.96137884  0.11123888  0.10100375 -0.29666195 -0.25670353]
+convergence 0.2823
+----------------------------
+differential_evolution step 106: f(x)= -2.8484
+Best Soln: [49.96137884  0.11123888  0.10100375 -0.29666195 -0.25670353]
+convergence 0.292
+----------------------------
+differential_evolution step 107: f(x)= -2.85249
+Best Soln: [49.95350489  0.11141812  0.10064924 -0.29606804 -0.25665723]
+convergence 0.3064
+----------------------------
+differential_evolution step 108: f(x)= -2.85249
+Best Soln: [49.95350489  0.11141812  0.10064924 -0.29606804 -0.25665723]
+convergence 0.3224
+----------------------------
+differential_evolution step 109: f(x)= -2.85249
+Best Soln: [49.95350489  0.11141812  0.10064924 -0.29606804 -0.25665723]
+convergence 0.3892
+----------------------------
+differential_evolution step 110: f(x)= -2.85249
+Best Soln: [49.95350489  0.11141812  0.10064924 -0.29606804 -0.25665723]
+convergence 0.5548
+----------------------------
+differential_evolution step 111: f(x)= -2.85287
+Best Soln: [49.94877669  0.11224702  0.10042162 -0.29559689 -0.25652227]
+convergence 0.604
+----------------------------
+differential_evolution step 112: f(x)= -2.85287
+Best Soln: [49.94877669  0.11224702  0.10042162 -0.29559689 -0.25652227]
+convergence 0.672
+----------------------------
+differential_evolution step 113: f(x)= -2.85565
+Best Soln: [49.95841489  0.1109899   0.1009108  -0.29627362 -0.25651669]
+convergence 0.7715
+----------------------------
+differential_evolution step 114: f(x)= -2.85565
+Best Soln: [49.95841489  0.1109899   0.1009108  -0.29627362 -0.25651669]
+convergence 0.9615
+----------------------------
+differential_evolution step 115: f(x)= -2.85565
+Best Soln: [49.95841489  0.1109899   0.1009108  -0.29627362 -0.25651669]
+convergence 1.1368
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -2.855651820531665
+       x: [ 4.996e+01  1.110e-01  1.009e-01 -2.963e-01 -2.565e-01]
+     nit: 115
+    nfev: 7424 
+
+
+tg =  [40.0, 50.0]
+
+log of gate error (truc2=44) = 
+-4.16432979, -2.85565182 ,
+
+fidelity =  (truc2=44) 
+0.9999315, 0.99860573 ,
+
+drive_param = 
+[39.991886, 0.104909, 0.028041, 0.002101, 0.003946] ,
+[49.958415, 0.11099, 0.100911, -0.296274, -0.256517] ,
+2it [37:37, 1145.13s/it]
+log of gate error (truc2=157) = 
+-4.17799592, -2.85475377 ,
+
+***Current Mountain Time: 2024-12-15 00:45:56.937652-07:00 
+
+differential_evolution step 1: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0063
+----------------------------
+differential_evolution step 2: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0066
+----------------------------
+differential_evolution step 3: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0069
+----------------------------
+differential_evolution step 4: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0076
+----------------------------
+differential_evolution step 5: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.008
+----------------------------
+differential_evolution step 6: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0082
+----------------------------
+differential_evolution step 7: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.009
+----------------------------
+differential_evolution step 8: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0092
+----------------------------
+differential_evolution step 9: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0096
+----------------------------
+differential_evolution step 10: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0101
+----------------------------
+differential_evolution step 11: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0103
+----------------------------
+differential_evolution step 12: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0106
+----------------------------
+differential_evolution step 13: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0111
+----------------------------
+differential_evolution step 14: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0121
+----------------------------
+differential_evolution step 15: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0123
+----------------------------
+differential_evolution step 16: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0128
+----------------------------
+differential_evolution step 17: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0131
+----------------------------
+differential_evolution step 18: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0138
+----------------------------
+differential_evolution step 19: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.014
+----------------------------
+differential_evolution step 20: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0145
+----------------------------
+differential_evolution step 21: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0148
+----------------------------
+differential_evolution step 22: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0153
+----------------------------
+differential_evolution step 23: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0156
+----------------------------
+differential_evolution step 24: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0166
+----------------------------
+differential_evolution step 25: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0177
+----------------------------
+differential_evolution step 26: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0181
+----------------------------
+differential_evolution step 27: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0183
+----------------------------
+differential_evolution step 28: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0184
+----------------------------
+differential_evolution step 29: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0194
+----------------------------
+differential_evolution step 30: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0197
+----------------------------
+differential_evolution step 31: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0205
+----------------------------
+differential_evolution step 32: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0211
+----------------------------
+differential_evolution step 33: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0219
+----------------------------
+differential_evolution step 34: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0224
+----------------------------
+differential_evolution step 35: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.023
+----------------------------
+differential_evolution step 36: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0245
+----------------------------
+differential_evolution step 37: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0245
+----------------------------
+differential_evolution step 38: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0251
+----------------------------
+differential_evolution step 39: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0251
+----------------------------
+differential_evolution step 40: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0255
+----------------------------
+differential_evolution step 41: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0255
+----------------------------
+differential_evolution step 42: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0259
+----------------------------
+differential_evolution step 43: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0258
+----------------------------
+differential_evolution step 44: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0266
+----------------------------
+differential_evolution step 45: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0272
+----------------------------
+differential_evolution step 46: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0277
+----------------------------
+differential_evolution step 47: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0278
+----------------------------
+differential_evolution step 48: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0294
+----------------------------
+differential_evolution step 49: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0294
+----------------------------
+differential_evolution step 50: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.03
+----------------------------
+differential_evolution step 51: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0305
+----------------------------
+differential_evolution step 52: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0323
+----------------------------
+differential_evolution step 53: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0323
+----------------------------
+differential_evolution step 54: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0329
+----------------------------
+differential_evolution step 55: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0341
+----------------------------
+differential_evolution step 56: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0346
+----------------------------
+differential_evolution step 57: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0362
+----------------------------
+differential_evolution step 58: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0375
+----------------------------
+differential_evolution step 59: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0385
+----------------------------
+differential_evolution step 60: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0392
+----------------------------
+differential_evolution step 61: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0409
+----------------------------
+differential_evolution step 62: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0454
+----------------------------
+differential_evolution step 63: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0457
+----------------------------
+differential_evolution step 64: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0466
+----------------------------
+differential_evolution step 65: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0472
+----------------------------
+differential_evolution step 66: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0491
+----------------------------
+differential_evolution step 67: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0507
+----------------------------
+differential_evolution step 68: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0504
+----------------------------
+differential_evolution step 69: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0525
+----------------------------
+differential_evolution step 70: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0538
+----------------------------
+differential_evolution step 71: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0516
+----------------------------
+differential_evolution step 72: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0526
+----------------------------
+differential_evolution step 73: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0534
+----------------------------
+differential_evolution step 74: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0553
+----------------------------
+differential_evolution step 75: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0585
+----------------------------
+differential_evolution step 76: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0585
+----------------------------
+differential_evolution step 77: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0629
+----------------------------
+differential_evolution step 78: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0572
+----------------------------
+differential_evolution step 79: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0556
+----------------------------
+differential_evolution step 80: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0573
+----------------------------
+differential_evolution step 81: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.059
+----------------------------
+differential_evolution step 82: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0592
+----------------------------
+differential_evolution step 83: f(x)= -3.3816
+Best Soln: [60.        0.081606  0.106285 -0.299703 -0.247238]
+convergence 0.0597
+----------------------------
+differential_evolution step 84: f(x)= -3.45719
+Best Soln: [59.92669946  0.08599253  0.10339069 -0.29244941 -0.24417499]
+convergence 0.0596
+----------------------------
+differential_evolution step 85: f(x)= -3.45719
+Best Soln: [59.92669946  0.08599253  0.10339069 -0.29244941 -0.24417499]
+convergence 0.0598
+----------------------------
+differential_evolution step 86: f(x)= -3.45719
+Best Soln: [59.92669946  0.08599253  0.10339069 -0.29244941 -0.24417499]
+convergence 0.0654
+----------------------------
+differential_evolution step 87: f(x)= -3.45719
+Best Soln: [59.92669946  0.08599253  0.10339069 -0.29244941 -0.24417499]
+convergence 0.063
+----------------------------
+differential_evolution step 88: f(x)= -3.45719
+Best Soln: [59.92669946  0.08599253  0.10339069 -0.29244941 -0.24417499]
+convergence 0.0645
+----------------------------
+differential_evolution step 89: f(x)= -3.45719
+Best Soln: [59.92669946  0.08599253  0.10339069 -0.29244941 -0.24417499]
+convergence 0.0707
+----------------------------
+differential_evolution step 90: f(x)= -3.45719
+Best Soln: [59.92669946  0.08599253  0.10339069 -0.29244941 -0.24417499]
+convergence 0.0737
+----------------------------
+differential_evolution step 91: f(x)= -3.5638
+Best Soln: [59.91347662  0.08532866  0.10285404 -0.28965943 -0.24202251]
+convergence 0.0734
+----------------------------
+differential_evolution step 92: f(x)= -3.5638
+Best Soln: [59.91347662  0.08532866  0.10285404 -0.28965943 -0.24202251]
+convergence 0.0768
+----------------------------
+differential_evolution step 93: f(x)= -3.5638
+Best Soln: [59.91347662  0.08532866  0.10285404 -0.28965943 -0.24202251]
+convergence 0.0785
+----------------------------
+differential_evolution step 94: f(x)= -3.5638
+Best Soln: [59.91347662  0.08532866  0.10285404 -0.28965943 -0.24202251]
+convergence 0.0785
+----------------------------
+differential_evolution step 95: f(x)= -3.5638
+Best Soln: [59.91347662  0.08532866  0.10285404 -0.28965943 -0.24202251]
+convergence 0.0799
+----------------------------
+differential_evolution step 96: f(x)= -3.5638
+Best Soln: [59.91347662  0.08532866  0.10285404 -0.28965943 -0.24202251]
+convergence 0.0917
+----------------------------
+differential_evolution step 97: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.0882
+----------------------------
+differential_evolution step 98: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.0963
+----------------------------
+differential_evolution step 99: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.1001
+----------------------------
+differential_evolution step 100: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.1057
+----------------------------
+differential_evolution step 101: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.1115
+----------------------------
+differential_evolution step 102: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.1127
+----------------------------
+differential_evolution step 103: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.1148
+----------------------------
+differential_evolution step 104: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.1235
+----------------------------
+differential_evolution step 105: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.1336
+----------------------------
+differential_evolution step 106: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.13
+----------------------------
+differential_evolution step 107: f(x)= -3.72456
+Best Soln: [59.88870494  0.08692651  0.10199046 -0.2869893  -0.24065691]
+convergence 0.1321
+----------------------------
+differential_evolution step 108: f(x)= -3.75158
+Best Soln: [59.91905006  0.0851733   0.10316739 -0.2903884  -0.24239992]
+convergence 0.1422
+----------------------------
+differential_evolution step 109: f(x)= -3.75158
+Best Soln: [59.91905006  0.0851733   0.10316739 -0.2903884  -0.24239992]
+convergence 0.213
+----------------------------
+differential_evolution step 110: f(x)= -3.75158
+Best Soln: [59.91905006  0.0851733   0.10316739 -0.2903884  -0.24239992]
+convergence 0.2152
+----------------------------
+differential_evolution step 111: f(x)= -3.75158
+Best Soln: [59.91905006  0.0851733   0.10316739 -0.2903884  -0.24239992]
+convergence 0.2189
+----------------------------
+differential_evolution step 112: f(x)= -3.75158
+Best Soln: [59.91905006  0.0851733   0.10316739 -0.2903884  -0.24239992]
+convergence 0.2287
+----------------------------
+differential_evolution step 113: f(x)= -3.75158
+Best Soln: [59.91905006  0.0851733   0.10316739 -0.2903884  -0.24239992]
+convergence 0.2391
+----------------------------
+differential_evolution step 114: f(x)= -3.75158
+Best Soln: [59.91905006  0.0851733   0.10316739 -0.2903884  -0.24239992]
+convergence 0.2712
+----------------------------
+differential_evolution step 115: f(x)= -3.79145
+Best Soln: [59.88563693  0.08724949  0.10179571 -0.2866513  -0.24052163]
+convergence 0.2864
+----------------------------
+differential_evolution step 116: f(x)= -3.79145
+Best Soln: [59.88563693  0.08724949  0.10179571 -0.2866513  -0.24052163]
+convergence 0.3218
+----------------------------
+differential_evolution step 117: f(x)= -3.79145
+Best Soln: [59.88563693  0.08724949  0.10179571 -0.2866513  -0.24052163]
+convergence 0.3258
+----------------------------
+differential_evolution step 118: f(x)= -3.79145
+Best Soln: [59.88563693  0.08724949  0.10179571 -0.2866513  -0.24052163]
+convergence 0.3233
+----------------------------
+differential_evolution step 119: f(x)= -3.79145
+Best Soln: [59.88563693  0.08724949  0.10179571 -0.2866513  -0.24052163]
+convergence 0.3408
+----------------------------
+differential_evolution step 120: f(x)= -3.79145
+Best Soln: [59.88563693  0.08724949  0.10179571 -0.2866513  -0.24052163]
+convergence 0.3546
+----------------------------
+differential_evolution step 121: f(x)= -3.79601
+Best Soln: [59.8874984   0.08720512  0.10181106 -0.28680746 -0.24057036]
+convergence 0.3695
+----------------------------
+differential_evolution step 122: f(x)= -3.80095
+Best Soln: [59.89269452  0.0868859   0.10203342 -0.28744729 -0.2409212 ]
+convergence 0.4267
+----------------------------
+differential_evolution step 123: f(x)= -3.80095
+Best Soln: [59.89269452  0.0868859   0.10203342 -0.28744729 -0.2409212 ]
+convergence 0.4268
+----------------------------
+differential_evolution step 124: f(x)= -3.80095
+Best Soln: [59.89269452  0.0868859   0.10203342 -0.28744729 -0.2409212 ]
+convergence 0.6069
+----------------------------
+differential_evolution step 125: f(x)= -3.80095
+Best Soln: [59.89269452  0.0868859   0.10203342 -0.28744729 -0.2409212 ]
+convergence 0.671
+----------------------------
+differential_evolution step 126: f(x)= -3.80095
+Best Soln: [59.89269452  0.0868859   0.10203342 -0.28744729 -0.2409212 ]
+convergence 0.745
+----------------------------
+differential_evolution step 127: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.7671
+----------------------------
+differential_evolution step 128: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.781
+----------------------------
+differential_evolution step 129: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.8833
+----------------------------
+differential_evolution step 130: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.8872
+----------------------------
+differential_evolution step 131: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.8924
+----------------------------
+differential_evolution step 132: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.8904
+----------------------------
+differential_evolution step 133: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.8719
+----------------------------
+differential_evolution step 134: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.8643
+----------------------------
+differential_evolution step 135: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.9222
+----------------------------
+differential_evolution step 136: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.9788
+----------------------------
+differential_evolution step 137: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 0.9813
+----------------------------
+differential_evolution step 138: f(x)= -3.81425
+Best Soln: [59.892442    0.08679481  0.10206226 -0.28739156 -0.24087104]
+convergence 1.0485
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -3.8142495464701787
+       x: [ 5.989e+01  8.679e-02  1.021e-01 -2.874e-01 -2.409e-01]
+     nit: 138
+    nfev: 8896 
+
+
+tg =  [40.0, 50.0, 60.0]
+
+log of gate error (truc2=44) = 
+-4.16432979, -2.85565182, -3.81424955 ,
+
+fidelity =  (truc2=44) 
+0.9999315, 0.99860573, 0.99984663 ,
+
+drive_param = 
+[39.991886, 0.104909, 0.028041, 0.002101, 0.003946] ,
+[49.958415, 0.11099, 0.100911, -0.296274, -0.256517] ,
+[59.892442, 0.086795, 0.102062, -0.287392, -0.240871] ,
+3it [1:00:19, 1244.16s/it]
+log of gate error (truc2=157) = 
+-4.17799592, -2.85475377, -3.61249736 ,
+
+***Current Mountain Time: 2024-12-15 01:08:38.946481-07:00 
+
+differential_evolution step 1: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.006
+----------------------------
+differential_evolution step 2: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0067
+----------------------------
+differential_evolution step 3: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0069
+----------------------------
+differential_evolution step 4: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0072
+----------------------------
+differential_evolution step 5: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0077
+----------------------------
+differential_evolution step 6: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0083
+----------------------------
+differential_evolution step 7: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0087
+----------------------------
+differential_evolution step 8: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0089
+----------------------------
+differential_evolution step 9: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0096
+----------------------------
+differential_evolution step 10: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0101
+----------------------------
+differential_evolution step 11: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0104
+----------------------------
+differential_evolution step 12: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0107
+----------------------------
+differential_evolution step 13: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0114
+----------------------------
+differential_evolution step 14: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0117
+----------------------------
+differential_evolution step 15: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.012
+----------------------------
+differential_evolution step 16: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0124
+----------------------------
+differential_evolution step 17: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0126
+----------------------------
+differential_evolution step 18: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0127
+----------------------------
+differential_evolution step 19: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0129
+----------------------------
+differential_evolution step 20: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0132
+----------------------------
+differential_evolution step 21: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0135
+----------------------------
+differential_evolution step 22: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0137
+----------------------------
+differential_evolution step 23: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0143
+----------------------------
+differential_evolution step 24: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0144
+----------------------------
+differential_evolution step 25: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0148
+----------------------------
+differential_evolution step 26: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0152
+----------------------------
+differential_evolution step 27: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0155
+----------------------------
+differential_evolution step 28: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0158
+----------------------------
+differential_evolution step 29: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0164
+----------------------------
+differential_evolution step 30: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0166
+----------------------------
+differential_evolution step 31: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0168
+----------------------------
+differential_evolution step 32: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0169
+----------------------------
+differential_evolution step 33: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0171
+----------------------------
+differential_evolution step 34: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0174
+----------------------------
+differential_evolution step 35: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.018
+----------------------------
+differential_evolution step 36: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0183
+----------------------------
+differential_evolution step 37: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0188
+----------------------------
+differential_evolution step 38: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0191
+----------------------------
+differential_evolution step 39: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0204
+----------------------------
+differential_evolution step 40: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0208
+----------------------------
+differential_evolution step 41: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0216
+----------------------------
+differential_evolution step 42: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0224
+----------------------------
+differential_evolution step 43: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0227
+----------------------------
+differential_evolution step 44: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0238
+----------------------------
+differential_evolution step 45: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0241
+----------------------------
+differential_evolution step 46: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0241
+----------------------------
+differential_evolution step 47: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0254
+----------------------------
+differential_evolution step 48: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0259
+----------------------------
+differential_evolution step 49: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.026
+----------------------------
+differential_evolution step 50: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0267
+----------------------------
+differential_evolution step 51: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0273
+----------------------------
+differential_evolution step 52: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0283
+----------------------------
+differential_evolution step 53: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0299
+----------------------------
+differential_evolution step 54: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0291
+----------------------------
+differential_evolution step 55: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0291
+----------------------------
+differential_evolution step 56: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0329
+----------------------------
+differential_evolution step 57: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.033
+----------------------------
+differential_evolution step 58: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0334
+----------------------------
+differential_evolution step 59: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0349
+----------------------------
+differential_evolution step 60: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0359
+----------------------------
+differential_evolution step 61: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.036
+----------------------------
+differential_evolution step 62: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0368
+----------------------------
+differential_evolution step 63: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0395
+----------------------------
+differential_evolution step 64: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0406
+----------------------------
+differential_evolution step 65: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0419
+----------------------------
+differential_evolution step 66: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0456
+----------------------------
+differential_evolution step 67: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0474
+----------------------------
+differential_evolution step 68: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0481
+----------------------------
+differential_evolution step 69: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0499
+----------------------------
+differential_evolution step 70: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0499
+----------------------------
+differential_evolution step 71: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0523
+----------------------------
+differential_evolution step 72: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0539
+----------------------------
+differential_evolution step 73: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0558
+----------------------------
+differential_evolution step 74: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0557
+----------------------------
+differential_evolution step 75: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0557
+----------------------------
+differential_evolution step 76: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0562
+----------------------------
+differential_evolution step 77: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0571
+----------------------------
+differential_evolution step 78: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.055
+----------------------------
+differential_evolution step 79: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0581
+----------------------------
+differential_evolution step 80: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0597
+----------------------------
+differential_evolution step 81: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0615
+----------------------------
+differential_evolution step 82: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0624
+----------------------------
+differential_evolution step 83: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0618
+----------------------------
+differential_evolution step 84: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0633
+----------------------------
+differential_evolution step 85: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0658
+----------------------------
+differential_evolution step 86: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0672
+----------------------------
+differential_evolution step 87: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0701
+----------------------------
+differential_evolution step 88: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0722
+----------------------------
+differential_evolution step 89: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0737
+----------------------------
+differential_evolution step 90: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0741
+----------------------------
+differential_evolution step 91: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0723
+----------------------------
+differential_evolution step 92: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0736
+----------------------------
+differential_evolution step 93: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0743
+----------------------------
+differential_evolution step 94: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0788
+----------------------------
+differential_evolution step 95: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0833
+----------------------------
+differential_evolution step 96: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0822
+----------------------------
+differential_evolution step 97: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0761
+----------------------------
+differential_evolution step 98: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0796
+----------------------------
+differential_evolution step 99: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0812
+----------------------------
+differential_evolution step 100: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0816
+----------------------------
+differential_evolution step 101: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0821
+----------------------------
+differential_evolution step 102: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0877
+----------------------------
+differential_evolution step 103: f(x)= -3.38389
+Best Soln: [ 7.00000e+01  6.93160e-02  1.09747e-01 -3.11983e-01 -2.52449e-01]
+convergence 0.0917
+----------------------------
+differential_evolution step 104: f(x)= -3.45717
+Best Soln: [69.96483471  0.07117357  0.10868867 -0.30933235 -0.25155472]
+convergence 0.0987
+----------------------------
+differential_evolution step 105: f(x)= -3.59067
+Best Soln: [69.89467145  0.0739695   0.1065578  -0.3030297  -0.24869458]
+convergence 0.0964
+----------------------------
+differential_evolution step 106: f(x)= -3.59067
+Best Soln: [69.89467145  0.0739695   0.1065578  -0.3030297  -0.24869458]
+convergence 0.1056
+----------------------------
+differential_evolution step 107: f(x)= -3.59067
+Best Soln: [69.89467145  0.0739695   0.1065578  -0.3030297  -0.24869458]
+convergence 0.1117
+----------------------------
+differential_evolution step 108: f(x)= -3.68161
+Best Soln: [69.84040445  0.0757788   0.10485922 -0.29772276 -0.24590784]
+convergence 0.1092
+----------------------------
+differential_evolution step 109: f(x)= -3.7613
+Best Soln: [69.76308271  0.07896935  0.10220177 -0.29051355 -0.24244721]
+convergence 0.1083
+----------------------------
+differential_evolution step 110: f(x)= -3.7613
+Best Soln: [69.76308271  0.07896935  0.10220177 -0.29051355 -0.24244721]
+convergence 0.1082
+----------------------------
+differential_evolution step 111: f(x)= -3.7613
+Best Soln: [69.76308271  0.07896935  0.10220177 -0.29051355 -0.24244721]
+convergence 0.1079
+----------------------------
+differential_evolution step 112: f(x)= -3.83605
+Best Soln: [69.7600237   0.07899248  0.10211962 -0.29003151 -0.24214096]
+convergence 0.0989
+----------------------------
+differential_evolution step 113: f(x)= -3.83605
+Best Soln: [69.7600237   0.07899248  0.10211962 -0.29003151 -0.24214096]
+convergence 0.1037
+----------------------------
+differential_evolution step 114: f(x)= -3.83605
+Best Soln: [69.7600237   0.07899248  0.10211962 -0.29003151 -0.24214096]
+convergence 0.1008
+----------------------------
+differential_evolution step 115: f(x)= -3.83605
+Best Soln: [69.7600237   0.07899248  0.10211962 -0.29003151 -0.24214096]
+convergence 0.1024
+----------------------------
+differential_evolution step 116: f(x)= -3.83605
+Best Soln: [69.7600237   0.07899248  0.10211962 -0.29003151 -0.24214096]
+convergence 0.1018
+----------------------------
+differential_evolution step 117: f(x)= -3.83605
+Best Soln: [69.7600237   0.07899248  0.10211962 -0.29003151 -0.24214096]
+convergence 0.1108
+----------------------------
+differential_evolution step 118: f(x)= -3.83605
+Best Soln: [69.7600237   0.07899248  0.10211962 -0.29003151 -0.24214096]
+convergence 0.1077
+----------------------------
+differential_evolution step 119: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1058
+----------------------------
+differential_evolution step 120: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1118
+----------------------------
+differential_evolution step 121: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1199
+----------------------------
+differential_evolution step 122: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1212
+----------------------------
+differential_evolution step 123: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.132
+----------------------------
+differential_evolution step 124: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1408
+----------------------------
+differential_evolution step 125: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1412
+----------------------------
+differential_evolution step 126: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1393
+----------------------------
+differential_evolution step 127: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1443
+----------------------------
+differential_evolution step 128: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1495
+----------------------------
+differential_evolution step 129: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1475
+----------------------------
+differential_evolution step 130: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1617
+----------------------------
+differential_evolution step 131: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1794
+----------------------------
+differential_evolution step 132: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1819
+----------------------------
+differential_evolution step 133: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.1856
+----------------------------
+differential_evolution step 134: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.2384
+----------------------------
+differential_evolution step 135: f(x)= -3.88732
+Best Soln: [69.76570531  0.07863936  0.10227561 -0.29041736 -0.24223248]
+convergence 0.2438
+----------------------------
+differential_evolution step 136: f(x)= -3.90748
+Best Soln: [69.74265003  0.07931892  0.10156324 -0.28808974 -0.24099329]
+convergence 0.2419
+----------------------------
+differential_evolution step 137: f(x)= -3.90748
+Best Soln: [69.74265003  0.07931892  0.10156324 -0.28808974 -0.24099329]
+convergence 0.2781
+----------------------------
+differential_evolution step 138: f(x)= -3.90748
+Best Soln: [69.74265003  0.07931892  0.10156324 -0.28808974 -0.24099329]
+convergence 0.2827
+----------------------------
+differential_evolution step 139: f(x)= -3.90748
+Best Soln: [69.74265003  0.07931892  0.10156324 -0.28808974 -0.24099329]
+convergence 0.3344
+----------------------------
+differential_evolution step 140: f(x)= -3.90748
+Best Soln: [69.74265003  0.07931892  0.10156324 -0.28808974 -0.24099329]
+convergence 0.3334
+----------------------------
+differential_evolution step 141: f(x)= -3.91272
+Best Soln: [69.76795726  0.07845917  0.10239507 -0.29066109 -0.24236015]
+convergence 0.3312
+----------------------------
+differential_evolution step 142: f(x)= -3.91272
+Best Soln: [69.76795726  0.07845917  0.10239507 -0.29066109 -0.24236015]
+convergence 0.4537
+----------------------------
+differential_evolution step 143: f(x)= -3.92463
+Best Soln: [69.75003234  0.07911123  0.10178963 -0.28886955 -0.24141437]
+convergence 0.4488
+----------------------------
+differential_evolution step 144: f(x)= -3.92463
+Best Soln: [69.75003234  0.07911123  0.10178963 -0.28886955 -0.24141437]
+convergence 0.5311
+----------------------------
+differential_evolution step 145: f(x)= -3.93057
+Best Soln: [69.74447771  0.07935413  0.10156916 -0.28824505 -0.24105794]
+convergence 0.5343
+----------------------------
+differential_evolution step 146: f(x)= -3.93057
+Best Soln: [69.74447771  0.07935413  0.10156916 -0.28824505 -0.24105794]
+convergence 0.5439
+----------------------------
+differential_evolution step 147: f(x)= -3.93574
+Best Soln: [69.76012778  0.07875385  0.1021396  -0.28978812 -0.24185407]
+convergence 0.5609
+----------------------------
+differential_evolution step 148: f(x)= -3.94635
+Best Soln: [69.74126556  0.07917486  0.10148086 -0.28781728 -0.24075745]
+convergence 0.5471
+----------------------------
+differential_evolution step 149: f(x)= -3.96809
+Best Soln: [69.74036381  0.07896218  0.10150922 -0.2875343  -0.24050318]
+convergence 0.6612
+----------------------------
+differential_evolution step 150: f(x)= -4.00931
+Best Soln: [69.73660743  0.07884816  0.10137804 -0.28710649 -0.24024947]
+convergence 0.6576
+----------------------------
+differential_evolution step 151: f(x)= -4.00931
+Best Soln: [69.73660743  0.07884816  0.10137804 -0.28710649 -0.24024947]
+convergence 0.6687
+----------------------------
+differential_evolution step 152: f(x)= -4.00931
+Best Soln: [69.73660743  0.07884816  0.10137804 -0.28710649 -0.24024947]
+convergence 0.6365
+----------------------------
+differential_evolution step 153: f(x)= -4.00931
+Best Soln: [69.73660743  0.07884816  0.10137804 -0.28710649 -0.24024947]
+convergence 0.7301
+----------------------------
+differential_evolution step 154: f(x)= -4.01448
+Best Soln: [69.74395044  0.07855491  0.10161248 -0.28777033 -0.24056327]
+convergence 0.7027
+----------------------------
+differential_evolution step 155: f(x)= -4.02943
+Best Soln: [69.74734185  0.07829705  0.1017643  -0.28803926 -0.24065859]
+convergence 0.6803
+----------------------------
+differential_evolution step 156: f(x)= -4.02943
+Best Soln: [69.74734185  0.07829705  0.1017643  -0.28803926 -0.24065859]
+convergence 0.7032
+----------------------------
+differential_evolution step 157: f(x)= -4.02943
+Best Soln: [69.74734185  0.07829705  0.1017643  -0.28803926 -0.24065859]
+convergence 0.7005
+----------------------------
+differential_evolution step 158: f(x)= -4.03086
+Best Soln: [69.73556939  0.07853793  0.1013673  -0.28676152 -0.23992925]
+convergence 0.6986
+----------------------------
+differential_evolution step 159: f(x)= -4.04743
+Best Soln: [69.73757194  0.07851624  0.10143982 -0.28698676 -0.2400532 ]
+convergence 0.6877
+----------------------------
+differential_evolution step 160: f(x)= -4.04743
+Best Soln: [69.73757194  0.07851624  0.10143982 -0.28698676 -0.2400532 ]
+convergence 0.6697
+----------------------------
+differential_evolution step 161: f(x)= -4.04743
+Best Soln: [69.73757194  0.07851624  0.10143982 -0.28698676 -0.2400532 ]
+convergence 0.6846
+----------------------------
+differential_evolution step 162: f(x)= -4.04871
+Best Soln: [69.74597956  0.07808661  0.10174578 -0.28775823 -0.24041744]
+convergence 0.7895
+----------------------------
+differential_evolution step 163: f(x)= -4.0623
+Best Soln: [69.74723734  0.07766747  0.1017964  -0.28767373 -0.24024411]
+convergence 0.741
+----------------------------
+differential_evolution step 164: f(x)= -4.0623
+Best Soln: [69.74723734  0.07766747  0.1017964  -0.28767373 -0.24024411]
+convergence 0.9501
+----------------------------
+differential_evolution step 165: f(x)= -4.07019
+Best Soln: [69.73195108  0.07842408  0.10125266 -0.2862653  -0.23957571]
+convergence 0.9876
+----------------------------
+differential_evolution step 166: f(x)= -4.09831
+Best Soln: [69.73450687  0.07810804  0.10135639 -0.28640789 -0.23956491]
+convergence 0.9293
+----------------------------
+differential_evolution step 167: f(x)= -4.09831
+Best Soln: [69.73450687  0.07810804  0.10135639 -0.28640789 -0.23956491]
+convergence 0.9978
+----------------------------
+differential_evolution step 168: f(x)= -4.09831
+Best Soln: [69.73450687  0.07810804  0.10135639 -0.28640789 -0.23956491]
+convergence 1.0777
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.098308813444463
+       x: [ 6.973e+01  7.811e-02  1.014e-01 -2.864e-01 -2.396e-01]
+     nit: 168
+    nfev: 10816 
+
+
+tg =  [40.0, 50.0, 60.0, 70.0]
+
+log of gate error (truc2=44) = 
+-4.16432979, -2.85565182, -3.81424955, -4.09830881 ,
+
+fidelity =  (truc2=44) 
+0.9999315, 0.99860573, 0.99984663, 0.99992026 ,
+
+drive_param = 
+[39.991886, 0.104909, 0.028041, 0.002101, 0.003946] ,
+[49.958415, 0.11099, 0.100911, -0.296274, -0.256517] ,
+[59.892442, 0.086795, 0.102062, -0.287392, -0.240871] ,
+[69.734507, 0.078108, 0.101356, -0.286408, -0.239565] ,
+4it [1:30:12, 1460.89s/it]4it [1:30:12, 1353.06s/it]
+
+log of gate error (truc2=157) = 
+-4.17799592, -2.85475377, -3.61249736, -3.93392699 ,
+
+***Current Mountain Time: 2024-12-15 01:38:32.080399-07:00 
+
+
+amp_bounds= (0, 0.2)
+detune_bounds= (-0.4, 0.01)
+Current Mountain Time: 2024-12-15 01:38:32.081194-07:00
+264605.46user 180.00system 1:30:35elapsed 4871%CPU (0avgtext+0avgdata 1667552maxresident)k
+0inputs+328outputs (77major+10536443minor)pagefaults 0swaps
