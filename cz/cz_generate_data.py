@@ -39,7 +39,6 @@ def cz_fidelity_pool(args):
 
 def import_para():
     n_cpu_full, n_cpu_pool = 1, 100
-    # truc1, truc_tot, charge_pick = 80, 1000, True
     # truc1, truc_tot, charge_pick = 300, 2000, True
     truc1, truc_tot, charge_pick = 400, 500, True
     truc_tot_2 = 500
@@ -50,42 +49,27 @@ def import_para():
     print('\ntruc1=', truc1, ', truc_tot=', truc_tot, ', charge_pick=', charge_pick)
     print('truc_tot_2=', truc_tot_2)
     folder = f'../two_qubit_data_truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
-    eval_tot = pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    n_theta0_dress = pd.read_csv(folder+ 'n_theta0_dress.txt').to_numpy()
-    n_theta1_dress = pd.read_csv(folder+ 'n_theta1_dress.txt').to_numpy()
+    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
+    n_theta0_dress = 2*np.pi* pd.read_csv(folder+ 'n_theta0_dress.txt').to_numpy()
+    n_theta1_dress = 2*np.pi* pd.read_csv(folder+ 'n_theta1_dress.txt').to_numpy()
     hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
 
     # the full Hilbert space
-    drive_ab = False
     logic_states = ['0-0', '0-2', '2-0', '2-2']
-    W_20_50 = 2*np.pi* ( eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')] )
-    drive_term = n_theta0_dress + n_theta1_dress  if drive_ab else n_theta1_dress
-    H0_full = 2*np.pi* qt.Qobj(np.diag(eval_tot))
-    H_drive_full = [H0_full, [2*np.pi* qt.Qobj(drive_term), ut.drive_gauss_A] ]
-    logic_idx_full = [hspace_full.index(i) for i in logic_states]
+    W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
+    drive_term = n_theta1_dress
+    H0_full = qt.Qobj(np.diag(eval_tot))
+    # H_drive_full = [H0_full, [2*np.pi* qt.Qobj(drive_term), ut.drive_gauss_A] ]
+    # logic_idx_full = [hspace_full.index(i) for i in logic_states]
 
-    # Truncate the full Hilbert space to the truncated Hilbert space
+    # Truncate the imported full Hilbert space
     truc_index = np.arange(truc_tot_2)
     hspace_truc = hspace_full[:truc_tot_2]
     H0_truc = ut.truncate_2( H0_full, truc_index)
     drive_truc = ut.truncate_2(drive_term, truc_index)
-    H_drive_truc = [H0_truc, [2*np.pi* drive_truc, ut.drive_gauss_A] ]
+    H_drive_truc = [H0_truc, [ drive_truc, ut.drive_gauss_A] ]
     logic_idx_truc = [hspace_truc.index(i) for i in logic_states]
 
-    # # the full Hilbert space
-    # pool = Pool(processes=n_cpu_pool)
-    # sesolve_args = []
-    # for i in range(len(para_tot)):
-    #     sesolve_args.append([para_tot[i][0], para_tot[i][1], para_tot[i][2],
-    #                         n_cpu_full, hspace_full, W_20_50, H_drive_full, logic_idx_full])
-    # result = []
-    # for tg, fidelity in pool.imap_unordered(cz_fidelity_pool, sesolve_args):
-    #     result.append([tg, fidelity])
-    # result = pd.DataFrame(result, columns=['tg', 'fidelity']).sort_values("tg", ascending=True).to_numpy().tolist()
-    # print(f'fidelity (truc={truc_tot}) = ')
-    # for i in result:
-    #     print(i, ',')
-    # Truncate the full Hilbert space to the truncated Hilbert space
     pool = Pool(processes=n_cpu_pool)
     sesolve_args = []
     for i in range(len(para_tot)):
