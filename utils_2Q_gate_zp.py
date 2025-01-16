@@ -341,9 +341,10 @@ def get_operator_two_zeropi_v2(Ec0=1.0, truc1=30, truc_tot=50, thresh_matrix_ele
     eket1 = ssp.csr_matrix([eket1[:,idx] for idx in range(truc1)])
 
     # get the n-operator in qubit basis of single qubit
-    n_theta0 = np.round(eket0 @ zp.subsystems[0].n2_operator() @ eket0.conj().T, 8).todense()
-    n_theta1 = np.round(eket1 @ zp.subsystems[1].n6_operator() @ eket1.conj().T, 8).todense()
-
+    # n_theta0 = np.round(eket0 @ zp.subsystems[0].n2_operator() @ eket0.conj().T, 8).todense()
+    # n_theta1 = np.round(eket1 @ zp.subsystems[1].n6_operator() @ eket1.conj().T, 8).todense()
+    n_theta0 = (eket0 @ zp.subsystems[0].n2_operator() @ eket0.conj().T).todense()
+    n_theta1 = (eket1 @ zp.subsystems[1].n6_operator() @ eket1.conj().T).todense()
     ##############################################################################################
     ###  Truncate two qubits using charge matrix elements
     hspace_0 = np.arange(truc1)
@@ -378,7 +379,8 @@ def get_operator_two_zeropi_v2(Ec0=1.0, truc1=30, truc_tot=50, thresh_matrix_ele
     Hint = qt.tensor(qt.Qobj(n_theta0) , qt.Qobj(n_theta1))
     H_bare = (  qt.tensor(qt.Qobj(np.diag(eval0)),  qt.identity(len(hspace_1)))
             +  qt.tensor(qt.identity(len(hspace_0)),  qt.Qobj(np.diag(eval1))) )
-    Htot = (g* Hint + H_bare).tidyup(atol=1e-8)
+    # Htot = (g* Hint + H_bare).tidyup(atol=1e-8)
+    Htot = g* Hint + H_bare
 
     ### the one-line code below takes time when truc1 is large
     k = Htot.shape[0] - 1
@@ -986,16 +988,17 @@ def cz_fidelity(arg_all):
     return np.log10(1-fidelity)
 
 
-def zero_pi_initialize(drive_phi, drive_theta, truncation=10):
+def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=200):
     EL        = 0.377 # GHz
     EJ        = 6.013 # Soft Zero Pi (Gyenis)
     EC_phi    = 1.142
     EC_theta  = 0.092
     E_CJ = 2 * EC_phi
     E_C = 2./(1./EC_theta -1./EC_phi)
-    phi_grid = scq.Grid1d(-6*np.pi, 6*np.pi, 100)
+    phi_grid = scq.Grid1d(-6*np.pi, 6*np.pi, phi_cut)
     zero_pi = scq.ZeroPi(grid=phi_grid, EJ=EJ, EL=EL, ECJ=E_CJ, EC = E_C, dEJ=0.,
-                            ng=0., flux=0., ncut=30, truncated_dim=truncation)
+                            ng=0., flux=0., ncut=ncut, truncated_dim=truncation)
+    # print('zero_pi.ncut=',zero_pi.ncut, ', zero_pi.grid.pt_count=',zero_pi.grid.pt_count )
     n_Theta = zero_pi.matrixelement_table(operator='n_theta_operator', evals_count=truncation)
     n_Phi = zero_pi.matrixelement_table(operator='i_d_dphi_operator', evals_count=truncation)
     n_phi = 2*np.pi * qt.Qobj(n_Phi)
@@ -1030,38 +1033,108 @@ def zero_pi_initialize(drive_phi, drive_theta, truncation=10):
     return H0, drive_term, w_trans_1, w_trans_2, hspace_charge
 
 
-def zero_pi_initialize_peter(drive_phi, drive_theta, truncation=10):
-    EL   = 0.04 # GHz
-    EJ   = 10
-    E_CJ = 20
-    E_C  = 0.04
-    phi_grid = scq.Grid1d(-6*np.pi, 6*np.pi, 100)
-    zero_pi = scq.ZeroPi(grid=phi_grid, EJ=EJ, EL=EL, ECJ=E_CJ, EC = E_C, dEJ=0.,
-                            ng=0., flux=0., ncut=30, truncated_dim=truncation)
-    n_Theta = zero_pi.matrixelement_table(operator='n_theta_operator', evals_count=truncation)
-    n_Phi = zero_pi.matrixelement_table(operator='i_d_dphi_operator', evals_count=truncation)
-    n_phi = 2*np.pi * qt.Qobj(n_Phi)
-    n_theta = 2*np.pi * qt.Qobj(n_Theta)
+# def zero_pi_initialize_peter(drive_phi, drive_theta, truncation=10):
+#     EL   = 0.04 # GHz
+#     EJ   = 10
+#     E_CJ = 20
+#     E_C  = 0.04
+#     phi_grid = scq.Grid1d(-6*np.pi, 6*np.pi, 100)
+#     zero_pi = scq.ZeroPi(grid=phi_grid, EJ=EJ, EL=EL, ECJ=E_CJ, EC = E_C, dEJ=0.,
+#                             ng=0., flux=0., ncut=30, truncated_dim=truncation)
+#     n_Theta = zero_pi.matrixelement_table(operator='n_theta_operator', evals_count=truncation)
+#     n_Phi = zero_pi.matrixelement_table(operator='i_d_dphi_operator', evals_count=truncation)
+#     n_phi = 2*np.pi * qt.Qobj(n_Phi)
+#     n_theta = 2*np.pi * qt.Qobj(n_Theta)
 
-    evals = 2*np.pi * zero_pi.eigenvals(evals_count=truncation)
-    evals = evals - evals[0]
-    H0 = qt.Qobj(np.diag(evals))
+#     evals = 2*np.pi * zero_pi.eigenvals(evals_count=truncation)
+#     evals = evals - evals[0]
+#     H0 = qt.Qobj(np.diag(evals))
 
-    if drive_theta:
-        w_trans_1 = evals[10] - evals[0]
-        w_trans_2 = evals[10] - evals[1]
-        drive_term = n_theta
+#     if drive_theta:
+#         w_trans_1 = evals[10] - evals[0]
+#         w_trans_2 = evals[10] - evals[1]
+#         drive_term = n_theta
 
-    ## find hilbert space
-    thresh = 0.01
-    hspace_charge = [0, 1]
-    for s in hspace_charge:
-        for i in range(truncation):
-            if np.abs(drive_term[s, i]/(2*np.pi)) > thresh and i not in hspace_charge:
-                hspace_charge.append(i)
-    hspace_charge.sort()
+#     ## find hilbert space
+#     thresh = 0.01
+#     hspace_charge = [0, 1]
+#     for s in hspace_charge:
+#         for i in range(truncation):
+#             if np.abs(drive_term[s, i]/(2*np.pi)) > thresh and i not in hspace_charge:
+#                 hspace_charge.append(i)
+#     hspace_charge.sort()
 
-    return H0, drive_term, w_trans_1, w_trans_2, hspace_charge
+#     return H0, drive_term, w_trans_1, w_trans_2, hspace_charge
+
+
+
+def _parallel_mesolve_fast(n, N, H, tlist, c_op_list, args, options, proj_idx, dims=None):
+    row_idx, col_idx = proj_idx[n]
+    rho0 = qt.states.projection(N, row_idx, col_idx)
+    rho0.dims = dims
+    output = qt.mesolve(
+        H, rho0, tlist, c_ops=c_op_list, args=args, options=options,
+        _safe_mode=False)
+    return output
+
+def get_propagator_noise_fast(H, tlist, num_cpus, parallel, c_op_list, args, options, logi_state):
+    dimz = len(logi_state)
+    proj_idx = [(logi_state[i],logi_state[j]) for j in range(dimz)
+                for i in range(dimz)]
+    if isinstance(H, list):
+        H0 = H[0][0] if isinstance(H[0], list) else H[0]
+    else:
+        H0 = H
+    N = H0.shape[0]
+    u = np.zeros([N * N, dimz * dimz, len(tlist)], dtype=complex)
+    if parallel:
+        output = qt.parallel.parallel_map(_parallel_mesolve_fast, range(dimz * dimz),
+                                task_args=(
+                                    N, H, tlist, c_op_list, args, options, proj_idx),
+                                task_kwargs={"dims": H0.dims},
+                                num_cpus=num_cpus)
+        for n in range(dimz * dimz):
+            for k, t in enumerate(tlist):
+                u[:, n, k] = qt.superoperator.mat2vec(output[n].states[k].full()).T
+    else:
+        for n, idx in enumerate(proj_idx):
+            row_idx, col_idx = idx
+            rho0 = qt.states.projection(N, row_idx, col_idx)
+            rho0.dims = H0.dims
+            output = qt.mesolve(
+                H, rho0, tlist, c_ops=c_op_list, args=args,
+                options=options, _safe_mode=False)
+            for k, t in enumerate(tlist):
+                u[:, n, k] = qt.superoperator.mat2vec(output.states[k].full()).T
+    out = np.empty((len(tlist),), dtype=object)
+    out[:] = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
+    return out[-1]
+
+
+def get_fidelity(s_op, keep_levels):
+    p0_kraus = qt.to_kraus(qt.to_super(s_op))
+    p0_kraus = [truncate_2(i, keep_levels) for i in p0_kraus]
+    p0_super_2 = qt.kraus_to_super(p0_kraus)
+    f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=qt.sigmax())
+    return f_noise
+
+
+def xgate_fidelity_noise_fast(args_indep, *args):
+    [H_qbt_drive, w_trans_1, w_trans_2, n_cpu, c_op_list, logi_state, parallel] = args
+    [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = args_indep
+    pulse_args = {'drive_amp_A': drive_amp_A ,
+            'drive_freq_A': w_trans_1 + 2*np.pi*detune_A,
+            'drive_amp_B': drive_amp_B ,
+            'drive_freq_B': w_trans_2 + 2*np.pi*detune_B,
+            'gate_time': tg,
+                'alpha_A': 0,
+                'alpha_B': 0 }
+    tlist = np.linspace(0, tg,  num=3*int(tg))  # total time
+    options =qt.Options(max_step=1e-4, nsteps=1e4, num_cpus=n_cpu )
+    p_simple_2_a = get_propagator_noise_fast(H_qbt_drive, tlist, n_cpu, parallel, c_op_list,
+                                   args=pulse_args, options=options, logi_state=logi_state)
+    f_noise = get_fidelity(p_simple_2_a, logi_state)
+    return np.log10(1-f_noise)
 
 
 def is_sparse(matrix):
