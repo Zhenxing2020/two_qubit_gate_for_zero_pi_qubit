@@ -1,8 +1,7 @@
 import sys
 sys.path.append('../')
-import os
 from datetime import datetime
-import pytz
+import pytz, os
 import numpy as np
 import scipy as sp
 from tqdm import tqdm
@@ -239,7 +238,7 @@ def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=2
 
     return H0, drive_term, w_trans_1, w_trans_2, hspace_charge
 
-def get_fidelity_super_operator(s_op, logi_state, gate_target):
+def get_fidelity_super_operator(super_op, logi_state, gate_target):
     """
     Computes the average gate fidelity for a given superoperator.
 
@@ -251,13 +250,13 @@ def get_fidelity_super_operator(s_op, logi_state, gate_target):
     Returns:
         float: The average gate fidelity of the operation.
     """
-    p0_kraus = qt.to_kraus(qt.to_super(s_op))
+    kraus = qt.to_kraus(qt.to_super(super_op))
     # print('logi_state=', logi_state)
     # print('p0_kraus=', p0_kraus)
     # print('p0_kraus[0].shape=', np.shape(p0_kraus[0]))
-    p0_kraus = [truncate_2(i, logi_state) for i in p0_kraus]
-    p0_super_2 = qt.kraus_to_super(p0_kraus)
-    return qt.metrics.average_gate_fidelity(p0_super_2, target=gate_target)
+    kraus = [truncate_2(i, logi_state) for i in kraus]
+    super_op_post = qt.kraus_to_super(kraus)
+    return qt.metrics.average_gate_fidelity(super_op_post, target=gate_target)
 
 # Compute the X-gate fidelity in parallel
 def xgate_fidelity_parallel(arg, *args):
