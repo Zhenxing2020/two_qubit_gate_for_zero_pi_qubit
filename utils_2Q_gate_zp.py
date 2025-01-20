@@ -19,9 +19,11 @@ def set_fig_font():
     plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
     plt.rc('figure', titlesize=SMALL_SIZE)  # fontsize of the figure title
 
+# Utility function for logging optimization progress
 def print_soln(xk, convergence=0):
-    print("Best Soln:", xk)
-    print("convergence", np.round(convergence,4))
+    """Log the best solution and convergence information during optimization."""
+    print("Best Solution:", np.round(xk, 8).tolist())
+    print("Convergence:", np.round(convergence, 4))
     print("----------------------------")
 
 def transition_frequency(s0: int, s1: int, eval_tot) -> float:
@@ -53,7 +55,6 @@ def truncate_2(qobj, indices):
     else:
         return qt.Qobj(qobj[indices])
 
-
 # Factor global phase so that upper-left corner of matrix is real
 def remove_global_phase(op):
     return op * np.exp(-1j * cmath.phase(op[0, 0]))
@@ -61,8 +62,6 @@ def remove_global_phase(op):
 def dphi(prop, idx):
     return (-np.angle(prop[idx[0], idx[1]])
             +np.angle(prop[0,0]))
-
-
 
 def gate_fidelity(Utarg, Ucand):
     ''' Compute gate fidelity between two unitaries (not quantum channels).
@@ -83,29 +82,12 @@ def gate_fidelity(Utarg, Ucand):
     fidelity = (((Ucandp.dag() * Ucandp).tr() + np.abs((Ucandp.dag() * Utarg).tr()) ** 2) / denom )
     return fidelity
 
-
 # Drive Coefficient on qubit A
 def drive_cos_A(t: float, args: dict) -> float:
     A = args.get('drive_amp_A', 0)
     wd = args.get('drive_freq_A', 0)
     tg = args.get('gate_time', 0)
     return A * np.cos(wd * t) * (0<=t<=tg)
-
-def drive_gauss_A(t: float, args: dict) -> float:
-    A = args.get('drive_amp_A', 0)
-    wd = args.get('drive_freq_A', 0)
-    tg = args.get('gate_time', 0)
-    return A * (np.exp(-8 * t * (t - tg) / tg**2) - 1) * np.cos(wd * t) * (0<=t<=tg)
-
-def drag_A(t: float, args: dict) -> float:
-    A = args.get('drive_amp_A', 0)
-    wd = args.get('drive_freq_A', 0)
-    tg = args.get('gate_time', 0)
-    alpha = args.get('alpha_A', 0)
-    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
-    return ( vg* np.cos(wd* t) + alpha* (vg+A)* (-8*(2*t-tg)/tg**2)* np.sin(wd* t) ) * (0<=t<=tg)
-
-
 
 # Drive Coefficient on qubit B
 def drive_cos_B(t: float, args: dict) -> float:
@@ -114,20 +96,89 @@ def drive_cos_B(t: float, args: dict) -> float:
     tg = args.get('gate_time', 0)
     return A * np.cos(wd * t) * (0<=t<=tg)
 
+# Functions for the pulse for qubits A and B
+def drive_gauss_A(t: float, args: dict) -> float:
+    """
+    Compute the pulse for qubit A.
+
+    Args:
+        t (float): Time at which to evaluate the pulse (0 <= t <= gate_time).
+        args (dict): Dictionary containing pulse parameters:
+            - drive_amp_A (float): Drive amplitude for qubit A.
+            - drive_freq_A (float): Drive frequency for qubit A.
+            - gate_time (float): Total duration of the gate.
+
+    Returns:
+        float: The value of the pulse for qubit A at time `t`.
+    """
+    A = args.get('drive_amp_A', 0)
+    wd = args.get('drive_freq_A', 0)
+    tg = args.get('gate_time', 0)
+    return A * (np.exp(-8 * t * (t - tg) / tg**2) - 1) * np.cos(wd * t) * (0<=t<=tg)
+
 def drive_gauss_B(t: float, args: dict) -> float:
+    """
+    Compute the pulse for qubit B.
+
+    Args:
+        t (float): Time at which to evaluate the pulse (0 <= t <= gate_time).
+        args (dict): Dictionary containing pulse parameters:
+            - drive_amp_B (float): Drive amplitude for qubit B.
+            - drive_freq_B (float): Drive frequency for qubit B.
+            - gate_time (float): Total duration of the gate.
+
+    Returns:
+        float: The value of the pulse for qubit B at time `t`.
+    """
     A = args.get('drive_amp_B', 0)
     wd = args.get('drive_freq_B', 0)
     tg = args.get('gate_time', 0)
     return A * (np.exp(-8 * t * (t - tg) / tg**2) - 1) * np.cos(wd * t) * (0<=t<=tg)
 
+# Functions for the DRAG pulse for qubits A and B
+def drag_A(t: float, args: dict) -> float:
+    """
+    Compute the DRAG pulse for qubit A.
+
+    Args:
+        t (float): Time at which to evaluate the pulse (0 <= t <= gate_time).
+        args (dict): Dictionary containing pulse parameters:
+            - drive_amp_A (float): Drive amplitude for qubit A.
+            - drive_freq_A (float): Drive frequency for qubit A.
+            - gate_time (float): Total duration of the gate.
+            - alpha_A (float): DRAG parameter for qubit A.
+
+    Returns:
+        float: The value of the DRAG pulse for qubit A at time `t`.
+    """
+    A = args.get('drive_amp_A', 0)
+    wd = args.get('drive_freq_A', 0)
+    tg = args.get('gate_time', 0)
+    alpha = args.get('alpha_A', 0)
+    vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
+    return (vg * np.cos(wd * t) + alpha * (vg + A) * (-8 * (2 * t - tg) / tg**2) * np.sin(wd * t)) * (0 <= t <= tg)
+
 def drag_B(t: float, args: dict) -> float:
+    """
+    Compute the DRAG pulse for qubit B.
+
+    Args:
+        t (float): Time at which to evaluate the pulse (0 <= t <= gate_time).
+        args (dict): Dictionary containing pulse parameters:
+            - drive_amp_B (float): Drive amplitude for qubit B.
+            - drive_freq_B (float): Drive frequency for qubit B.
+            - gate_time (float): Total duration of the gate.
+            - alpha_B (float): DRAG parameter for qubit B.
+
+    Returns:
+        float: The value of the DRAG pulse for qubit B at time `t`.
+    """
     A = args.get('drive_amp_B', 0)
     wd = args.get('drive_freq_B', 0)
     tg = args.get('gate_time', 0)
     alpha = args.get('alpha_B', 0)
     vg = A * (np.exp(-8 * t * (t - tg) / tg**2) - 1)
-    return ( vg* np.cos(wd* t) + alpha* (vg+A)* (-8*(2*t-tg)/tg**2)* np.sin(wd* t) ) * (0<=t<=tg)
-
+    return (vg * np.cos(wd * t) + alpha * (vg + A) * (-8 * (2 * t - tg) / tg**2) * np.sin(wd * t)) * (0 <= t <= tg)
 
 def make_power_spectrum(pulse, tlist, drive_freq):
         # Power spectrum of pulse
@@ -136,8 +187,6 @@ def make_power_spectrum(pulse, tlist, drive_freq):
         peak_loc = np.argmin(np.abs(freqs-drive_freq/(2*np.pi)))
         ps_db = 20*np.log10(mag/mag[peak_loc])
         return mag, freqs, peak_loc, ps_db
-
-
 
 def geometric_phase_integral(xx, yy, zz):
     phi = np.arctan2(yy, xx)
@@ -834,6 +883,7 @@ def xgate_fidelity_fast(argz):
     # error_leak = 1 - 0.5*(Uc.dag()*Uc).tr()
     # fidelity = gate_fidelity(Utarg=qt.sigmax(), Ucand=Uc)
     fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
+
     return np.log10(1-fidelity)
 
 def sesolve_parallel(argz):
@@ -1113,6 +1163,9 @@ def get_propagator_noise_fast(H, tlist, num_cpus, parallel, c_op_list, args, opt
 
 def get_fidelity(s_op, keep_levels):
     p0_kraus = qt.to_kraus(qt.to_super(s_op))
+    print('logi_state=', keep_levels)
+    print('p0_kraus=', p0_kraus)
+    print('p0_kraus[0].shape=', np.shape(p0_kraus[0]))
     p0_kraus = [truncate_2(i, keep_levels) for i in p0_kraus]
     p0_super_2 = qt.kraus_to_super(p0_kraus)
     f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=qt.sigmax())
