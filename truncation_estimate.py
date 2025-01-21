@@ -7,17 +7,15 @@ import pandas as pd
 import networkx as nx
 
 
-def trunc_by_thresh(core_states, drive_term, labels = None, thresh=1e-2, total_trunc=None):
+def trunc_by_thresh(core_states_index, drive_term, thresh=1e-2, total_trunc=None):
     """
     Returns a list of state indices that are connected to the specified core states
     via large entries in the given drive term
 
     Args:
-        core_states (list[int]): The indices of the states to begin with 
+        core_states_index (list[int]): The indices of the states to begin with 
                                    (should be the logical states).
         drive_term (np.array complex): The operator used to drive a gate.
-        labels (list[str], optional): labels to use for each state. Uses
-                                      the index of the state if none is given
         thresh (float, optional): The threshold above which states count as connected.
                                   Defaults to 1e-2.
         total_trunc (int, optional): Highest index to consider. If none is given
@@ -29,21 +27,18 @@ def trunc_by_thresh(core_states, drive_term, labels = None, thresh=1e-2, total_t
     
     if total_trunc is None:
         total_trunc = drive_term.shape[1]
-
-    if labels is None:
-        labels = np.arange(drive_term.shape[1])
     
-    hspace_index = [s for s in core_states]
+    hspace_index = [s for s in core_states_index]
     # Add every state that is connected by entries above thresh
     # to the core states in the drive term
     # By adding to hspace_index as you're looping through it,
     # we consider as many degrees of connection as we need 
     for s in hspace_index:
-        for i, s2 in enumerate(labels):
+        for i, s2 in enumerate(np.arange(total_trunc)):
             if np.abs(drive_term[s, i]) > thresh and i not in hspace_index:
-                hspace_index.append(s2)
+                hspace_index.append(i)
 
-    return hspace_index
+    return sorted(hspace_index)
 
 
 def pop_rate(A, n_ij, delta):
@@ -245,6 +240,8 @@ if __name__ == "__main__":
 
     drive_term = n_theta1_dress
 
-    G = make_rate_graph(drive_term, eval_tot, wd, A, labels = hspace_full)
-    df = make_leakage_df(core_states, drive_term, eval_tot, wd, A, labels = hspace_full, n_cpu=100)
-    states = trunc_by_graph_estimate(100, core_states, drive_term, eval_tot, wd, A, labels=hspace_full)
+    hspace_index_2 = trunc_by_thresh(hspace_index, drive_term, thresh=1e-2)
+
+    # G = make_rate_graph(drive_term, eval_tot, wd, A, labels = hspace_full)
+    # df = make_leakage_df(core_states, drive_term, eval_tot, wd, A, labels = hspace_full, n_cpu=100)
+    # states = trunc_by_graph_estimate(100, core_states, drive_term, eval_tot, wd, A, labels=hspace_full)
