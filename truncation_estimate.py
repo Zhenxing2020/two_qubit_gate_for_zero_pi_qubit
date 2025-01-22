@@ -1,6 +1,7 @@
 
 from multiprocessing import Pool
 
+from copy import deepcopy
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
@@ -55,7 +56,7 @@ def pop_rate(A, n_ij, delta):
     return (np.abs(A*n_ij)**2) / (np.abs(A*n_ij)**2 + delta**2)
 
 
-def make_rate_graph(drive_term, evals, wd, A, labels = None):
+def make_rate_graph(drive_term, evals, wd, A, labels = None, normalization=True):
     """
     Makes a graph that represents the population transfer rate
     of a system under the presence of the specified monotone drive
@@ -76,10 +77,13 @@ def make_rate_graph(drive_term, evals, wd, A, labels = None):
         labels = np.arange(drive_term.shape[0])
 
     G = nx.DiGraph()
+    max_n_ij = np.max(np.abs(drive_term))
     for i, s_i in enumerate(labels):
         for j, s_j in enumerate(labels):
             if i < j:
-                n_ij = drive_term[i, j]
+                n_ij = np.abs(drive_term[i, j])
+                if normalization:
+                    n_ij *= n_ij/max_n_ij
                 delta = abs(wd - (evals[j] - evals[i]))
                 population_rate = pop_rate(A, n_ij, delta)
                 if population_rate > 0:
@@ -146,7 +150,7 @@ def all_path_to_core(G, core_states, target, cutoff=2):
     return target, (weight_tot, path_tot)
 
 
-def make_leakage_df(core_states, drive_term, evals, wd, A, G=None, labels = None, n_cpu=4):
+def make_leakage_df(core_states, drive_term, evals, wd, A, G=None, labels = None):
     """
     Makes a dataframe where each row is a state rated by how much
     leakage is expected
@@ -171,10 +175,8 @@ def make_leakage_df(core_states, drive_term, evals, wd, A, G=None, labels = None
     if G is None:
         G = make_rate_graph(drive_term, evals, wd, A, labels = labels)
 
-    pool = Pool(processes=n_cpu)
-    params = [(G, core_states, s) for s in labels]
-    for target, (shortest_path_len, shortest_path) in tqdm(pool.imap_unordered(_shortest_path_to_core_parallel, params),
-                total=len(labels)):
+    for s in tqdm(labels, total=len(labels)):
+        target, (shortest_path_len, shortest_path) = shortest_path_to_core(G, core_states, s)
         entry = {}
         entry["i"] = target
         entry["path"] = shortest_path
@@ -184,7 +186,7 @@ def make_leakage_df(core_states, drive_term, evals, wd, A, G=None, labels = None
     return pd.DataFrame(df).sort_values(by="path_len", ascending=False)
 
 
-def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, G=None, labels=None, n_cpu=4):
+def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, G=None, labels=None):
     """
     Returns indices/state labels for a truncated model, keeping the n most important states
     according to the graph search estimate
@@ -204,7 +206,7 @@ def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, G=None, la
         list of state indices/labels
     """
 
-    df = make_leakage_df(core_states, drive_term, evals, wd, A, G=G, labels=labels, n_cpu=n_cpu)
+    df = make_leakage_df(core_states, drive_term, evals, wd, A, G=G, labels=labels)
     return list(df["i"].values[:n])
 
 
