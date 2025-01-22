@@ -97,7 +97,7 @@ def sesolve_parallel(argz):
     H, psi0, tlist, pulse_args, options = argz
     return psi0, qt.sesolve(H, qt.basis(H[0].shape[0], psi0), tlist, options=options, args=pulse_args)
 
-def get_propagator(H, tlist, num_cpus, parallel, c_op_list, pulse_args, options, logi_state):
+def get_propagator(H, tlist, num_cpus, parallel, c_op_list, pulse_args, options, logi_state, return_all_t=False):
     """
     Compute the propagator for a quantum system, supporting both noiseless and noisy systems.
 
@@ -111,6 +111,7 @@ def get_propagator(H, tlist, num_cpus, parallel, c_op_list, pulse_args, options,
         pulse_args (dict): Arguments for time-dependent pulse functions in the Hamiltonian.
         options (qt.Options): Solver options for QuTiP.
         logi_state (list): List of logical states (indices of basis states) to include in the propagator.
+        return_all_t (bool): Return a propagator for each timestep in tlist
 
     Returns:
         qt.Qobj or list of qt.Qobj:
@@ -120,12 +121,15 @@ def get_propagator(H, tlist, num_cpus, parallel, c_op_list, pulse_args, options,
     H0 = H[0][0] if isinstance(H[0], list) else H[0] if isinstance(H, list) else H
     if len(c_op_list) == 0:
         # Computes the propagator for noiseless systems.
-        prop = np.zeros((H0.shape[0], len(logi_state)), dtype=np.complex128)
+        prop = np.zeros((tlist.shape[0], H0.shape[0], len(logi_state)), dtype=np.complex128)
         for i in logi_state:
             res = qt.sesolve(H, qt.basis(H[0].shape[0], i), tlist, options=options, args=pulse_args)
-            prop[:, logi_state.index(i)] = res.states[-1].full().flatten()
-        Uc = truncate_2(qt.Qobj(prop), logi_state)
-        return Uc
+            for it in range(len(res.states)):
+                prop[it, :, logi_state.index(i)] = res.states[it].full().flatten()
+        if return_all_t:
+            return [truncate_2(qt.Qobj(p), logi_state) for p in prop]
+        else:
+            return truncate_2(qt.Qobj(prop[-1]), logi_state)
     else:
         # Computes the propagator for noisy systems.
         dimz = len(logi_state)
@@ -152,8 +156,10 @@ def get_propagator(H, tlist, num_cpus, parallel, c_op_list, pulse_args, options,
                 )
                 for k, t in enumerate(tlist):
                     u[:, n, k] = qt.superoperator.mat2vec(output.states[k].full()).T
-
-        return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
+        if return_all_t:
+            return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
+        else:
+            return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
 
 # Initialize the parameters and operators for the Zero-Pi qubit system.
 def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=200):
@@ -351,7 +357,8 @@ def xgate_fidelity_log_noise(args_indep, *args):
     }
 
     tlist = np.linspace(0, tg, num=3 * int(tg))
-    options = qt.Options(max_step=max_step, nsteps=nsteps, num_cpus=n_cpu)
+    # options = qt.Options(max_step=max_step, nsteps=nsteps, num_cpus=n_cpu)
+    options = qt.Options(num_cpus=n_cpu)
     p_simple_2_a = get_propagator(
         H_qbt_drive, tlist, n_cpu, parallel, c_op_list, pulse_args,
         options=options, logi_state=logi_state
@@ -535,13 +542,13 @@ def import_para_noise():
     """
     Imports parameters and computes gate fidelities for noisy systems.
     """
-    drive_phi, drive_theta, truc = False, True, 30
+    drive_phi, drive_theta, truc = False, True, 100
     # drive_phi, drive_theta, truc = True, False, 30
     parallel = False
-    folder = 'data/data_xgate_theta.txt' if drive_theta else 'data/data_xgate_phi.txt'
+    folder = 'data/data_xgate_theta_3ncut.txt' if drive_theta else 'data/data_xgate_phi.txt'
     f_xgate = pd.read_csv(folder)
-    params = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()[:1]
-    n_cpu, n_job = 4, 4*len(params)
+    params = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
+    n_cpu, n_job = 4, len(params)
     logi_state = [0, 2]
     # [H0, drive_term, w_trans_1, w_trans_2, _] = ut.zero_pi_initialize(drive_phi, drive_theta, truncation=truc)
     folder = f'data/data_one_zeropi_truncation=1000/'
@@ -550,11 +557,13 @@ def import_para_noise():
     n_phi = 2*np.pi* pd.read_csv(folder+ 'n_phi.txt').map(complex).to_numpy()
     gate_target = qt.sigmax()
     gamma2 =  1 / 1600e3
-    gammas =  1 / 2e3
+    # gammas =  1 / 2e3
+    gammas = 1 / 5e3
     gamma2_p = 0 / 100e3
     # ratio = 10
     # gammas =  gamma_2 * ratio
-    gammas_p = 1 / 9000
+    # gammas_p = 1 / 9000
+    gammas_p = 1 / 5e3
 
     jump_t1   = []
     jump_tphi = []
@@ -594,9 +603,12 @@ def import_para_noise():
     ############################################################
 
     c_op_list = [qt.Qobj(np.zeros((truc, truc)))]
-    args = [H_qbt_drive, w_trans_1, w_trans_2, n_cpu, c_op_list, logi_state, parallel, gate_target]
+    # args = [H_qbt_drive, w_trans_1, w_trans_2, n_cpu, c_op_list, logi_state, parallel, gate_target]
     # f_ideal = [xgate_fidelity_log_noise(params[0], *args)]
-    f_ideal = Parallel(n_jobs=n_job, verbose=0)(delayed(xgate_fidelity_log_noise)(args_indep, *args)
+    # f_ideal = Parallel(n_jobs=n_job, verbose=0)(delayed(xgate_fidelity_log_noise)(args_indep, *args)
+    #                                             for args_indep in params)
+    args = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu]
+    f_ideal = Parallel(n_jobs=n_job, verbose=0)(delayed(xgate_fidelity_parallel)(args_indep, *args)
                                                 for args_indep in params)
     print('\nf_ideal = [')
     for i in range(0, len(f_ideal), 4):
@@ -619,8 +631,8 @@ if __name__ == '__main__':
     print(os.path.basename(__file__))  # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    import_para()
-    # import_para_noise()
+    # import_para()
+    import_para_noise()
 
 
 
