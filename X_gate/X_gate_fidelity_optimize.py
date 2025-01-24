@@ -161,6 +161,47 @@ def get_propagator(H, tlist, num_cpus, parallel, c_op_list, pulse_args, options,
         else:
             return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
 
+
+def get_expect(states, expects, props, sigma = 0.0):
+    """
+    For a propagator or list of propagators returned by get_propagator
+    calculate the expectation value of operators expects for
+    starting states states.
+
+    Args:
+        states (list[qt.Qobj]): list of starting states
+        expects (list[qt.Qobj]): list of operators to get the expectation value
+                                  of. Give projectors to calculate population.
+        props (list[qt.Qobj] or qt.Qobj): propagator or list of propagators returned
+                                          by get_propagator. Can be either an operator
+                                          or superoperator.
+        sigma (float, optional): sigma for gaussian kernel to smooth populations. Defaults to 0.0.
+
+    Returns:
+        np.array: array with expectation values
+                  dimensions (len(states), len(expects), len(props))
+    """
+
+    if not isinstance(props, list):
+        props = [props]
+
+    # Get population of logical states, intermediate states, and other states < or >= divide
+    pops = np.zeros((len(states), len(expects), len(props)))
+    for i, s in enumerate(states):
+        psit = []
+        for it, p in enumerate(props):
+            if p.issuper:
+                psit.append(qt.vector_to_operator(p*qt.operator_to_vector(s.proj())))
+            else:
+                psit.append(p*s)
+        for ie, e_op in enumerate(expects):
+            pops[i, ie, :] = qt.expect(e_op, psit)
+    if sigma == 0:
+        return pops
+    else:
+        return sp.ndimage.gaussian_filter1d(pops, sigma = sigma, axis=-1)
+
+
 # Initialize the parameters and operators for the Zero-Pi qubit system.
 def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=200):
     """
@@ -273,6 +314,39 @@ def xgate_fidelity_parallel(arg, *args):
     argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
             tg, drive_amp_A, drive_amp_B, detune_A, detune_B]
     return xgate_fidelity_log(argz)
+
+def xgate_fidelity_parallel_noise_est(arg, *args):
+    """Compute the X-gate fidelity, estimating the effect of noise based on intermediate state population"""
+    
+    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, t1, tphi] = args
+    [tg, amp_A, amp_B, detune_A, detune_B] = arg
+    pulse_args_ = {'drive_amp_A': amp_A ,
+            'drive_freq_A': w_trans_1 + 2*np.pi*detune_A,
+            'drive_amp_B': amp_B ,
+            'drive_freq_B': w_trans_2 + 2*np.pi*detune_B,
+            'gate_time': tg}
+
+    H_qbt_drive = [truncate_2(H0, hilbert_space),
+                   [truncate_2(drive_term, hilbert_space),  drive_gauss_A],
+                   [truncate_2(drive_term, hilbert_space),  drive_gauss_B]]
+    tlist_solve = np.linspace(0, tg, 100)
+
+    logi_state = [0, 2]
+    logi_idx = [hilbert_space.index(s) for s in logi_state]
+    c_op_list = []
+
+    options = qt.Options(nsteps=nsteps)
+    props = get_propagator(H_qbt_drive, tlist_solve, 2, False, [], pulse_args_,
+                           options, logi_state=logi_idx, return_all_t=True)
+
+    states = [qt.basis(2, i) for i in [0, 1]]
+    expects = [s.proj() for s in states]
+    pops = get_expect(states, expects, props)
+    infid = 1-qt.average_gate_fidelity(props[-1], qt.sigmax())
+    logi_pop = np.sum(pops, axis=1)
+    max_pop = 1-logi_pop.mean(axis=1).mean()
+    penalty = max_pop*(tg/(4*t1) + tg/(3*tphi))
+    return np.log10(infid + penalty)
 
 def xgate_fidelity_log(argz):
     """
@@ -476,6 +550,154 @@ def fidelity_optimize_x():
     print('amp1_bounds =', amp1_bounds, ', amp2_bounds =', amp2_bounds)
     print('detune1_bounds =', detune1_bounds, ', detune2_bounds =', detune2_bounds)
 
+
+# Optimize fidelity with differential evolution
+def fidelity_optimize_x_noise_est():
+    """
+    Perform optimization of fidelity using differential evolution.
+
+    The function optimizes gate parameters for high fidelity in a quantum system
+    using the `differential_evolution` method from `scipy.optimize`. It also evaluates
+    fidelity for various truncations of the Hilbert space and prints results.
+    """
+
+    # Drive parameters
+    drive_phi, drive_theta = False, True
+
+    # Parameter bounds
+    amp1_bounds = (0, 0.6)
+    amp2_bounds = (0, 0.6)
+    detune1_bounds = (-0.5, 0.5)
+    detune2_bounds = (-0.5, 0.5)
+    tg_bound = (-0.05, 0.05)
+
+    # Target gate times
+    tg_vec = [40]
+
+    # Optimization parameters
+    workers, popsize = 100, 20
+    recombination, tol, mutation = 0.7, 0.01, (0.5, 1.0)
+
+    # Truncations
+    truc1, truncation = 300, 500
+    trunc_full = truncation
+
+    # charge and phase basis
+    ncut, phi_cut = 60, 200
+
+    print('drive_phi =', drive_phi, ', drive_theta =', drive_theta)
+    print('amp1_bounds =', amp1_bounds, ', amp2_bounds =', amp2_bounds, ', tg_bound =', tg_bound)
+    print('detune1_bounds =', detune1_bounds, ', detune2_bounds =', detune2_bounds)
+    print('workers =', workers, ', popsize =', popsize)
+    print('recombination =', recombination, ', tol =', tol, ', mutation =', mutation)
+
+    # Initialize system
+    # [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = zero_pi_initialize(
+    #     drive_phi, drive_theta, truncation=truc1, ncut=ncut, phi_cut=phi_cut
+    # )
+    # [H0_full, drive_full, _, _, _] = zero_pi_initialize(
+    #     drive_phi, drive_theta, truncation=truc_full, ncut=ncut, phi_cut=phi_cut
+    # )
+    hspace_full = np.arange(truncation).tolist()
+
+    # Load parameters
+    #####################################################################
+    # truncation, truc1 = 1000, 300
+    folder = f'data/data_one_zeropi_truncation=1000/'
+    evals = 2*np.pi* pd.read_csv(folder+ 'evals.txt').to_numpy().flatten()
+    n_theta = qt.Qobj(2*np.pi* pd.read_csv(folder+ 'n_theta.txt').to_numpy())
+    n_phi = qt.Qobj(2*np.pi* pd.read_csv(folder+ 'n_phi.txt').map(complex).to_numpy())
+    gate_target = qt.sigmax()
+    evals = evals - evals[0]
+
+    H0 = qt.Qobj(np.diag(evals))
+    if drive_phi:
+        w_trans_1 = evals[9] - evals[0]
+        w_trans_2 = evals[9] - evals[2]
+        drive_term = n_phi
+    if drive_theta:
+        w_trans_1 = evals[7] - evals[0]
+        w_trans_2 = evals[7] - evals[2]
+        drive_term = n_theta
+
+    ## find hilbert space
+    thresh = 0.01
+    hspace_charge = [0, 2]
+    for s in hspace_charge:
+        for i in range(truc1):
+            if np.abs(drive_term[s, i]/(2*np.pi)) > thresh and i not in hspace_charge:
+                hspace_charge.append(i)
+    hspace_charge.sort()
+#####################################################################
+
+    print('truc1 =', truc1, ', truc2 (in optimization) =', len(hspace_charge))
+    print('truc1_full =', trunc_full, ', truc2_full =', len(hspace_full))
+    print("tg vec", tg_vec)
+#############################################################
+
+    fidelity = []
+    drive_param = []
+    fidelity_full = []
+    n_cpu = 1
+    T1, Tphi = 5e03, 5e03
+    args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, T1, Tphi]
+
+    for jdx, tg in enumerate(tg_vec):
+        tg_bounds = (tg + tg_bound[0], tg + tg_bound[1])
+        bounds = (tg_bounds, amp1_bounds, amp2_bounds, detune1_bounds, detune2_bounds)
+
+        # Optimize fidelity using differential evolution
+        res = sp.optimize.differential_evolution(
+            func=xgate_fidelity_parallel_noise_est,
+            bounds=bounds,
+            args=args,
+            disp=True,
+            callback=print_soln,
+            init="sobol",
+            workers=workers,
+            popsize=popsize,
+            mutation=mutation,
+            recombination=recombination,
+            tol=tol,
+            updating="deferred",
+            polish=False,
+            x0 = np.array([3.9991616e+01, 1.0504500e-01, 2.8058000e-02, 2.1710000e-03, 3.9880000e-03])
+        )
+
+        fidelity.append(res.fun)
+        drive_param.append(res.x)
+
+        # Print optimization results
+        print(res, '\n')
+        print(f'\ntg = {np.array(tg_vec[:jdx + 1]).tolist()}')
+        print(f'\nlog of gate error (truc1={len(hspace_charge)}) = ')
+        for i in range(0, len(fidelity), 4):
+            print(', '.join(map(str, np.round(fidelity[i:i + 4], 8))), ',')
+
+        print(f'\ndrive_param (truc1={len(hspace_charge)}) = ')
+        for param in drive_param:
+            print(np.round(param, 6).tolist(), ',')
+
+        # Evaluate fidelity for optimal parameters in the full system
+        tg, drive_amp_A, drive_amp_B, detune_A, detune_B = drive_param[jdx]
+
+        n_cpu2 = 2
+        argz = [
+            H0, drive_term, w_trans_1, w_trans_2, hspace_full, n_cpu2,
+            tg, drive_amp_A, drive_amp_B, detune_A, detune_B
+        ]
+        fidelity_full.append(xgate_fidelity_log(argz))
+
+        print(f'\nlog of gate error (truc_full={trunc_full}) = ')
+        for i in range(0, len(fidelity_full), 4):
+            print(', '.join(map(str, np.round(fidelity_full[i:i + 4], 8))), ',')
+
+        print("\n***Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')), '\n')
+
+    print('amp1_bounds =', amp1_bounds, ', amp2_bounds =', amp2_bounds)
+    print('detune1_bounds =', detune1_bounds, ', detune2_bounds =', detune2_bounds)
+
+
 def import_para():
     drive_phi, drive_theta = False, True
     # drive_phi, drive_theta =  True, False
@@ -632,7 +854,8 @@ if __name__ == '__main__':
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     # import_para()
-    import_para_noise()
+    # import_para_noise()
+    fidelity_optimize_x_noise_est()
 
 
 
