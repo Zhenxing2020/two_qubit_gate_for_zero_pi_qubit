@@ -31,10 +31,8 @@ def import_para_noise():
     n_phi = 2*np.pi* pd.read_csv(folder+ 'n_phi.txt').map(complex).to_numpy()
 
     gamma2 =  1 / 1600e3
-    gammas =  1 / 2e3
     gamma2_p = 0 / 100e3
-    # ratio = 10
-    # gammas =  gamma_2 * ratio
+    gammas =  1 / 2e3
     gammas_p = 1 / 9e3
 
     jump_t1   = []
@@ -149,34 +147,7 @@ def check_eval():
     pd.DataFrame(eval_error).to_csv(folder+ 'eval_error.txt', sep=',', index=False, header=True)
     print(f'Eigenvalue error: Level={level_index} (error={eval_error[idx_charge, idx_phase]})')
 
-def generate_data():
-    truncation=1000
-    ncut, phi_cut = 90, 300
-    print('truncation=', truncation)
-    print('ncut, phi_cut =', ncut, phi_cut)
-    folder = 'data/'
-    EL        = 0.377 # GHz
-    EJ        = 6.013 # Soft Zero Pi (Gyenis)
-    EC_phi    = 1.142
-    EC_theta  = 0.092
-    E_CJ = 2 * EC_phi
-    E_C = 2./(1./EC_theta -1./EC_phi)
-    phi_grid = scq.Grid1d(-6*np.pi, 6*np.pi, phi_cut)
-    zero_pi = scq.ZeroPi(grid=phi_grid, EJ=EJ, EL=EL, ECJ=E_CJ, EC = E_C, dEJ=0.,
-                            ng=0., flux=0., ncut=ncut, truncated_dim=truncation)
-    # specdata = zero_pi.eigensys(evals_count=truncation, return_spectrumdata=True)
-    # specdata.filewrite(folder + f'zeropi_specdata_truc={truncation}.h5')
-    # n_Theta = zero_pi.matrixelement_table(operator='n_theta_operator', evals_count=truncation, return_datastore=True)
-    # n_Theta.filewrite(folder + f'zeropi_n_theta_truc={truncation}.h5')
-    # n_Phi = zero_pi.matrixelement_table(operator='i_d_dphi_operator', evals_count=truncation, return_datastore=True)
-    # n_Phi.filewrite(folder + f'zeropi_n_phi_truc={truncation}.h5')
 
-    new_specdata = scq.read(folder + f'zeropi_specdata_truc={truncation}_3ncut.h5')
-    n_theta = scq.read(folder + f'zeropi_n_theta_truc={truncation}_3ncut.h5')
-    n_phi = scq.read(folder + f'zeropi_n_theta_truc={truncation}_3ncut.h5')
-    print(new_specdata.energy_table)
-    print(n_theta.matrixelem_table)
-    print(n_phi.matrixelem_table)
 
 def import_para():
     ############################################################
@@ -261,14 +232,44 @@ def import_para():
     #     print(', '.join(map(str, np.round(f_theta[i:i+4], 8))), ',')
     # print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
+def generate_data():
+    truncation=1000
+    ncut, phi_cut = 90, 300
+    print('truncation=', truncation)
+    print('ncut, phi_cut =', ncut, phi_cut)
+    folder = '../../data/data_3ncut_one_zeropi/'
+    EL        = 0.377 # GHz
+    EJ        = 5.41 # Soft Zero Pi (Gyenis)
+    EC_phi    = 1.142
+    EC_theta  = 0.092
+    E_CJ = 2 * EC_phi
+    E_C = 2./(1./EC_theta -1./EC_phi)
+    phi_grid = scq.Grid1d(-6*np.pi, 6*np.pi, phi_cut)
+    zero_pi = scq.ZeroPi(grid=phi_grid, EJ=EJ, EL=EL, ECJ=E_CJ, EC = E_C, dEJ=0.,
+                            ng=0., flux=0., ncut=ncut, truncated_dim=truncation)
+    zero_pi.eigensys(evals_count=truncation, return_spectrumdata=True,
+                    filename=folder + f'zeropi2_specdata_truc={truncation}.h5')
+    zero_pi.matrixelement_table(operator='n_theta_operator', evals_count=truncation, return_datastore=True,
+                                          filename=folder + f'zeropi2_n_theta_truc={truncation}.h5')
+    zero_pi.matrixelement_table(operator='i_d_dphi_operator', evals_count=truncation, return_datastore=True,
+                                        filename=folder + f'zeropi2_n_phi_truc={truncation}.h5')
+
+    eval0 = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc={truncation}_3ncut.h5').energy_table
+    n_theta0 = 2*np.pi* scq.read(folder + f'zeropi_0_n_theta_truc={truncation}_3ncut.h5').matrixelem_table
+    n_phi0 = 2*np.pi* scq.read(folder + f'zeropi_0_n_phi_truc={truncation}_3ncut.h5').matrixelem_table
+    eval0 = eval0 - eval0[0]
+    print(eval0)
+    print(n_theta0)
+    print(n_phi0)
+
 if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     # import_para()
-    import_para_noise()
+    # import_para_noise()
     # check_eval()
-    # generate_data()
+    generate_data()
 
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 

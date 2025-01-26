@@ -35,80 +35,66 @@ if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    n_cpu = 20
-    n_job = 3
-    max_steps = 1e-4
-    gamma_2 =  1 / 1600e3
-    gamma_p2 = 1 / 100e3
-    ratio = 10
-    gamma_3 =  gamma_2 * ratio
-    gamma_p3 = gamma_p2 * ratio
+    truc1, truc_tot, charge_pick = 300, 300, False
+    truc_tot_2 = 23
+    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}_eket/'
+    eval_tot = pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
+    hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
+    hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
+    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
+    n_theta0_dress = pd.read_csv(folder+ 'n_theta0_dress.txt').map(complex).to_numpy()
+    n_theta1_dress = pd.read_csv(folder+ 'n_theta1_dress.txt').map(complex).to_numpy()
+    eket_tot = pd.read_csv(folder+ 'eket_tot.txt').map(complex).to_numpy()
 
-    args_all = ut.get_operator_two_zeropi()
-    [n_theta1, n_theta2, n_theta1_dress, n_theta2_dress, n_theta1_truc, n_theta2_truc,
-    eval_tot, order_sort, H0, trunc_states, eket0, eket1, eket_tot  ] = args_all
-    idxs = [order_sort.index(i) for i in trunc_states]
+    eval_tot = eval_tot[:truc_tot_2]
+    eket_tot = eket_tot[:truc_tot_2]
+    hspace_full = hspace_full[:truc_tot_2]
+    hspace_dress = np.arange(truc_tot_2)
+    n_theta0_dress = qt.Qobj(n_theta0_dress[np.ix_(hspace_dress, hspace_dress)])
+    n_theta1_dress = qt.Qobj(n_theta1_dress[np.ix_(hspace_dress, hspace_dress)])
 
-    trunc_dim = eket1.shape[0]
-    truc = len(trunc_states)
-    
-    eket_truc = [eket_tot[i] for i in idxs]
-    eket_truc = np.reshape(eket_truc, (truc, trunc_dim**2))
+    cz300_se_3ncut= pd.read_csv('data/data_cz_3ncut_truc1=300_select.txt')
+    params = cz300_se_3ncut[['tg', 'drive_amp', 'detune']].to_numpy()#[:1]
+
+    num_cpus, n_job = 1, 100
+    max_steps = None
+    gamma_decay_logi =  1 / 1600e3
+    gamma_dephase_logi = 0
+    gamma_decay_other = 1 / 2e3
+    gamma_dephase_other = 1 / 400
+
     jump_t1   = []
     jump_tphi = []
-    gamma_t1   = [0, gamma_3,  gamma_2]  + [gamma_3]  * (trunc_dim-3)
-    gamma_tphi = [0, gamma_p3, gamma_p2] + [gamma_p3] * (trunc_dim-3)
-    for i in range(1,trunc_dim):
-        ladder_0i = qt.basis(trunc_dim,0) * qt.basis(trunc_dim,i).dag()
-        a_0i_I = qt.tensor(ladder_0i, qt.qeye(trunc_dim))
-        a_I_0i = qt.tensor(qt.qeye(trunc_dim), ladder_0i)
-        jump_t1.append(qt.Qobj( eket_truc @ ( np.sqrt(gamma_t1[i])* a_0i_I ).data @ eket_truc.conj().T ))
-        jump_t1.append(qt.Qobj( eket_truc @ ( np.sqrt(gamma_t1[i])* a_I_0i ).data @ eket_truc.conj().T ))
+    gamma_decay   = [0, gamma_decay_other,  gamma_decay_logi]  + [gamma_decay_other]  * (truc1-3)
+    gamma_dephase = [0, gamma_dephase_other, gamma_dephase_logi] + [gamma_dephase_other] * (truc1-3)
 
-        # t_phi
-        proj_ii = qt.basis(trunc_dim,i).proj()
-        a_ii_I = qt.tensor(proj_ii, qt.qeye(trunc_dim))
-        a_I_ii = qt.tensor(qt.qeye(trunc_dim), proj_ii)
-        jump_tphi.append(qt.Qobj( eket_truc @ ( np.sqrt(2*gamma_tphi[i])* a_ii_I  ).data @ eket_truc.conj().T) )
-        jump_tphi.append(qt.Qobj( eket_truc @ ( np.sqrt(2*gamma_tphi[i])* a_I_ii  ).data @ eket_truc.conj().T) )
+    args = [truc1, gamma_decay, gamma_dephase, eket_tot]
+    jump_op = Parallel(n_jobs=100)(delayed(ut.get_jump_op)(state, *args) for state in range(1,truc1))
+    jump_t1 = np.array(jump_op)[:,:2]
+    jump_tphi = np.array(jump_op)[:,2:]
+    jump_t1_list = [qt.Qobj(matrix) for row in jump_t1 for matrix in row]
+    jump_tphi_list = [qt.Qobj(matrix) for row in jump_tphi for matrix in row]
 
-    state_tot = [qt.basis(truc, i) for i in range(truc)]
-    W_20_50 = np.abs(ut.transition_frequency(order_sort.index('20') , order_sort.index('50'), eval_tot))
-
-    n1_22 = n_theta1_truc[trunc_states.index('22'), trunc_states.index('52')]
-    n2_22 = n_theta2_truc[trunc_states.index('22'), trunc_states.index('52')]
-    n1_20 = n_theta1_truc[trunc_states.index('20'), trunc_states.index('50')]
-    n2_20 = n_theta2_truc[trunc_states.index('20'), trunc_states.index('50')]
-    eta = - n2_22 / n1_22
-
-    drive_ab = True
-
-
-    # params = pd.read_csv('data/data_cz_n2_20.txt').to_numpy()
-    # param2 = []
-    # for i in range(20):
-    #     param2.append(params[8*i+2].tolist())
-    # params = np.array(param2)
-    params = pd.read_csv('data/data_cz_n1n2_20_dark.txt').to_numpy()
-    param2 = []
-    for i in range(20):
-        param2.append(params[4*i+2].tolist())
-    params = np.array(param2)
-
-
-    print("n_cpu = ", n_cpu, ";   n_job = ", n_job)
-    print("gamma_2 = ", gamma_2, "gamma_p2 = ", gamma_p2,
-          ";  gamma_3 / gamma_2 =", ratio,";   max_steps = ", max_steps)
-    if gamma_2 != 0:
-        print(f"T1_2 = {1/gamma_2} ns")
-    if gamma_p2 != 0:
-        print(f"Tphi_2 = {1/gamma_p2} ns")
+    print('truc1=', truc1, '; truc_tot = ', truc_tot, '; charge_pick = ', charge_pick)
+    print("n_cpu = ", num_cpus, ";   n_job = ", n_job, ";   truc_tot_2 = ", truc_tot_2)
+    print("gamma_decay_logi = ", gamma_decay_logi, "gamma_dephase_logi = ", gamma_dephase_logi)
+    print("gamma_decay_other = ", gamma_decay_other, "gamma_dephase_other = ", gamma_dephase_other)
+    print(f"T1_2 = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
+    print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
+    print(f"Tphi_2 = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None
+    print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
     for para in params:
         print(para.tolist(), ',')
 
-    c_op_list = []
-    args = [H0, n_theta1_truc, n_theta2_truc, eta, W_20_50, max_steps, n_cpu, c_op_list, drive_ab ]
-    f_ideal = Parallel(n_jobs=n_job, verbose=10)(delayed(ut.get_fidelity_noise_cz)(args_indep, *args)
+    W_20_50 = 2*np.pi* ( eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')] )
+    H0 = qt.Qobj(np.diag(eval_tot))
+    H_qbt_drive = [H0, [2*np.pi* n_theta1_dress, ut.drive_gauss_A] ]
+    logi_state = ['0-0', '0-2', '2-0', '2-2']
+    logi_idx = [hspace_full.index(state) for state in logi_state]
+
+    c_op_list = [qt.Qobj(np.zeros((truc_tot_2, truc_tot_2)))]
+    args = [H_qbt_drive, W_20_50, max_steps, num_cpus, c_op_list, logi_idx ]
+    f_ideal = Parallel(n_jobs=n_job, verbose=0)(delayed(ut.cz_fidelity_log_noise)(args_indep, *args)
                                                 for args_indep in params)
     print('\nf_ideal = [')
     for i in range(0, len(f_ideal), 4):
@@ -116,9 +102,9 @@ if __name__ == '__main__':
     print(']')
 
 
-    c_op_list = jump_t1 + jump_tphi
-    args = [H0, n_theta1_truc, n_theta2_truc, eta, W_20_50, max_steps, n_cpu, c_op_list, drive_ab ]
-    f_noise = Parallel(n_jobs=n_job, verbose=10)(delayed(ut.get_fidelity_noise_cz)(args_indep, *args)
+    c_op_list = jump_t1_list + jump_tphi_list
+    args = [H_qbt_drive, W_20_50, max_steps, num_cpus, c_op_list, logi_idx ]
+    f_noise = Parallel(n_jobs=n_job, verbose=0)(delayed(ut.cz_fidelity_log_noise)(args_indep, *args)
                                                 for args_indep in params)
     print('\nf_noise = [')
     for i in range(0, len(f_noise), 4):
@@ -131,41 +117,3 @@ if __name__ == '__main__':
 
 
 
-    # eket_truc = np.reshape([eket_tot[i] for i in idxs], (truc, eket1.shape[0]**2))
-    # jump_op_t1 = np.zeros((truc, truc), dtype=complex)
-    # jump_op_tphi = np.zeros((truc, truc), dtype=complex)
-    # for state in trunc_states[1:]:
-    #     a0i = eket0[0].conj().T @ eket0[int(state[0])]
-    #     a0i = eket0 @ a0i @ eket0.conj().T
-    #     b0j = eket1[0].conj().T @ eket1[int(state[1])]
-    #     b0j = eket1 @ b0j @ eket1.conj().T
-    #     jump_op_t1 += (eket_truc @ np.kron(a0i, b0j) @ eket_truc.conj().T)
-    #     aii = eket0[int(state[0])].conj().T @ eket0[int(state[0])]
-    #     aii = eket0 @ aii @ eket0.conj().T
-    #     bjj = eket1[int(state[1])].conj().T @ eket1[int(state[1])]
-    #     bjj = eket1 @ bjj @ eket1.conj().T
-    #     eket_truc = np.reshape([eket_tot[i] for i in idxs], (truc, eket1.shape[0]**2))
-    #     jump_op_tphi += (eket_truc @ np.kron(aii, bjj) @ eket_truc.conj().T)
-    # jump_op_t1 = qt.Qobj(jump_op_t1) * np.sqrt(gamma_2)
-    # jump_op_tphi = qt.Qobj(jump_op_tphi) * np.sqrt(2*gamma_p2)
-
-
-    # jump_t1 = np.zeros((truc, truc), dtype=complex)
-    # jump_tphi = np.zeros((truc, truc), dtype=complex)
-    # for i in range(1,10):
-    #     ladder_0i = qt.basis(trunc_dim,0) * qt.basis(trunc_dim,i).dag()
-    #     a_0i_I = qt.tensor(ladder_0i, qt.qeye(trunc_dim))
-    #     a_I_0i = qt.tensor(qt.qeye(trunc_dim), ladder_0i)
-    #     jump_t1_i = (eket_truc @ ( a_0i_I + a_I_0i ).data @ eket_truc.conj().T)
-    #     proj_ii = qt.basis(trunc_dim,i).proj()
-    #     a_ii_I = qt.tensor(proj_ii, qt.qeye(trunc_dim))
-    #     a_I_ii = qt.tensor(qt.qeye(trunc_dim), proj_ii)
-    #     jump_tphi_i = (eket_truc @ ( a_ii_I + a_I_ii ).data @ eket_truc.conj().T)
-    #     if i == 1:
-    #         jump_t1 += np.sqrt(gamma_2)* jump_t1_i
-    #         jump_tphi += np.sqrt(2*gamma_p2) * jump_tphi_i
-    #     else:
-    #         jump_t1 += np.sqrt(gamma_3)* jump_t1_i
-    #         jump_tphi += np.sqrt(2*gamma_p3) * jump_tphi_i
-    # jump_t1 = qt.Qobj(jump_t1)
-    # jump_tphi = qt.Qobj(jump_tphi)

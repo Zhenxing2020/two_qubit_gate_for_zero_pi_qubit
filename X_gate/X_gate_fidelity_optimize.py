@@ -495,7 +495,7 @@ def import_para():
     folder = 'data/'
     new_specdata = scq.read(folder + f'zeropi_specdata_truc={truncation}_3ncut.h5')
     n_theta = scq.read(folder + f'zeropi_n_theta_truc={truncation}_3ncut.h5')
-    n_phi = scq.read(folder + f'zeropi_n_theta_truc={truncation}_3ncut.h5')
+    n_phi = scq.read(folder + f'zeropi_n_phi_truc={truncation}_3ncut.h5')
     evals = 2*np.pi* new_specdata.energy_table
     n_Theta = 2*np.pi* n_theta.matrixelem_table
     n_Phi = 2*np.pi* n_phi.matrixelem_table
@@ -549,20 +549,18 @@ def import_para_noise():
     n_theta = 2*np.pi* pd.read_csv(folder+ 'n_theta.txt').to_numpy()
     n_phi = 2*np.pi* pd.read_csv(folder+ 'n_phi.txt').map(complex).to_numpy()
     gate_target = qt.sigmax()
-    gamma2 =  1 / 1600e3
-    gammas =  1 / 2e3
-    gamma2_p = 0 / 100e3
-    # ratio = 10
-    # gammas =  gamma_2 * ratio
-    gammas_p = 1 / 9000
+    gamma_decay_logi =  1 / 1600e3
+    gamma_dephase_logi = 0
+    gamma_decay_other =  1 / 2e3
+    gamma_dephase_other = 1 / 400
 
     jump_t1   = []
     jump_tphi = []
-    gamma_t1   = [0, gammas,  gamma2]  + [gammas]  * (truc-3)
-    gamma_tphi = [0, gammas_p, gamma2_p] + [gammas_p] * (truc-3)
+    gamma_decay   = [0, gamma_decay_other,  gamma_decay_logi]  + [gamma_decay_other]  * (truc-3)
+    gamma_dephase = [0, gamma_dephase_other, gamma_dephase_logi] + [gamma_dephase_other] * (truc-3)
     for i in range(1,truc):
-        jump_t1.append( np.sqrt(gamma_t1[i]) * qt.basis(truc,0) * qt.basis(truc,i).dag() )
-        jump_tphi.append( np.sqrt(2*gamma_tphi[i]) * qt.basis(truc,i).proj() )
+        jump_t1.append( np.sqrt(gamma_decay[i]) * qt.basis(truc,0) * qt.basis(truc,i).dag() )
+        jump_tphi.append( np.sqrt(2*gamma_dephase[i]) * qt.basis(truc,i).proj() )
 
     H0 = qt.Qobj(np.diag(evals))
     if drive_phi:
@@ -584,12 +582,12 @@ def import_para_noise():
     for para in params:
         print(para.tolist(), ',')
     print("n_cpu = ", n_cpu, ";   n_job = ", n_job)
-    print("gamma_2 = ", gamma2, "gamma_p2 = ", gamma2_p)
-    print("gammas = ", gammas, "gammas_p = ", gammas_p)
-    print(f"T1_2 = {1/gamma2} ns") if gamma2 != 0 else None
-    print(f"T1_other = {1/gammas} ns") if gammas != 0 else None
-    print(f"Tphi_2 = {1/gamma2_p} ns") if gamma2_p != 0 else None
-    print(f"Tphi_other = {1/gammas_p} ns") if gammas_p != 0 else None
+    print("gamma_2 = ", gamma_decay_logi, "gamma_p2 = ", gamma_dephase_logi)
+    print("gammas = ", gamma_decay_other, "gammas_p = ", gamma_dephase_other)
+    print(f"T1_2 = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
+    print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
+    print(f"Tphi_2 = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None
+    print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
 
     ############################################################
 

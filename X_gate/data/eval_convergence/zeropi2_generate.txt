@@ -1,0 +1,29 @@
+sigmaX_fidelity_import_paras.py
+Current Mountain Time: 2025-01-21 15:07:54.422348-07:00
+truncation= 1000
+ncut, phi_cut = 90 300
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/X_gate/sigmaX_fidelity_import_paras.py", line 300, in <module>
+    generate_data()
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/X_gate/sigmaX_fidelity_import_paras.py", line 286, in generate_data
+    specdata = scq.read(folder + f'zeropi2_specdata_truc={truncation}.h5')
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/scqubits/io_utils/fileio.py", line 128, in read
+    iodata = reader.from_file(filename, file_handle=file_handle)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/scqubits/io_utils/fileio_backends.py", line 242, in from_file
+    h5file_group = h5py.File(filename, "r", rdcc_nbytes=1024**2 * 200)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/h5py/_hl/files.py", line 567, in __init__
+    fid = make_fid(name, mode, userblock_size, fapl, fcpl, swmr=swmr)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/h5py/_hl/files.py", line 231, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 106, in h5py.h5f.open
+FileNotFoundError: [Errno 2] Unable to open file (unable to open file: name = '../../data/zeropi2_specdata_truc=1000_3ncut.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Command exited with non-zero status 1
+30309.98user 2304.11system 22:15.81elapsed 2441%CPU (0avgtext+0avgdata 3667284maxresident)k
+17448inputs+843200outputs (168major+1947203minor)pagefaults 0swaps
