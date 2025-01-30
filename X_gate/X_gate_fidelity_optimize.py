@@ -431,8 +431,8 @@ def xgate_fidelity_log_noise(args_indep, *args):
     }
 
     tlist = np.linspace(0, tg, num=3 * int(tg))
-    # options = qt.Options(max_step=max_step, nsteps=nsteps, num_cpus=n_cpu)
-    options = qt.Options(num_cpus=n_cpu)
+    options = qt.Options(max_step=max_step, nsteps=nsteps, num_cpus=n_cpu)
+    # options = qt.Options(num_cpus=n_cpu)
     p_simple_2_a = get_propagator(
         H_qbt_drive, tlist, n_cpu, parallel, c_op_list, pulse_args,
         options=options, logi_state=logi_state
@@ -780,12 +780,12 @@ def import_para_noise():
     gate_target = qt.sigmax()
     gamma2 =  1 / 1600e3
     # gammas =  1 / 2e3
-    gammas = 1 / 5e3
     gamma2_p = 0 / 100e3
     # ratio = 10
     # gammas =  gamma_2 * ratio
     # gammas_p = 1 / 9000
-    gammas_p = 1 / 5e3
+    gammas = 1 / 20e3
+    gammas_p = 1 / 10e3
 
     jump_t1   = []
     jump_tphi = []
@@ -854,8 +854,8 @@ if __name__ == '__main__':
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     # import_para()
-    # import_para_noise()
-    fidelity_optimize_x_noise_est()
+    import_para_noise()
+    # fidelity_optimize_x_noise_est()
 
 
 
