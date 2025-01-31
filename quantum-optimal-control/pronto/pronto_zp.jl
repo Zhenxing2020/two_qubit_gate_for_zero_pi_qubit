@@ -147,11 +147,12 @@ end
 n_basis = 2
 model_size = (length(hspace))*2*n_basis
 @kwdef struct XGateZP <: PRONTO.Model{model_size,1}
-    # kl::Float64 = 0.01
+    kl::Float64 = 0.01
+    kq::Float64 = 0.5
     # kq::Float64 = 0.5/4.5
     # Estimates based off fidelity
-    kl::Float64 = 0.0005*2
-    kq::Float64 = 0.006*2
+    # kl::Float64 = 0.0005*2
+    # kq::Float64 = 0.006*2
 end
 
 
