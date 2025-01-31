@@ -10,7 +10,7 @@ from joblib import Parallel, delayed
 from multiprocessing import Pool
 from IPython.display import display, Math
 
-max_step, nsteps = 1e-4, 1e4
+max_step, nsteps = 1e-3, 1e4
 ### Define circuit and variable transform
  # EC = 0.20012190476190478
  # EJ2 = 5.4117
@@ -247,7 +247,7 @@ def labmert_proj(xx, yy, zz):
 def PolyArea(x,y):
     return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
 
-def get_operator_two_zeropi_v2(Ec0=1.0, truc1=30, truc_tot=50, thresh_matrix_element=1e-4, charge_pick=False):
+def get_operator_two_zeropi_v2(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n_cut=60, phi_cut=200):
     zp = scq.Circuit(zp_yml, from_file=False)
     zp.Ec0 = Ec0
     zp.configure(transformation_matrix=np.linalg.inv(transform_2zeropi))
@@ -259,8 +259,8 @@ def get_operator_two_zeropi_v2(Ec0=1.0, truc1=30, truc_tot=50, thresh_matrix_ele
     zp.configure(system_hierarchy=system_hierarchy,
                 subsystem_trunc_dims=subsystem_trunc_dims)
 
-    zp.cutoff_ext_1, zp.cutoff_ext_5 = 300, 300
-    zp.cutoff_n_2, zp.cutoff_n_6 = 90, 90
+    zp.cutoff_ext_1, zp.cutoff_ext_5 = phi_cut, phi_cut
+    zp.cutoff_n_2, zp.cutoff_n_6 = n_cut, n_cut
 
     ### the two-line code below takes time when truc1 is large
     eval0, eket0 = zp.subsystems[0].eigensys(evals_count=truc1)
@@ -285,6 +285,7 @@ def get_operator_two_zeropi_v2(Ec0=1.0, truc1=30, truc_tot=50, thresh_matrix_ele
     ###  Truncate two qubits using charge matrix elements
     hspace_0 = np.arange(truc1)
     hspace_1 = np.arange(truc1)
+    thresh_matrix_element=1e-4
     if charge_pick:
         hspace_0 = [0, 2]
         hspace_1 = [0, 2]
@@ -331,52 +332,52 @@ def get_operator_two_zeropi_v2(Ec0=1.0, truc1=30, truc_tot=50, thresh_matrix_ele
 
     ##############################################################################################
     ###  Get wavefunction overlap for the truncated dressed states
-    bare_state = [[qt.tensor(qt.basis(len(hspace_0), i), qt.basis(len(hspace_1), j))
-                            for j in range(len(hspace_1))]
-                                for i in range(len(hspace_0))]
-    def find_overlap(eket):
-        overlaps = np.array([[np.abs( (eket @ bare_state[i][j].data).todense()[0,0] )
-                            for j in range(len(eval1))]
-                                for i in range(len(eval0))])
-        flat_array = overlaps.flatten() # Flatten the 2D array
-        # Find the indices of the top 3 largest values (in the flattened 1D array)
-        top_indices_flat = np.argpartition(-flat_array, 10)[:10]
-        # Convert the flat indices to 2D indices
-        top_indices_2d = np.unravel_index(top_indices_flat, overlaps.shape)
-        # Extract the values corresponding to the indices
-        top_values = overlaps[top_indices_2d]
-        # Sort the values in descending order
-        sorted_indices = np.argsort(-top_values)  # Use a negative sign for descending order
-        sorted_top_indices = [tuple(zip(top_indices_2d[0], top_indices_2d[1]))[i] for i in sorted_indices]
-        sorted_top_values = top_values[sorted_indices]
-        return sorted_top_indices, sorted_top_values
+    # bare_state = [[qt.tensor(qt.basis(len(hspace_0), i), qt.basis(len(hspace_1), j))
+    #                         for j in range(len(hspace_1))]
+    #                             for i in range(len(hspace_0))]
+    # def find_overlap(eket):
+    #     overlaps = np.array([[np.abs( (eket @ bare_state[i][j].data).todense()[0,0] )
+    #                         for j in range(len(eval1))]
+    #                             for i in range(len(eval0))])
+    #     flat_array = overlaps.flatten() # Flatten the 2D array
+    #     # Find the indices of the top 3 largest values (in the flattened 1D array)
+    #     top_indices_flat = np.argpartition(-flat_array, 10)[:10]
+    #     # Convert the flat indices to 2D indices
+    #     top_indices_2d = np.unravel_index(top_indices_flat, overlaps.shape)
+    #     # Extract the values corresponding to the indices
+    #     top_values = overlaps[top_indices_2d]
+    #     # Sort the values in descending order
+    #     sorted_indices = np.argsort(-top_values)  # Use a negative sign for descending order
+    #     sorted_top_indices = [tuple(zip(top_indices_2d[0], top_indices_2d[1]))[i] for i in sorted_indices]
+    #     sorted_top_values = top_values[sorted_indices]
+    #     return sorted_top_indices, sorted_top_values
 
-    result = Parallel(n_jobs=10, verbose=0)(delayed(find_overlap)(arg) for arg in eket_tot)
-    top_index = [result[i][0] for i in range(eval_tot.shape[0])]
-    top_overlap = [result[i][1] for i in range(eval_tot.shape[0])]
-    # for i in range(truc_tot):
-    #     print(i, top3_index[i], top3_overlap[i])
+    # result = Parallel(n_jobs=10, verbose=0)(delayed(find_overlap)(arg) for arg in eket_tot)
+    # top_index = [result[i][0] for i in range(eval_tot.shape[0])]
+    # top_overlap = [result[i][1] for i in range(eval_tot.shape[0])]
+    # # for i in range(truc_tot):
+    # #     print(i, top3_index[i], top3_overlap[i])
 
-    ##############################################################################################
-    ### Get the dressed states index
-    index_array = [] # array index in each qubit (# in hspace_0, hspace_1)
-    for i, index in enumerate(top_index):
-        j=0
-        while j < len(index):
-            if index[j] not in index_array:
-                index_array.append(index[j])
-                break
-            else:
-                j+=1
-            if j==10:
-                index_array.append((0,0))
-                print(i, 'need to further compare overlap')
-    hspace_full = [(str(hspace_0[idx[0]])+'-'+str(hspace_1[idx[1]])) for idx in index_array] # actual state index in each qubit
+    # ##############################################################################################
+    # ### Get the dressed states index
+    # index_array = [] # array index in each qubit (# in hspace_0, hspace_1)
+    # for i, index in enumerate(top_index):
+    #     j=0
+    #     while j < len(index):
+    #         if index[j] not in index_array:
+    #             index_array.append(index[j])
+    #             break
+    #         else:
+    #             j+=1
+    #         if j==10:
+    #             index_array.append((0,0))
+    #             print(i, 'need to further compare overlap')
+    # hspace_full = [(str(hspace_0[idx[0]])+'-'+str(hspace_1[idx[1]])) for idx in index_array] # actual state index in each qubit
 
-    n_theta0_dress = ssp.kron(n_theta0, ssp.identity(len(hspace_1)))
-    n_theta0_dress = np.abs(np.round(eket_tot @ n_theta0_dress @ eket_tot.conj().T, 8)).todense()
-    n_theta1_dress = ssp.kron(ssp.identity(len(hspace_0)), n_theta1)
-    n_theta1_dress = np.abs(np.round(eket_tot @ n_theta1_dress @ eket_tot.conj().T, 8)).todense()
+    # n_theta0_dress = ssp.kron(n_theta0, ssp.identity(len(hspace_1)))
+    # n_theta0_dress = np.abs(np.round(eket_tot @ n_theta0_dress @ eket_tot.conj().T, 8)).todense()
+    # n_theta1_dress = ssp.kron(ssp.identity(len(hspace_0)), n_theta1)
+    # n_theta1_dress = np.abs(np.round(eket_tot @ n_theta1_dress @ eket_tot.conj().T, 8)).todense()
 
     # hspace_logi = ['0-0', '0-2', '2-0', '2-2']
     # hspace_index = [index_state.index(i) for i in hspace_logi]
@@ -385,8 +386,9 @@ def get_operator_two_zeropi_v2(Ec0=1.0, truc1=30, truc_tot=50, thresh_matrix_ele
     #         if np.abs(n_theta1_dress[s, i]) > thresh_matrix_element and i not in hspace_index:
     #             hspace_index.append(i)
     # hspace_index.sort()
-    return [hspace_0, hspace_1, top_index, top_overlap,
-            n_theta0_dress, n_theta1_dress, eval_tot, hspace_full]
+    # return [hspace_0, hspace_1, top_index, top_overlap,
+    #         n_theta0_dress, n_theta1_dress, eval_tot, hspace_full]
+    return [hspace_0, hspace_1, eval_tot, eket_tot]
 
 
 ###################################################################
@@ -605,7 +607,7 @@ def cz_fidelity_optimize(arg, *args):
 
 def cz_fidelity_parallel(arg, *args):
     tg, detune, drive_amp = arg # Independent arguments that can be optimized over
-    [n_cpu, H_qbt_drive, W_target, state_logi] = args # System arguments
+    [num_cpus, H_qbt_drive, W_target, state_logi] = args # System arguments
 
     pulse_args = {'drive_amp_A': drive_amp,
                 'drive_freq_A': W_target + 2*np.pi*detune,
@@ -615,7 +617,7 @@ def cz_fidelity_parallel(arg, *args):
                         t=tlist,
                         args=pulse_args,
                         options=qt.Options( num_cpus=1 ),
-                        num_cpus=n_cpu,
+                        num_cpus=num_cpus,
                         parallel=True,
                         )[-1]  # get the propagator at the final time step
     fidelity = cz_fidelity( prop, state_logi )
@@ -651,6 +653,8 @@ def cz_fidelity_log_noise_qutip(args_indep, *args):
                             parallel=True,
                             )[-1]  # get the propagator at the final time step
     p0_kraus = qt.to_kraus(qt.to_super(p))
+
+    # the following could lead to error
     p0_kraus = [truncate(i, 4) for i in p0_kraus]
     p0_kraus_zz = cz_phase_correct(p0_kraus)
     p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
@@ -666,11 +670,12 @@ def cz_fidelity_log_noise(args_indep, *args):
                 'gate_time': tg}
     tlist = np.linspace(0, tg, num=3*int(tg))  # total time
     options =qt.Options(max_step=max_steps, nsteps=nsteps, num_cpus=1 )
-    U_noise = get_propagator_v2(
+    U_noise = get_propagator_cz(
         H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, options, logi_idx
     )
     p0_kraus = qt.to_kraus(qt.to_super(U_noise))
-    p0_kraus = [truncate(i, 4) for i in p0_kraus]
+    if len(c_op_list) != 0:
+        p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
     p0_kraus_zz = cz_phase_correct(p0_kraus)
     p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
     f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=cz_gate())
@@ -678,6 +683,7 @@ def cz_fidelity_log_noise(args_indep, *args):
 
 
 def get_jump_op(state_i, *args):
+
     truc1, gamma_decay, gamma_dephase, eket_tot = args
     # t_1
     ladder_0i = qt.basis(truc1,0) * qt.basis(truc1, state_i).dag()
@@ -692,6 +698,31 @@ def get_jump_op(state_i, *args):
     jump_tphi_a = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_ii_I  ).data @ eket_tot.conj().T)
     jump_tphi_b = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_I_ii  ).data @ eket_tot.conj().T)
     return [jump_t1_a, jump_t1_b, jump_tphi_a, jump_tphi_b]
+
+
+
+def get_jump_op_charge_pick(state, *args):
+
+    dim_0, dim_1, gamma_decay, gamma_dephase, eket_tot, qubit_a = args
+    if qubit_a:
+        # t_1
+        ladder_0i = qt.basis(dim_0,0) * qt.basis(dim_0, state).dag()
+        a_0i_I = qt.tensor(ladder_0i, qt.qeye(dim_1))
+        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_0i_I ).data @ eket_tot.conj().T )
+        # t_phi
+        proj_ii = qt.basis(dim_0, state).proj()
+        a_ii_I = qt.tensor(proj_ii, qt.qeye(dim_1))
+        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_ii_I  ).data @ eket_tot.conj().T)
+    else: # qubit_b
+        # t_1
+        ladder_0j = qt.basis(dim_1,0) * qt.basis(dim_1, state).dag()
+        a_I_0i = qt.tensor(qt.qeye(dim_0), ladder_0j)
+        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_I_0i ).data @ eket_tot.conj().T )
+        # t_phi
+        proj_ii = qt.basis(dim_1, state).proj()
+        a_I_ii = qt.tensor(qt.qeye(dim_0), proj_ii)
+        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_I_ii  ).data @ eket_tot.conj().T)
+    return [jump_t1, jump_tphi]
 
 
 def cz_fidelity_optimize(arg, *args):
@@ -724,6 +755,7 @@ def cz_fidelity(arg_all):
         for se_arg in sesolve_args:
             i, res = sesolve_parallel(se_arg)
             prop[:, logic_idx.index(i)] = res.states[-1].full().flatten()
+
     Uc = truncate_2(qt.Qobj(prop), logic_idx)
     Uz = remove_global_phase(qt.tensor( rz(dphi(Uc, (2,2))),
                                         rz(dphi(Uc, (1,1)))))
@@ -986,7 +1018,7 @@ def get_propagator(H, tlist, num_cpus, parallel, c_op_list, pulse_args, options,
     else:
         # Computes the propagator for noisy systems.
         dimz = len(logi_state)
-        proj_idx = [(logi_state[i], logi_state[j]) for j in range(dimz) for i in range(dimz)]
+        proj_idx = [(i, j) for j in logi_state for i in logi_state]
         N = H0.shape[0]
         u = np.zeros([N * N, dimz * dimz, len(tlist)], dtype=complex)
 
@@ -1013,7 +1045,7 @@ def get_propagator(H, tlist, num_cpus, parallel, c_op_list, pulse_args, options,
         return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
 
 
-def get_propagator_v2(H, tlist, num_cpus, c_op_list, pulse_args, options, logi_idx):
+def get_propagator_cz(H, tlist, num_cpus, c_op_list, pulse_args, options, logi_idx):
     """
     Compute the propagator for a quantum system, supporting both noiseless and noisy systems.
 
@@ -1022,7 +1054,6 @@ def get_propagator_v2(H, tlist, num_cpus, c_op_list, pulse_args, options, logi_i
                              the first element represents the static part.
         tlist (list): List of time points for the simulation.
         num_cpus (int): Number of CPUs to use for parallel computation (if `parallel=True`).
-        parallel (bool): Whether to run the computation in parallel.
         c_op_list (list): List of collapse operators for modeling noise. If empty, the system is noiseless.
         pulse_args (dict): Arguments for time-dependent pulse functions in the Hamiltonian.
         options (qt.Options): Solver options for QuTiP.
