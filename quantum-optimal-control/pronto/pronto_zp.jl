@@ -42,6 +42,7 @@ params = npzread("H_$drive.npz")
 hspace_full = params["hspace_full"] 
 # hspace_reduced = params["hspace_reduced"] 
 hspace_reduced = [0, 1, 2, 5, 7, 25, 38]
+# hspace_reduced = [0, 1, 2, 7]
 w_trans_1 = params["w_trans_1"]
 w_trans_2 = params["w_trans_2"]
 drive_term = params["drive"]
@@ -186,26 +187,36 @@ end
     ψ2[i2] = 1
     xf = vec([ψ2;0*ψ2;ψ1;0*ψ1])
 
+    v1 = zeros(2)
+    v1[1] = 1
+    v2 = zeros(2)
+    v2[1] = 1
+    trunc = v1*ψ1' + v2*ψ2'
+
     # Turn x into an imaginary vector for each state
     half = Int(size(x)[1]/2)
-    # x1 = abs.(re_to_im(x[1:half]))
-    # x2 = abs.(re_to_im(x[half+1:end]))
-    x1 = re_to_im(x[1:half])
-    x2 = re_to_im(x[half+1:end])
+    x1 = abs.(re_to_im(x[1:half]))
+    x2 = abs.(re_to_im(x[half+1:end]))
+    # x1 = re_to_im(x[1:half])
+    # x2 = re_to_im(x[half+1:end])
 
-    phase = exp(-im*angle(ψ2'*x1))
+    # phase = exp(-im*angle(ψ2'*x1))
 
-    idx = [i0, i2]
-    G = phase*hcat(x1[idx], x2[idx])
-    sx = hcat([0.0, 1.0], [1.0, 0.0])
-    d = 2
-    fid = 1/(d+1) + (1/(d*(d+1)))*abs(tr(sx*G))^2
+    # idx = [i0, i2]
+    # G = phase*hcat(x1[idx], x2[idx])
+    # G = phase*trunc*hcat(x1, x2)
+    # sx = hcat([0.0, 1.0], [1.0, 0.0])
+    # d = 2
+    # fid = 1/(d+1) + (1/(d*(d+1)))*abs(tr(sx*G))^2
+
+    # return 1 - fid
+
+    # return (1/2)*(1 - abs(ψ1'*x2)^2 - abs(ψ2'*x1)^2)
 
 
-    return (1/2)*(1 - abs(ψ1'*x2)^2 - abs(ψ2'*x1)^2)
-
-
-
+    # x1 = abs.(x1)
+    # x2 = abs.(x2)
+    return (1/2)*((ψ2-x1)'*(ψ2-x1) + (ψ1-x2)'*(ψ1-x2))
     # return (1/2)*((ψ2-x1)'*(ψ2-x1) + (ψ1-x2)'*(ψ1-x2))
     # print("\n new\n")
     # print((1/2)*((ψ2-x1)'*(ψ2-x1) + (ψ1-x2)'*(ψ1-x2)))
@@ -234,7 +245,8 @@ x0 = SVector{model_size}(vec([ψ1;0*ψ1;ψ2;0*ψ2]))
 η = open_loop(θ, x0, μ, τ) # guess trajectory
 
 
-plot_results(η; savename= "guess_trajectory.png", states_to_plot=[0, 1, 2, 5, 7, 25, 38])
+# plot_results(η; savename= "guess_trajectory.png", states_to_plot=[0, 1, 2, 5, 7, 25, 38])
+plot_results(η; savename= "guess_trajectory.png", states_to_plot=[0, 2, 7])
 ξ,data = pronto(θ, x0, η, τ;tol=1e-4); # optimal trajectory
 
 ## ----------------------------------- plot results ----------------------------------- ##
