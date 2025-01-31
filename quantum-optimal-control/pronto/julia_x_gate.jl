@@ -20,7 +20,8 @@ params = npzread("H_$drive.npz")
 # The .+ 1 is elementwise addition to an array/vector
 # Must do .+ 1 because Julia indexes from 1
 hspace_full = params["hspace_full"] 
-hspace_reduced = params["hspace_reduced"] 
+# hspace_reduced = params["hspace_reduced"]
+hspace_reduced = [0, 1, 2, 5, 7, 25, 38]
 w_trans_1 = params["w_trans_1"]
 w_trans_2 = params["w_trans_2"]
 drive_term = params["drive"]

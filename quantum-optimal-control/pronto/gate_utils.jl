@@ -2,6 +2,7 @@ using QuantumOptics
 using PyPlot
 
 
+
 function gauss_envelope(t, tg, A)
     A * (exp(-8 * t * (t - tg) / tg^2) - 1)
 end
