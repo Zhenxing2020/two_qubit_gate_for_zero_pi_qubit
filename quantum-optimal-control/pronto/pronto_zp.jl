@@ -10,6 +10,8 @@ using LinearAlgebra
 using StaticArrays
 using Base: @kwdef
 
+using FFTW
+
 ## ----------------------------------- define helper functions ----------------------------------- ##
 
 function mprod(x)
@@ -63,7 +65,7 @@ drive = drive_trunc
 
 
 # Plot results
-function plot_results(res; savename = "control_plot_2.png", states_to_plot = [0, 2, 7], divide=10)
+function plot_results(res; savename = "control_plot_2.png", states_to_plot = [0, 2, 7], divide=10, fft = true)
 
     fig, ax = plt.subplots(nrows=3, figsize=(10, 10))
     t0,tf = τ
@@ -195,12 +197,21 @@ end
 
     # Turn x into an imaginary vector for each state
     half = Int(size(x)[1]/2)
-    x1 = abs.(re_to_im(x[1:half]))
-    x2 = abs.(re_to_im(x[half+1:end]))
-    # x1 = re_to_im(x[1:half])
-    # x2 = re_to_im(x[half+1:end])
+    # x1 = abs.(re_to_im(x[1:half]))
+    # x2 = abs.(re_to_im(x[half+1:end]))
+    x1 = re_to_im(x[1:half])
+    x2 = re_to_im(x[half+1:end])
 
-    # phase = exp(-im*angle(ψ2'*x1))
+    # TODO: Express this phase using just the numbers
+
+    phase = exp(-im*angle(ψ2'*x1))
+    # phase = ψ2'*x1
+    # phase = phase/abs(n)
+
+    v = phase*vcat(x1, x2)
+    vf = vcat(ψ2, ψ1)
+    # return (1/2)*(v-vf)'*I*(v-vf)
+    return (1/2)*sum(abs.(v-vf).^2)
 
     # idx = [i0, i2]
     # G = phase*hcat(x1[idx], x2[idx])
@@ -214,9 +225,10 @@ end
     # return (1/2)*(1 - abs(ψ1'*x2)^2 - abs(ψ2'*x1)^2)
 
 
+
     # x1 = abs.(x1)
     # x2 = abs.(x2)
-    return (1/2)*((ψ2-x1)'*(ψ2-x1) + (ψ1-x2)'*(ψ1-x2))
+    # return (1/2)*((ψ2-x1)'*(ψ2-x1) + (ψ1-x2)'*(ψ1-x2))
     # return (1/2)*((ψ2-x1)'*(ψ2-x1) + (ψ1-x2)'*(ψ1-x2))
     # print("\n new\n")
     # print((1/2)*((ψ2-x1)'*(ψ2-x1) + (ψ1-x2)'*(ψ1-x2)))
