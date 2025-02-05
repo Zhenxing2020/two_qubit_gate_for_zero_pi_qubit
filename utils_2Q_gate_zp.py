@@ -668,9 +668,9 @@ def cz_fidelity_log_noise(args_indep, *args):
     pulse_args = {'drive_amp_A': drive_amp,
                 'drive_freq_A': W_target + 2*np.pi*detune,
                 'gate_time': tg}
-    tlist = np.linspace(0, tg, num=3*int(tg))  # total time
+    tlist = np.linspace(0, tg, num=int(tg))  # total time
     options =qt.Options(max_step=max_steps, nsteps=nsteps, num_cpus=1 )
-    U_noise = get_propagator_cz(
+    U_noise = get_propagator(
         H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, options, logi_idx
     )
     p0_kraus = qt.to_kraus(qt.to_super(U_noise))
@@ -731,7 +731,7 @@ def cz_fidelity_optimize(arg, *args):
     arg_all = [tg, drive_amp, detune, n_cpu, hspace, W_20_50, H_drive, logic_idx]
     return cz_fidelity(arg_all)
 
-def cz_fidelity(arg_all):
+def cz_fidelity_log(arg_all):
     [tg, drive_amp, detune, n_cpu, hspace, W_20_50, H_drive, logic_idx] = arg_all
 
     pulse_args = {'drive_amp_A': drive_amp,
@@ -890,10 +890,8 @@ def xgate_fidelity_log(argz):
     logi_state = [0, 2]
     logi_idx = [hilbert_space.index(s) for s in logi_state]
     c_op_list = []
-    parallel = True
     options = qt.Options(nsteps=nsteps)
-    Uc = get_propagator(H_qbt_drive, tlist, n_cpu, parallel, c_op_list, pulse_args,
-                        options, logi_state=logi_idx)
+    Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, options, logi_idx)
     fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
     # error_leak = 1 - 0.5*(Uc.dag()*Uc).tr()
     # fidelity = gate_fidelity(Utarg=qt.sigmax(), Ucand=Uc)
@@ -914,17 +912,16 @@ def xgate_fidelity_log_noise(args_indep, *args):
             - H_qbt_drive (list): Hamiltonian with drive terms.
             - w_trans_1 (float): Transition frequency for qubit A.
             - w_trans_2 (float): Transition frequency for qubit B.
-            - n_cpu (int): Number of CPUs for parallelization.
+            - num_cpus (int): Number of CPUs for parallelization.
             - c_op_list (list): Collapse operators for modeling noise.
             - logi_state (list): Logical state indices for truncation.
-            - parallel (bool): Whether to enable parallel computation.
             - gate_target (qt.Qobj): Target gate for fidelity comparison.
 
     Returns:
         float: Logarithm of the infidelity for the X-gate in a noisy system.
     """
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = args_indep
-    [H_qbt_drive, w_trans_1, w_trans_2, n_cpu, c_op_list, logi_state, parallel, gate_target] = args
+    [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, gate_target, max_step] = args
 
     pulse_args = {
         'drive_amp_A': drive_amp_A,
@@ -935,12 +932,11 @@ def xgate_fidelity_log_noise(args_indep, *args):
     }
 
     tlist = np.linspace(0, tg, num=3 * int(tg))
-    options = qt.Options(max_step=max_step, nsteps=nsteps, num_cpus=n_cpu)
+    options = qt.Options(max_step=max_step, nsteps=nsteps, num_cpus=num_cpus)
     U_noise = get_propagator(
-        H_qbt_drive, tlist, n_cpu, parallel, c_op_list, pulse_args,
-        options=options, logi_state=logi_state
+        H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, options, logi_idx
     )
-    return np.log10(1 - get_fidelity_super_operator(U_noise, logi_state, gate_target))
+    return np.log10(1 - get_fidelity_super_operator(U_noise, logi_idx, gate_target, c_op_list))
 
 def xgate_fidelity_optimize(arg, *args):
     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg, drag] = args
@@ -986,66 +982,8 @@ def sesolve_parallel(argz):
     H, psi0, tlist, pulse_args, options = argz
     return psi0, qt.sesolve(H, qt.basis(H[0].shape[0], psi0), tlist, options=options, args=pulse_args)
 
-def get_propagator(H, tlist, num_cpus, parallel, c_op_list, pulse_args, options, logi_state):
-    """
-    Compute the propagator for a quantum system, supporting both noiseless and noisy systems.
 
-    Args:
-        H (list or qt.Qobj): The Hamiltonian of the system. Can be a single Qobj or a list where
-                             the first element represents the static part.
-        tlist (list): List of time points for the simulation.
-        num_cpus (int): Number of CPUs to use for parallel computation (if `parallel=True`).
-        parallel (bool): Whether to run the computation in parallel.
-        c_op_list (list): List of collapse operators for modeling noise. If empty, the system is noiseless.
-        pulse_args (dict): Arguments for time-dependent pulse functions in the Hamiltonian.
-        options (qt.Options): Solver options for QuTiP.
-        logi_state (list): List of logical states (indices of basis states) to include in the propagator.
-
-    Returns:
-        qt.Qobj or list of qt.Qobj:
-            - For noiseless systems: A `Qobj` representing the truncated propagator for logical states.
-            - For noisy systems: A `Qobj` representing the superoperator propagator for the final time step.
-    """
-    H0 = H[0][0] if isinstance(H[0], list) else H[0] if isinstance(H, list) else H
-    if len(c_op_list) == 0:
-        # Computes the propagator for noiseless systems.
-        prop = np.zeros((H0.shape[0], len(logi_state)), dtype=np.complex128)
-        for i in logi_state:
-            res = qt.sesolve(H, qt.basis(H[0].shape[0], i), tlist, options=options, args=pulse_args)
-            prop[:, logi_state.index(i)] = res.states[-1].full().flatten()
-        Uc = truncate_2(qt.Qobj(prop), logi_state)
-        return Uc
-    else:
-        # Computes the propagator for noisy systems.
-        dimz = len(logi_state)
-        proj_idx = [(i, j) for j in logi_state for i in logi_state]
-        N = H0.shape[0]
-        u = np.zeros([N * N, dimz * dimz, len(tlist)], dtype=complex)
-
-        if parallel:
-            output = qt.parallel.parallel_map(
-                parallel_mesolve, range(dimz * dimz),
-                task_args=(N, H, tlist, c_op_list, pulse_args, options, proj_idx),
-                task_kwargs={"dims": H0.dims}, num_cpus=num_cpus
-            )
-            for n in range(dimz * dimz):
-                for k, t in enumerate(tlist):
-                    u[:, n, k] = qt.superoperator.mat2vec(output[n].states[k].full()).T
-        else:
-            for n, idx in enumerate(proj_idx):
-                row_idx, col_idx = idx
-                rho0 = qt.states.projection(N, row_idx, col_idx)
-                rho0.dims = H0.dims
-                output = qt.mesolve(
-                    H, rho0, tlist, c_op_list, args=pulse_args, options=options, _safe_mode=False
-                )
-                for k, t in enumerate(tlist):
-                    u[:, n, k] = qt.superoperator.mat2vec(output.states[k].full()).T
-
-        return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
-
-
-def get_propagator_cz(H, tlist, num_cpus, c_op_list, pulse_args, options, logi_idx):
+def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, options, logi_idx):
     """
     Compute the propagator for a quantum system, supporting both noiseless and noisy systems.
 
@@ -1057,7 +995,7 @@ def get_propagator_cz(H, tlist, num_cpus, c_op_list, pulse_args, options, logi_i
         c_op_list (list): List of collapse operators for modeling noise. If empty, the system is noiseless.
         pulse_args (dict): Arguments for time-dependent pulse functions in the Hamiltonian.
         options (qt.Options): Solver options for QuTiP.
-        logi_state (list): List of logical states (indices of basis states) to include in the propagator.
+        logi_idx (list): List of logical states (indices of basis states) to include in the propagator.
 
     Returns:
         qt.Qobj or list of qt.Qobj:
@@ -1105,7 +1043,7 @@ def get_propagator_cz(H, tlist, num_cpus, c_op_list, pulse_args, options, logi_i
         return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
 
 
-def get_fidelity_super_operator(super_op, logi_state, gate_target):
+def get_fidelity_super_operator(super_op, logi_idx, gate_target, c_op_list):
     """
     Computes the average gate fidelity for a given superoperator.
 
@@ -1121,7 +1059,8 @@ def get_fidelity_super_operator(super_op, logi_state, gate_target):
     # print('logi_state=', logi_state)
     # print('p0_kraus=', p0_kraus)
     # print('p0_kraus[0].shape=', np.shape(p0_kraus[0]))
-    kraus = [truncate_2(i, logi_state) for i in kraus]
+    if len(c_op_list) != 0:
+        kraus = [truncate_2(i, logi_idx) for i in kraus]
     super_op_post = qt.kraus_to_super(kraus)
     return qt.metrics.average_gate_fidelity(super_op_post, target=gate_target)
 
@@ -1161,3 +1100,19 @@ def print_trans_freq(state_i, state_j, evals, n_Theta=None, n_Phi=None):
     else:
         display(Math(f"\omega_{{{state_i}-{state_j}}} = %.3f \cdot 2\pi\ GHz = %.3f\ GHz," %(w_i_j/(2*np.pi), w_i_j)
                     + f"\ n_{{\phi}}^{{{state_i}-{state_j}}} = %.4f \cdot 2\pi = %.4f" %(n_Phi_i_j/(2*np.pi), n_Phi_i_j) ))
+
+
+
+def top_population(pop_integral, hspace_full, num=10):
+    arr = pop_integral
+    # Get the indices of the top 10 largest values
+    top_indices = np.argsort(arr)[-num:]  # Sort and take the last 10 indices
+    # Get the top 10 largest values
+    top_values = arr[top_indices]
+    # Sorting in descending order (optional)
+    sorted_order = np.argsort(top_values)[::-1]
+    top_indices = top_indices[sorted_order]
+    top_values = top_values[sorted_order]
+    print("\nTop 10 values:", top_values.tolist())
+    print("State of large population:", np.array(hspace_full)[top_indices.tolist()])
+    return None
