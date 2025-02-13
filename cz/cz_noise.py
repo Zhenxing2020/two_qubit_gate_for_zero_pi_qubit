@@ -31,12 +31,14 @@ if __name__ == '__main__':
 
     print('"new" is Tphi_logi  0 ---> 100μs')
     cz300_se_3ncut= pd.read_csv('data/data_cz_3ncut_truc1=300_select.txt')
-    params = cz300_se_3ncut[['tg', 'drive_amp', 'detune']].to_numpy()#[[0, 5, 10, 15, 20, 25],:]  #[[0, 15, 30],:]
+    params = cz300_se_3ncut[['tg', 'drive_amp', 'detune']].to_numpy()[[11,12,13,14, 16,17,18,19, 21,22,23,24, 26,27,28,29,30],:]
+    # [[1,2,3,4, 6,7,8,9, 11,12,13,14, 16,17,18,19, 21,22,23,24, 26,27,28,29,30],:]
+    #[[0, 5, 10, 15, 20, 25],:]  #[[0, 15, 30],:]
 
-    truc1, truc_tot, charge_pick = 300, 300, True
-    truc_tot_2, max_steps = 70, 1e-3
+    truc1, truc_tot, charge_pick = 300, 1000, True
+    truc_tot_2 = 70
     num_cpus, n_job = 16, len(params)
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}_eket/'
+    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
     hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
     hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
     hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
@@ -53,6 +55,11 @@ if __name__ == '__main__':
     hspace_dress = np.arange(truc_tot_2)
     n_theta0_dress = qt.Qobj(n_theta0_dress[np.ix_(hspace_dress, hspace_dress)])
     n_theta1_dress = qt.Qobj(n_theta1_dress[np.ix_(hspace_dress, hspace_dress)])
+    print('truc1=', truc1, '; truc_tot = ', truc_tot, '; charge_pick = ', charge_pick)
+    print("truc_tot_2 = ", truc_tot_2)
+    print("num_cpus = ", num_cpus, ";   n_job = ", n_job)
+    for para in params:
+        print(para.tolist(), ',')
 
     gamma_decay_logi =  1 / 1600e3
     gamma_dephase_logi = 1 / 100e3
@@ -82,18 +89,12 @@ if __name__ == '__main__':
         jump_tphi = np.array(jump_op)[:,2:]
         jump_t1_list = [qt.Qobj(matrix) for row in jump_t1 for matrix in row]
         jump_tphi_list = [qt.Qobj(matrix) for row in jump_tphi for matrix in row]
-
-    print('truc1=', truc1, '; truc_tot = ', truc_tot, '; charge_pick = ', charge_pick)
-    print("truc_tot_2 = ", truc_tot_2, "; max_steps = ", max_steps)
-    print("num_cpus = ", num_cpus, ";   n_job = ", n_job)
     print("gamma_decay_logi = ", gamma_decay_logi, "gamma_dephase_logi = ", gamma_dephase_logi)
     print("gamma_decay_other = ", gamma_decay_other, "gamma_dephase_other = ", gamma_dephase_other)
     print(f"T1_logi = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
     print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
     print(f"Tphi_logi = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None
     print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
-    for para in params:
-        print(para.tolist(), ',')
 
     logi_state = ['0-0', '0-2', '2-0', '2-2']
     W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
@@ -104,7 +105,7 @@ if __name__ == '__main__':
 
     # c_op_list = [qt.Qobj(np.zeros((truc_tot_2, truc_tot_2)))]
     c_op_list = []
-    args = [H_qbt_drive, W_20_50, max_steps, num_cpus, c_op_list, logi_idx ]
+    args = [H_qbt_drive, W_20_50, num_cpus, c_op_list, logi_idx ]
     f_ideal = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)(args_indep, *args)
                                                 for args_indep in params)
     print('\nf_ideal = [')
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     c_op_list = jump_t1_list + jump_tphi_list
-    args = [H_qbt_drive, W_20_50, max_steps, num_cpus, c_op_list, logi_idx ]
+    args = [H_qbt_drive, W_20_50, num_cpus, c_op_list, logi_idx ]
     f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)(args_indep, *args)
                                                 for args_indep in params)
     print('\nf_noise = [')

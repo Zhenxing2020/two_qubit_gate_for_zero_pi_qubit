@@ -29,7 +29,8 @@ import os
 ###################################################################
 def fidelity_sweep():
     n_cpu = 1
-    args_truc = [n_cpu, hspace_truc, W_20_50, H_drive_truc, logic_idx_truc]
+    c_op_list = []
+    args_truc = [H_drive_truc, W_20_50, n_cpu, c_op_list, logic_idx_truc]
     fidelity = []
     drive_param = []
     fidelity_full = []
@@ -38,7 +39,7 @@ def fidelity_sweep():
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
         bounds = (tg_bounds, amp_bound, detune_bound)
         res = sp.optimize.differential_evolution(
-            func=ut.cz_fidelity_optimize,
+            func=ut.cz_fidelity_log_noise,
             bounds=bounds,
             args=args_truc,
             disp=True,
@@ -70,7 +71,7 @@ def fidelity_sweep():
         n_cpu_full = 50
         tg, drive_amp, detune = drive_param[jdx]
         arg_all = [tg, drive_amp, detune, n_cpu_full, hspace_full, W_20_50, H_drive_full, logic_idx_full]
-        fidelity_full.append(ut.cz_fidelity(arg_all))
+        fidelity_full.append(ut.cz_fidelity_log(arg_all))
         print(f'\nlog of gate error (truc={len(eval_tot)}) = ')
         for i in range(0, len(fidelity_full), 4):
             print(', '.join(map(str, np.round(fidelity_full[i:i+4], 8))), ',')
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     print("Start Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     truc1, truc_tot, charge_pick = 300, 1000, True
-    truc_tot_2 = 1000
+    truc_tot_2 = 500
 
     folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
     eval_tot = pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
@@ -99,10 +100,10 @@ if __name__ == '__main__':
 
     # amp_bound, detune_bound, tg_bound = [(0.008, 0.012), (0.012, 0.018), (0, 0.01)]
     # amp_bound, detune_bound, tg_bound = [(0.007, 0.00875), (0.012, 0.015), (0, 0.01)]
-    amp_bound, detune_bound, tg_bound = [(0, 0.05), (0, 0.04), (-0.01, 0.01)]
+    amp_bound, detune_bound, tg_bound = [(0.005, 0.041), (0.01, 0.031), (-0.01, 0.01)]
 
     # tg_vec = np.arange(27, 38, 1)
-    cz = pd.read_csv('data/other/data_cz_sesolve_truc1=80_select.txt')
+    cz = pd.read_csv('data/data_cz_1ncut_truc1=80.txt')
     x0_vec = cz[['tg', 'drive_amp', 'detune']].to_numpy()
     print('gate_time_vector:', np.array(tg_vec).tolist()) if 'tg_vec' in globals() else None
     for i in x0_vec:
@@ -140,20 +141,17 @@ if __name__ == '__main__':
 '5-34', '5-35', '5-36', '0-73', '2-52', '2-53', '9-26', '0-78', '5-39', '18-16' ,
 '4-44', '2-54', '2-55', '2-57', '5-42', '2-59', '0-83', '2-60', '5-44', '8-39' ,
 '9-33', '5-45', '9-34', '9-35', '5-46', '2-64', '2-65', '5-52', '5-53', '2-66' ,
-'2-68', '5-55', '2-73', '2-76', '5-59', '9-44', '5-65', '2-83', '5-68', '5-83'
     ] # 1ncut
-    truc_index = [hspace_full.index(i) for i in hspace_truc]
-    truc_len = len(hspace_truc)
-
     H0_full = 2*np.pi* qt.Qobj(np.diag(eval_tot))
     H_drive_full = [H0_full, [2*np.pi* qt.Qobj(drive_term), ut.drive_gauss_A] ]
     logic_idx_full = [hspace_full.index(i) for i in logic_states]
 
+    truc_index = [hspace_full.index(i) for i in hspace_truc]
+    truc_len = len(hspace_truc)
     H0_truc = ut.truncate_2( H0_full, truc_index)
     drive_truc = ut.truncate_2(drive_term, truc_index)
     H_drive_truc = [H0_truc, [2*np.pi* drive_truc, ut.drive_gauss_A] ]
     logic_idx_truc = [hspace_truc.index(i) for i in logic_states]
-
 
     print('\ntruc1=', truc1, ', truc_tot=', truc_tot, ', charge_pick=', charge_pick)
     print('truc_tot_2=', truc_tot_2)

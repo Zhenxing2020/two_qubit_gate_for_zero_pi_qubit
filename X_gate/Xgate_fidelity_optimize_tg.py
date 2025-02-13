@@ -8,7 +8,7 @@ import scqubits.settings as settings
 settings.OVERLAP_THRESHOLD = 0.3
 import scipy as sp
 import utils_2Q_gate_zp as ut
-import os, pytz, pytz, datetime
+import os, pytz
 from datetime import datetime
 import pandas as pd
 
@@ -21,8 +21,8 @@ def fidelity_de():
     fidelity_full = []
     n_cpu = 1
     args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu]
-    # for jdx, tg in tqdm(enumerate(tg_vec)):
-    for jdx, tg in tqdm(enumerate(x0_vec[:,0])): # if there is x0
+    for jdx, tg in tqdm(enumerate(tg_vec)):
+    # for jdx, tg in tqdm(enumerate(x0_vec[:,0])): # if there is x0
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
         bounds = (tg_bounds, amp1_bounds, amp2_bounds, detune1_bounds, detune2_bounds)
         res = sp.optimize.differential_evolution(
@@ -37,15 +37,15 @@ def fidelity_de():
             mutation=mutation,
             recombination=recombination,
             tol=tol,
-            x0=x0_vec[jdx],
+            # x0=x0_vec[jdx],
             polish=False, # 'True' will make the for-loop break
             )
         fidelity.append(res.fun)
         drive_param.append(res.x)
         ### print fidelity
         print(res, '\n')
-        # print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
-        print('\ntg = ', np.array((x0_vec[:,0])[:jdx+1]).tolist())
+        print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
+        # print('\ntg = ', np.array((x0_vec[:,0])[:jdx+1]).tolist())
         print(f'\nlog of gate error (truc1={len(hspace_charge)}) = ')
         for i in range(0, len(fidelity), 4):
             print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     if drive_theta:
         # amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0, 0.5), (0, 0.5), (-0.1, 0.1), (-0.1, 0.1)] # theta big
         amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.01, 0.08), (0.003, 0.03), (0, 0.01), (0, 0.01)] # theta small
-        # tg_vec = np.arange(60, 120, step=10).tolist() # theta
+        tg_vec = np.arange(2, 4, step=1).tolist() # theta
     else:
         amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.15, 0.3), (0, 0.3), (0.3, 0.5), (0.3, 0.5)] # phi
         tg_vec = np.arange(10, 50, step=10).tolist() # phi
@@ -85,8 +85,8 @@ if __name__ == '__main__':
     tg_bound = (-0.01, 0.01)
     folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
     f_xgate = pd.read_csv('data/'+folder)
-    x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2',
-                        'detune_1', 'detune_2']].to_numpy()[[10, 12, 13, 15],:] #[[10,8,6,4,2],:]
+    # x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2',
+    #                     'detune_1', 'detune_2']].to_numpy()[[10, 12, 13, 15],:] #[[10,8,6,4,2],:]
 
     workers, popsize = 100, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
