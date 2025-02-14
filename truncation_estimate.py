@@ -77,7 +77,7 @@ def make_rate_graph(drive_term, evals, wd, A, labels = None, normalization=True)
         labels = np.arange(drive_term.shape[0])
 
     G = nx.DiGraph()
-    max_n_ij = np.max(np.abs(drive_term))
+    max_n_ij = np.max(np.abs(drive_term.data))
     for i, s_i in enumerate(labels):
         for j, s_j in enumerate(labels):
             if i < j:
@@ -118,10 +118,6 @@ def shortest_path_to_core(G, core_states, target):
     return target, (shortest_path_len, shortest_path)
 
 
-def _shortest_path_to_core_parallel(p):
-    return shortest_path_to_core(*p)
-
-
 def all_path_to_core(G, core_states, target, cutoff=2):
     """Finds all paths to the specified core states
     under a specified length
@@ -147,10 +143,11 @@ def all_path_to_core(G, core_states, target, cutoff=2):
             for path in nx.all_simple_paths(G, source, target, cutoff=cutoff):
                 weight_tot += np.exp( - nx.path_weight(G, path,'weight') )
                 path_tot.append(path)
-    return target, (weight_tot, path_tot)
+    return target, (-np.log(weight_tot), path_tot)
 
 
-def make_leakage_df(core_states, drive_term, evals, wd, A, G=None, labels = None):
+def make_leakage_df(core_states, drive_term, evals, wd, A, labels=None, 
+                    path_func=shortest_path_to_core, G=None):
     """
     Makes a dataframe where each row is a state rated by how much
     leakage is expected
@@ -160,10 +157,14 @@ def make_leakage_df(core_states, drive_term, evals, wd, A, G=None, labels = None
                                    (should be the logical states).
         drive_term (np.array[complex]): The operator used to drive a gate.
         evals (list[float]): eigenvalues of the system
-        wd (float): drive frequency
-        A (float): drive amplitude
+        wd (float or list of float): drive frequency(s)
+        A (float or list of float): drive amplitude(s)
         labels (list[str], optional): labels to use for each state. Uses
                                       the index of the state if none is given
+        path_func (func): function that takes in (G, core_states, s) and returns
+                          a distance from s to core_states. Either shortest_path_to_core
+                          or all_path_to_core
+        G (nx.Graph): pre-computed rate-graph. Makes one if none is given.
 
     Returns:
         dataframe
@@ -176,7 +177,7 @@ def make_leakage_df(core_states, drive_term, evals, wd, A, G=None, labels = None
         G = make_rate_graph(drive_term, evals, wd, A, labels = labels)
 
     for s in tqdm(labels, total=len(labels)):
-        target, (shortest_path_len, shortest_path) = shortest_path_to_core(G, core_states, s)
+        target, (shortest_path_len, shortest_path) = path_func(G, core_states, s)
         entry = {}
         entry["i"] = target
         entry["path"] = shortest_path
@@ -186,10 +187,14 @@ def make_leakage_df(core_states, drive_term, evals, wd, A, G=None, labels = None
     return pd.DataFrame(df).sort_values(by="path_len", ascending=False)
 
 
-def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, G=None, labels=None):
+def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, labels=None,
+                            path_func=shortest_path_to_core):
     """
     Returns indices/state labels for a truncated model, keeping the n most important states
-    according to the graph search estimate
+    according to the graph search estimate.
+
+    You can give multiple drive pulses by making wd and A lists. In this case it
+    will combine the dataframes, keeping the maximum entry for each state.
 
     Args:
         n (int): number of states to include in the reduced model
@@ -197,18 +202,31 @@ def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, G=None, la
                                    (should be the logical states).
         drive_term (np.array[complex]): The operator used to drive a gate.
         evals (list[float]): eigenvalues of the system
-        wd (float): drive frequency
-        A (float): drive amplitude
+        wd (float or list of float): drive frequency(s)
+        A (float or list of float): drive amplitude(s)
         labels (list[str], optional): labels to use for each state. Uses
                                       the index of the state if none is given
+        path_func (func): function that takes in (G, core_states, s) and returns
+                          a distance from s to core_states. Either shortest_path_to_core
+                          or all_path_to_core
+        G (nx.graph or list of nx.graph): precomputed rate graphs, must match len of A,wd
 
     Returns:
         list of state indices/labels
     """
 
-    df = make_leakage_df(core_states, drive_term, evals, wd, A, G=G, labels=labels)
+    if isinstance(wd, float):
+        wd = [wd]
+    if isinstance(A, float):
+        A = [A]
+    
+    df_list = []
+    for i in range(len(wd)):
+        df = make_leakage_df(core_states, drive_term, evals, wd[i], A[i], G=None, labels=labels,
+                             path_func=path_func)
+        df_list.append(df)
+    df = pd.concat(df_list).sort_values("path_len", ascending=False).drop_duplicates("i", keep="first")
     return list(df["i"].values[:n])
-
 
 if __name__ == "__main__":
 
@@ -234,6 +252,7 @@ if __name__ == "__main__":
 
     A = 0.02
     W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
+    W_22_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-2')]
     detune = 0. # Assume very close to resonance driving -- not actually true
     wd = W_20_50 + detune
     hspace_logi = ['0-0', '0-2', '2-0', '2-2']
@@ -242,8 +261,14 @@ if __name__ == "__main__":
 
     drive_term = n_theta1_dress
 
-    hspace_index_2 = trunc_by_thresh(hspace_index, drive_term, thresh=1e-2)
+    # hspace_index_2 = trunc_by_thresh(hspace_index, drive_term, thresh=1e-2)
 
     # G = make_rate_graph(drive_term, eval_tot, wd, A, labels = hspace_full)
     # df = make_leakage_df(core_states, drive_term, eval_tot, wd, A, labels = hspace_full, n_cpu=100)
-    # states = trunc_by_graph_estimate(100, core_states, drive_term, eval_tot, wd, A, labels=hspace_full)
+
+    A = [0.02, 0.01]
+    wd = [W_20_50, W_22_50]
+    states_short = trunc_by_graph_estimate(100, core_states, drive_term, eval_tot, wd, A, labels=hspace_full,
+                                         path_func=shortest_path_to_core)
+    states_all = trunc_by_graph_estimate(100, core_states, drive_term, eval_tot, wd, A, labels=hspace_full,
+                                         path_func=all_path_to_core)
