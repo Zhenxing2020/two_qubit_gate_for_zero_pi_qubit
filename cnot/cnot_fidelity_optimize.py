@@ -25,18 +25,11 @@ def fidelity_sweep():
     fidelity = []
     drive_param = []
     fidelity_full = []
-    arg_truc = [H_drive_truc, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_truc]
+    arg_truc = [H_drive_part, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_part]
     # for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
     for jdx, tg in tqdm(enumerate(tg_vec)):
-        # if tg_optimize:
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
         bounds = (tg_bounds, A1_bound, A2_bound, detune1_bound, detune2_bound)
-        # func = ut.cnot_fidelity_log_noise_tg
-        # else:
-        #     bounds = (A1_bound, A2_bound, detune1_bound, detune2_bound)
-        #     arg_truc = [H_drive_truc, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_truc, tg]
-        #     func = ut.cnot_fidelity_log_noise
-
         res = sp.optimize.differential_evolution(
             func=ut.cnot_fidelity_log_tg,
             bounds=bounds,
@@ -49,34 +42,29 @@ def fidelity_sweep():
             mutation=mutation,
             recombination=recombination,
             tol=tol,
+            # x0=x0_vec[jdx],
             polish=False, # 'True' will make the for-loop break
             )
         fidelity.append(res.fun)
         drive_param.append(res.x.tolist())
         print(res, '\n')
         print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
-
-        print(f'\nlog of gate error (truc={truc_len}) = ')
+        # print('\ntg = ', np.array((x0_vec[:,0])[:jdx+1]).tolist())
+        print(f'\nlog of gate error (truc={len_part}) = ')
         for i in range(0, len(fidelity), 4):
             print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
-
-        print(f'\ndrive_param (truc={truc_len}) = ')
+        print(f'\ndrive_param (truc={len_part}) = ')
         for i in drive_param:
             print(np.round(i,6).tolist(),',')
 
-        # print("fidelity_full... Time:", datetime.now(pytz.timezone('America/Denver')))
-        # if tg_optimize:
-        # [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = drive_param[jdx]
-        # arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
-        #             H_drive_full, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_full]
-        # fidelity_full.append(ut.cnot_fidelity_log(arg_all))
-        # else:
-        #     arg_all = [H_drive_full, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_full, tg]
-        #     fidelity_full.append(ut.cnot_fidelity_log_noise(drive_param[jdx], *arg_all))
-
-        # print(f'\nlog of gate error (truc={len(eval_tot)}) = ')
-        # for i in range(0, len(fidelity_full), 4):
-        #     print(', '.join(map(str, np.round(fidelity_full[i:i+4], 8))), ',')
+        print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
+        [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = drive_param[jdx]
+        arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
+                    H_drive_False, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_False]
+        fidelity_full.append(ut.cnot_fidelity_log(arg_all))
+        print(f'\nlog of gate error (truc={H_drive_False[0].shape[0]},False) = ')
+        for i in range(0, len(fidelity_full), 4):
+            print(', '.join(map(str, np.round(fidelity_full[i:i+4], 8))), ',')
         print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
     print('amp1_bounds=',A1_bound, ', amp2_bounds=',A2_bound, ', tg_bound=', tg_bound)
     print('detune1_bounds=',detune1_bound, ', detune2_bounds=', detune2_bound)
@@ -87,78 +75,134 @@ if __name__ == '__main__':
     print("Start Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     truc1, truc_tot, charge_pick = 300, 1000, True
-    truc_tot_2 = 700
+    truc_full = 500
 
     folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
     eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    n_theta0_dress = 2*np.pi* pd.read_csv(folder+ 'n_theta0_dress.txt').to_numpy()
     hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
-    truc_list = np.arange(truc_tot_2)
-    hspace_full = hspace_full[:truc_tot_2]
-    eval_tot = eval_tot[:truc_tot_2]
+    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
+    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
+    truc_list = np.arange(truc_full)
+    hspace_full = hspace_full[:truc_full]
+    eval_tot = eval_tot[:truc_full]
     n_theta0_dress = ut.truncate_2(n_theta0_dress, truc_list)
+    n_theta1_dress = ut.truncate_2(n_theta1_dress, truc_list)
 
-    A1_bound, A2_bound, detune1_bound, detune2_bound = [(0, 0.4), (0, 0.4), (-0.3, 0.3), (-0.3, 0.3)]
-    tg_bound = (-0.1, 0.1) #(-1e-10, 1e-10) #
-    tg_optimize = True
+    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick=False/'
+    eval_False = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
+    hspace_False = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
+    n_theta0_False = qt.Qobj(2*np.pi* np.load(folder+'n_theta0_dress.npy'))
+    n_theta1_False = qt.Qobj(2*np.pi* np.load(folder+'n_theta1_dress.npy'))
 
-    tg_vec = [20, 60]#np.arange(20, 101, 10)
-    workers, popsize = 100, 10
+    A1_bound, A2_bound, detune1_bound, detune2_bound = [
+        (0, 0.03), (0, 0.02), (-0.005, 0), (-0.005, 0)]
+    tg_bound = (-0.01, 0.01) #(-1e-10, 1e-10) #
+
+    tg_vec = np.arange(350, 401, 10)
+#     x0_vec = np.array([
+# [30.01162, 0.10169, 0.044983, -0.009811, -0.009766]  ,
+# [39.998662, 0.089416, 0.037348, -0.009861, -0.009929],
+# [50.008477, 0.109744, 0.038176, -0.009909, -0.009861] ,
+# [60.008685, 0.098128, 0.036572, -0.009999, -0.009908] ,
+# [70.000849, 0.082864, 0.033988, -0.009862, -0.009941] ,
+# [80.006954, 0.071752, 0.03142, -0.009981, -0.009936] ,
+# [89.999445, 0.105925, 0.043856, -0.000587, 0.001384] ,
+# [100.002336, 0.057277, 0.029136, -0.009885, -0.009919] ,
+# [110.003179, 0.053457, 0.027985, -0.009981, -0.009731] ,
+# [120.006159, 0.049206, 0.026725, -0.009686, -0.009409] ,
+# [129.990684, 0.04568, 0.025497, -0.009214, -0.008853] ,
+# [140.000437, 0.042429, 0.024297, -0.008615, -0.008199] ,
+# [150.000299, 0.039364, 0.022781, -0.00763, -0.007284] ,
+
+# [160.009391, 0.036845, 0.021622, -0.006944, -0.006607] ,
+# [169.998348, 0.034385, 0.020468, -0.006263, -0.005973] ,
+# [179.992607, 0.032374, 0.019379, -0.005679, -0.005419] ,
+# [189.994999, 0.047201, 0.030152, -0.002023, -0.001734] ,
+# [200.0004, 0.028943, 0.017513, -0.004677, -0.004464] ,
+
+# [209.99896, 0.027499, 0.016692, -0.004235, -0.004072] ,
+# [219.997264, 0.026207, 0.016013, -0.003929, -0.003743] ,
+# [230.001933, 0.024872, 0.015335, -0.003583, -0.003419] ,
+# [239.990775, 0.023819, 0.014721, -0.003327, -0.003175] ,
+# [250.002309, 0.036788, 0.023488, -0.000348, -0.000133] ,
+#     ])
+
+    workers, popsize = 50, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
-
     logi_state = ['0-0', '0-2', '2-0', '2-2']
+
+    mid_state = '8-2'
     idx_0 = hspace_full.index('0-2')
     idx_1 = hspace_full.index('2-2')
-    idx_2 = hspace_full.index('8-2')
+    hspace_part = [
+'0-0', '0-1', '1-0', '0-2', '2-0', '0-4', '4-0', '1-1', '0-5', '2-1' ,
+'5-0', '1-2', '0-8', '2-2', '8-0', '1-4', '4-1', '2-4', '9-0', '1-5' ,
+'5-1', '4-2', '0-12', '2-5', '1-8', '12-0', '5-2', '8-1', '4-4', '13-0' ,
+'15-0', '2-8', '1-9', '9-1', '8-2', '5-4', '4-5', '0-18', '2-9', '0-21' ,
+'18-0', '9-2', '12-1', '5-5', '0-24', '4-8', '1-13', '20-0', '8-4', '22-0' ,
+'2-12', '13-1', '24-0', '0-25', '15-1', '5-8', '4-9', '12-2', '9-4', '8-5' ,
+'25-0', '13-2', '26-0', '1-18', '15-2', '5-9', '4-12', '0-30', '18-1', '12-4' ,
+'9-5', '1-21', '8-8', '20-1', '4-13', '22-1', '4-16', '30-0', '13-4', '5-12' ,
+'15-4', '24-1', '33-0', '18-2', '34-0', '2-21', '8-9', '35-0', '1-25', '9-8' ,
+'12-5', '37-0', '20-2', '5-16', '22-2', '13-5', '25-1', '26-1', '24-2', '15-5' ,
+'2-25', '39-0', '8-12', '2-26', '9-9', '18-4', '28-1', '12-8', '41-0', '0-45' ,
+'4-21', '13-8', '25-2', '20-4', '22-4', '4-24', '26-2', '5-18', '15-8', '30-1' ,
+'9-12', '44-0', '12-9', '28-2', '45-0', '33-1', '18-5', '2-30', '46-0', '34-1' ,
+'13-9', '9-13', '9-16', '20-5', '22-5', '50-0', '30-2', '25-4', '15-9', '8-18' ,
+'24-5', '12-12', '33-2', '18-8', '34-2', '35-2', '13-12', '41-1', '37-2', '22-8' ,
+'56-0', '25-5', '26-5', '30-4', '18-9', '39-2', '13-16', '59-0', '33-4', '28-5' ,
+'41-2', '35-4', '20-9', '22-9', '25-8', '65-0', '26-8', '24-9', '30-5', '12-18' ,
+'44-2', '33-5', '45-2', '34-5', '35-5', '46-2', '12-20', '69-0', '37-5', '26-9' ,
+'50-2', '51-2', '39-5', '54-2', '41-5', '56-2', '58-2', '34-9', '18-20', '59-2' ,
+'44-5', '45-5', '60-2', '41-8', '46-5', '64-2', '65-2', '33-12', '50-5', '51-5' ,
+    ]
+
+    idx_2 = hspace_full.index(mid_state)
     W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
     W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
-    n_theta0_0_2 = n_theta0_dress[idx_2, idx_0]
-    n_theta0_1_2 = n_theta0_dress[idx_2, idx_1]
-
-    # hspace_truc = hspace_full[:100]
-    hspace_truc = [
-'0-0', '0-1', '1-0', '0-2', '2-0', '4-0', '1-1', '0-5', '2-1', '5-0' ,
-'1-2', '0-8', '2-2', '8-0', '1-4', '4-1', '9-0', '5-1', '4-2', '2-5' ,
-'1-8', '12-0', '5-2', '8-1', '4-4', '13-0', '15-0', '2-8', '1-9', '9-1' ,
-'8-2', '5-4', '4-5', '0-21', '18-0', '9-2', '5-5', '4-8', '1-13', '20-0' ,
-'22-0', '2-12', '15-1', '5-8', '4-9', '12-2', '9-4', '8-5', '25-0', '13-2' ,
-'1-18', '15-2', '5-9', '4-12', '18-1', '12-4', '9-5', '1-21', '8-8', '20-1' ,
-'4-13', '30-0', '13-4', '18-2', '34-0', '8-9', '12-5', '20-2', '5-16', '22-2' ,
-'24-2', '15-5', '9-9', '12-8', '0-45', '25-2', '26-2', '9-12', '12-9', '28-2' ,
-'18-5', '46-0', '13-9', '9-13', '20-5', '30-2', '25-4', '8-18', '33-2', '18-8' ,
-'34-2', '35-2', '37-2', '26-5', '24-9', '30-5', '44-2', '35-5', '37-5', '56-2' ,
-    ]
-    truc_index = [hspace_full.index(i) for i in hspace_truc]
-    truc_len = len(hspace_truc)
-
     H0_full = qt.Qobj(np.diag(eval_tot))
-    logi_idx_full = [hspace_full.index(i) for i in logi_state]
-    H_drive_full = [ H0_full,   [n_theta0_dress, ut.drive_gauss_A],
-                                [n_theta0_dress, ut.drive_gauss_B]  ]
+    
+    H0_False = qt.Qobj(np.diag(eval_False))
+    logi_idx_False = [hspace_False.index(i) for i in logi_state]
 
-    H0_truc = ut.truncate_2( H0_full, truc_index)
-    n_theta0_truc = ut.truncate_2(n_theta0_dress, truc_index)
-    logi_idx_truc = [hspace_truc.index(i) for i in logi_state]
-    H_drive_truc = [ H0_truc,   [n_theta0_truc, ut.drive_gauss_A],
-                                [n_theta0_truc, ut.drive_gauss_B]  ]
+    index_part = [hspace_full.index(i) for i in hspace_part]
+    len_part = len(hspace_part)
+    H0_part = ut.truncate_2( H0_full, index_part)
+    n_theta0_part = ut.truncate_2(n_theta0_dress, index_part)
+    n_theta1_part = ut.truncate_2(n_theta1_dress, index_part)
+    logi_idx_part = [hspace_part.index(i) for i in logi_state]
 
+    if mid_state in [ '8-2', '4-5', '1-4', '8-0' ]:
+        H_drive_False = [ H0_False,     [n_theta0_False, ut.drive_gauss_A],
+                                        [n_theta0_False, ut.drive_gauss_B]  ]
+        H_drive_part = [ H0_part,   [n_theta0_part, ut.drive_gauss_A],
+                                    [n_theta0_part, ut.drive_gauss_B]  ]
+    else:
+        H_drive_False = [ H0_False,     [n_theta1_False, ut.drive_gauss_A],
+                                        [n_theta1_False, ut.drive_gauss_B]  ]
+        H_drive_part = [ H0_part,   [n_theta1_part, ut.drive_gauss_A],
+                                    [n_theta1_part, ut.drive_gauss_B]  ]
     c_op_list = []
     num_cpus = None
-    print('\ntruc1=', truc1, ', truc_tot=', truc_tot, ', charge_pick=', charge_pick)
-    print('truc_tot_2=', truc_tot_2, ', tg_optimize=', tg_optimize, )
+    print('\nmid_state = ', mid_state)
+    print('truc1=', truc1, ', truc_tot=', truc_tot, ', charge_pick=', charge_pick)
+    print('truc_tot_2=', truc_full )
     print('W_0_2 = ', np.round(W_0_2, 3), ', W_1_2 = ', np.round(W_1_2, 3))
-    print('n_theta0_0_2 = ', np.round(n_theta0_0_2, 5),
-        ', n_theta0_1_2 = ', np.round(n_theta0_1_2, 5))
-    print('tg_bound=', tg_bound, 'A1_bound=',A1_bound, ', A2_bound=',A2_bound)
+    print('tg_bound=', tg_bound, ', A1_bound=',A1_bound, ', A2_bound=',A2_bound)
     print('detune1_bound=',detune1_bound, ', detune2_bound=', detune2_bound)
-    print('amp1_bounds=',A1_bound, ', amp2_bounds=',A2_bound, ', tg_bound=', tg_bound)
-    print('detune1_bounds=',detune1_bound, ', detune2_bounds=', detune2_bound)
-    print('gate_time_vector:', np.array(tg_vec).tolist())
+    if 'x0_vec' in globals():
+        print('params = ')
+        for i in x0_vec:
+            print(np.round(i,6).tolist(),',')
+    if 'tg_vec' in globals():
+        print('tg_vec = ')
+        for i in range(0, len(tg_vec), 4):
+            print(', '.join(map(str, tg_vec[i:i+4])), ',')
     print('workers=', workers, ', popsize=', popsize)
     print('recombination=', recombination, ', tol=', tol, ', mutation=', mutation)
-    print(f'\nhspace_truc (len={truc_len}) = [')
-    for i in range(0, len(hspace_truc), 10):
-        print(", ".join(f"'{x}'" for x in hspace_truc[i:i + 10]), ',')
+    print(f'\nhspace_truc (len={len_part}) = [')
+    for i in range(0, len(hspace_part), 10):
+        print(", ".join(f"'{x}'" for x in hspace_part[i:i + 10]), ',')
     print(']')
 
     fidelity_sweep()
