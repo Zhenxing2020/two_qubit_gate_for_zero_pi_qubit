@@ -3,6 +3,9 @@ Pkg.activate(".")
 
 include("gate_utils.jl")
 
+using Statistics: mean
+
+
 using PyPlot, NPZ
 
 using PRONTO
@@ -127,12 +130,14 @@ function plot_results(res; savename = "control_plot_2.png", states_to_plot = [0,
     ax2.plot(ts, res_high_1, linewidth = 2, label = "others > |$divide⟩")
     ax2.legend()
     max_val_1 = maximum([maximum(res_low_1), maximum(res_high_1)])
-    ax2.set_title("Max Other States $max_val_1")
+    avg_val_1 = sum([mean(res_low_1), mean(res_high_1)])
+    ax2.set_title("Max Other States $max_val_1" * " Avg $avg_val_1")
 
     ax3.plot(ts, res_low_2, linewidth = 2, label = "others < |$divide⟩")
     ax3.plot(ts, res_high_2, linewidth = 2, label = "others > |$divide⟩")
     max_val_2 = maximum([maximum(res_low_2), maximum(res_high_2)])
-    ax3.set_title("Max Other States $max_val_2")
+    avg_val_2 = sum([mean(res_low_2), mean(res_high_2)])
+    ax3.set_title("Max Other States $max_val_2" * " Avg $avg_val_2")
     ax3.legend()
 
     plt.tight_layout()
@@ -150,12 +155,12 @@ end
 n_basis = 2
 model_size = (length(hspace))*2*n_basis
 @kwdef struct XGateZP <: PRONTO.Model{model_size,1}
-    kl::Float64 = 0.01
-    kq::Float64 = 0.5
+    # kl::Float64 = 0.01
+    # kq::Float64 = 0.05
     # kq::Float64 = 0.5/4.5
     # Estimates based off fidelity
-    # kl::Float64 = 0.0005*2
-    # kq::Float64 = 0.006*2
+    kl::Float64 = 0.0005*2
+    kq::Float64 = 0.006*2
 end
 
 
@@ -189,29 +194,29 @@ end
     ψ2[i2] = 1
     xf = vec([ψ2;0*ψ2;ψ1;0*ψ1])
 
-    v1 = zeros(2)
-    v1[1] = 1
-    v2 = zeros(2)
-    v2[1] = 1
-    trunc = v1*ψ1' + v2*ψ2'
+    # v1 = zeros(2)
+    # v1[1] = 1
+    # v2 = zeros(2)
+    # v2[1] = 1
+    # trunc = v1*ψ1' + v2*ψ2'
 
     # Turn x into an imaginary vector for each state
-    half = Int(size(x)[1]/2)
+    # half = Int(size(x)[1]/2)
     # x1 = abs.(re_to_im(x[1:half]))
     # x2 = abs.(re_to_im(x[half+1:end]))
-    x1 = re_to_im(x[1:half])
-    x2 = re_to_im(x[half+1:end])
+    # x1 = re_to_im(x[1:half])
+    # x2 = re_to_im(x[half+1:end])
 
     # TODO: Express this phase using just the numbers
 
-    phase = exp(-im*angle(ψ2'*x1))
+    # phase = exp(-im*angle(ψ2'*x1))
     # phase = ψ2'*x1
     # phase = phase/abs(n)
 
-    v = phase*vcat(x1, x2)
-    vf = vcat(ψ2, ψ1)
+    # v = phase*vcat(x1, x2)
+    # vf = vcat(ψ2, ψ1)
     # return (1/2)*(v-vf)'*I*(v-vf)
-    return (1/2)*sum(abs.(v-vf).^2)
+    # return (1/2)*sum(abs.(v-vf).^2)
 
     # idx = [i0, i2]
     # G = phase*hcat(x1[idx], x2[idx])
@@ -234,7 +239,7 @@ end
     # print((1/2)*((ψ2-x1)'*(ψ2-x1) + (ψ1-x2)'*(ψ1-x2)))
     # print("\n old\n")
     # print(1/2*(x-xf)'*I(model_size)*(x-xf))
-    # return 1/2*(x-xf)'*I(model_size)*(x-xf)
+    return 1/2*(x-xf)'*I(model_size)*(x-xf)
 end
 
 

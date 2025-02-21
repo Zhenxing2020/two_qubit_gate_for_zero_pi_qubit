@@ -15,13 +15,22 @@ end
 
 
 drive = "theta"
-params = npzread("H_$drive.npz")
+params = npzread("/home/eweissler/src/zp_data/H_$drive.npz")
 
 # The .+ 1 is elementwise addition to an array/vector
 # Must do .+ 1 because Julia indexes from 1
 hspace_full = params["hspace_full"] 
-# hspace_reduced = params["hspace_reduced"]
-hspace_reduced = [0, 1, 2, 5, 7, 25, 38]
+hspace_reduced = params["hspace_reduced"][1:100]
+# hspace_reduced = sort(0:40)
+# for i in 1:10
+#     append!(hspace_reduced, i)
+# end
+# append!(hspace_reduced, 4)
+# append!(hspace_reduced, 38)
+hspace_reduced = sort(unique(hspace_reduced))
+println("hspace ", hspace_reduced)
+# hspace_reduced = [0, 1, 2, 5, 7, 25, 38]
+# hspace_reduced = hspace_full
 w_trans_1 = params["w_trans_1"]
 w_trans_2 = params["w_trans_2"]
 drive_term = params["drive"]
@@ -35,21 +44,30 @@ drive_trunc = Operator(basis, truncate(drive_term, hspace_reduced))
 
 H = LazySum([1.0, 0.0, 0.0], [H_trunc, drive_trunc, drive_trunc])
 function Ht(t, psi)
-    H.factors[2] = drive_gauss(t, params["drive_freq_A"], params["gate_time"], params["drive_amp_A"])
-    H.factors[3] = drive_gauss(t, params["drive_freq_B"], params["gate_time"], params["drive_amp_B"])
+    H.factors[2] = drive_gauss(t, params["drive_freq_A"], params["gate_time"], params["drive_amp_A"], normalized=false)
+    H.factors[3] = drive_gauss(t, params["drive_freq_B"], params["gate_time"], params["drive_amp_B"], normalized=false)
     return H
 end
 
 
-tlist = LinRange(0,params["gate_time"], 1000)
+tlist = LinRange(0,params["gate_time"], 500)
 
-props, times = batch_evol(Ht, [0, 2], tlist)
+props, G, times = batch_evol(Ht, [0, 2], tlist)
 
-pops, f = plot_evolution(hspace_reduced, tlist, props, [0, 2], 7, savename="theta_gate.png");
+U0 = zeros(ComplexF64, 2, 2)
+U0[1,2] = 1
+U0[2,1] = 1
 
-plt.gca().set_yscale("log")
-plt.gca().set_ylim(1e-05, 1)
-plt.savefig("theta_gate.png")
+fid = fid_coherent(U0, G)
+
+println("fidelity ", fid)
+println("log(1-fidelity) ", log10(1-fid))
+
+pops, f = plot_evolution(hspace_reduced, tlist, props, [0, 2], 7, savename="theta_gate.png", s=3);
+
+# plt.gca().set_yscale("log")
+# plt.gca().set_ylim(1e-05, 1)
+plt.savefig("theta_gate.png");
 
 # #Expectation values
 # function calc_pops(t, psi)

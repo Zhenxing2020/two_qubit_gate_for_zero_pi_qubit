@@ -1,24 +1,54 @@
 using QuantumOptics
 using PyPlot
+using LinearAlgebra
+
+using ImageFiltering: imfilter, KernelFactors
 
 
-
-function gauss_envelope(t, tg, A)
-    A * (exp(-8 * t * (t - tg) / tg^2) - 1)
+function truncate(H0::Matrix, hspace)
+    H0[hspace .+ 1, hspace .+ 1]
+end
+function truncate(x::Vector, hspace)
+    x[hspace .+ 1]
 end
 
-function drive_gauss(t, wd, tg, A)
+function gauss_envelope(t, tg; normalized = true)
+    env = (exp(-8 * t * (t - tg) / tg^2) - 1)
+    if normalized
+        env /= (exp(-8 * tg/2 * (tg/2 - tg) / tg^2) - 1)
+    end
+    return env
+end
+
+function drive_gauss(t, wd, tg, A; normalized = true)
     if 0 <= t <= tg
-         gauss_envelope(t, tg, A) * cos(wd * t)
+         A * gauss_envelope(t, tg, normalized=normalized) * cos(wd * t)
     else
         0
     end
+end
+
+function my_tr(M::Matrix, d::Integer)
+    return sum([M[i, i] for i in 1:d])
+end
+
+function fid_coherent(U0::Matrix, G::Matrix)
+    M = U0' * G
+    d = size(U0)[1]
+    # return (1/(d * (d + 1))) * (tr(M' * M) + abs(tr(M))^2)
+
+    # return (1/(d * (d + 1))) * (d + abs(tr(M))^2)
+    return (1/(d * (d + 1))) * (real(my_tr(M' * M, d)) + abs(my_tr(M, d))^2)
+    # return 1/(d+1) + abs(tr(M))^2 / (d*(d+1))
 end
 
 function batch_evol(Ht, logical_states, tlist)
 
     # Initial vectors and results/times to save
     psi0 = [nlevelstate(Ht(0, 0).basis_r, logical_states[i] + 1) for i in 1:length(logical_states)]
+
+    # Gate in the logical space
+    G = zeros(ComplexF64, length(logical_states), length(logical_states))
     res = Vector{Any}(undef, length(logical_states))
     times = Vector{Any}(undef, length(logical_states))
 
@@ -28,13 +58,15 @@ function batch_evol(Ht, logical_states, tlist)
         stuff = timeevolution.schroedinger_dynamic(tlist, psi0[i], Ht)
         times[i] = stuff[1]
         res[i] = stuff[2]
+        G[:, i] = truncate(res[i][end].data, logical_states)
     end
+
     
-    res, times
+    res, G, times
 end
 
 
-function plot_evolution(hspace, tlist, props, logical, intermediate; divide=11, suptitle="", savename="")
+function plot_evolution(hspace, tlist, props, logical, intermediate; divide=11, suptitle="", savename="", s=0)
     
     # Get population of logical states, intermediate states, and other states < or >= divide
     pops = zeros((2, 5, length(tlist)))
@@ -54,7 +86,8 @@ function plot_evolution(hspace, tlist, props, logical, intermediate; divide=11, 
         end
 
     end
-    print(logical_idx, " ", int_idx, " ", others_low, " ", others_high)
+    # print(logical_idx, " ", int_idx, " ", others_low, " ", others_high)
+    kg = KernelFactors.gaussian(s)
     f, ax = plt.subplots(ncols=2, figsize=(8,3))
     for i = range(1, length(logical_idx))
         props_i = props[i]
@@ -68,8 +101,12 @@ function plot_evolution(hspace, tlist, props, logical, intermediate; divide=11, 
             pops[i,5,:] += abs.([p.data[o] for p in props_i]).^2
         end
 
+        for j in 1:size(pops)[2]
+            pops[i, j, :] = imfilter(pops[i, j, :], kg, "symmetric")
+        end
+
         ax[i].plot(tlist, pops[i, 1, :], label=logical[1])
-        ax[i].plot(tlist, pops[i, 2, :],label=logical[2])
+        ax[i].plot(tlist, pops[i, 2, :], label=logical[2])
         ax[i].plot(tlist, pops[i, 3, :], label=intermediate)
         ax[i].plot(tlist, pops[i, 4, :], label="others < $divide")
         ax[i].plot(tlist, pops[i, 5, :], label="others >= $divide")
