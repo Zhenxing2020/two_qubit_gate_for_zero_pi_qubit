@@ -10,7 +10,7 @@ from joblib import Parallel, delayed
 from multiprocessing import Pool
 from IPython.display import display, Math
 
-max_step, nsteps = 1e-3, 1e4
+# max_step, nsteps = 1e-3, 1e4
 ### Define circuit and variable transform
  # EC = 0.20012190476190478
  # EJ2 = 5.4117
@@ -392,33 +392,6 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
 ###################################################################
 # CNOT-gate
 
-def get_fidelity_cnot_1A0(arg_de, *args):
-    drive_amp, tg, detune = arg_de
-
-    (w_00_14, w_20_14, n_theta1_00_14, n_theta2_00_14, n_theta1_20_14,
-    n_theta2_20_14, state_tot, H_qbt_drive, n1n1) = args
-
-    if n1n1:
-        pulse_args = {'drive_amp_A': drive_amp* (n_theta1_20_14/n_theta1_00_14) ,
-                    'drive_freq_A': w_00_14 + 2*np.pi*detune,
-                    'drive_amp_B': drive_amp ,
-                    'drive_freq_B': w_20_14 + 2*np.pi*detune,
-                    'gate_time': tg }
-    else:
-        pulse_args = {'drive_amp_A': drive_amp* (n_theta1_20_14/n_theta2_00_14) ,
-                    'drive_freq_A': w_00_14 + 2*np.pi*detune,
-                    'drive_amp_B': drive_amp ,
-                    'drive_freq_B': w_20_14 + 2*np.pi*detune,
-                    'gate_time': tg }
-    tlist = np.linspace(0, tg, num=int(tg))  # total time
-    prop = qt.propagator( H=H_qbt_drive,
-                          t=tlist,
-                          args=pulse_args,
-                        #   c_op_list=c_op_list,
-                          )[-1]  # get the propagator at the final time step
-    fidelity = cnot_fidelity( prop, state_tot )
-    return np.log10(1-fidelity)
-
 def cnot_fidelity(prop):
     # prop = state_tot[:4]
     prop = qt.Qobj(prop, dims=[[2, 2], [2, 2]])
@@ -438,18 +411,6 @@ def cnot_fidelity(prop):
     fidelity = qt.average_gate_fidelity(U_final, target=cnot())
     return fidelity
 
-def cnot_phase_correct(U_kraus):
-    U_final = []
-    for u in U_kraus:
-        phase = np.angle(u)
-        x2 = 0.5* (  phase[0,0] + phase[1,3] - phase[2,2] - phase[3,1])
-        x3 = 0.5* (  phase[0,0] - phase[1,3] + phase[2,2] - phase[3,1])
-        x4 = 0.5* (  phase[0,0] - phase[1,3] - phase[2,2] + phase[3,1])
-        Ur = qt.Qobj( np.diag([ 1, np.exp(1j*x3), np.exp(1j*x4), np.exp(1j*(x3+x4)) ]))
-        Ul = qt.Qobj( np.diag([ 1, 1, np.exp(1j*x2), np.exp(1j*x2) ]))
-        U_final.append( Ul * u * Ur)
-    return U_final
-
 def cnot_fidelity_log(arg_all):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
      H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx] = arg_all
@@ -465,40 +426,8 @@ def cnot_fidelity_log(arg_all):
     f_ideal = cnot_fidelity( U_noise)
     return np.log10(1-f_ideal)
 
-
-def cnot_fidelity_log_noise_wrong(arg_all):
-    [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
-     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx] = arg_all
-    pulse_args = {'drive_amp_A': drive_amp_A ,
-                'drive_freq_A': w_0_2 + 2*np.pi*detune_A,
-                'drive_amp_B': drive_amp_B ,
-                'drive_freq_B': w_1_2 + 2*np.pi*detune_B,
-                'gate_time': tg }
-    tlist = np.linspace(0, tg, num=int(tg))  # total time
-
-    U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
-    p0_kraus = qt.to_kraus(qt.to_super(U_noise))
-    if len(c_op_list) != 0:
-        p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
-
-    p0_kraus_zz = cnot_phase_correct(p0_kraus)
-    p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
-    f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=qt.Qobj(cnot().full()))
-    return np.log10(1-f_noise)
-
-def cnot_fidelity_log_notg(arg_optimize, *args):
-    [drive_amp_A, drive_amp_B, detune_A, detune_B] = arg_optimize
-
-    [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, tg] = args
-
-    arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
-     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx]
-
-    return cnot_fidelity_log(arg_all)
-
-def cnot_fidelity_log_tg(arg_optimize, *args):
+def cnot_fidelity_log_optimize(arg_optimize, *args):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg_optimize
-
     [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx] = args
 
     arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
@@ -506,42 +435,109 @@ def cnot_fidelity_log_tg(arg_optimize, *args):
 
     return cnot_fidelity_log(arg_all)
 
+# def cnot_phase_correct(U_kraus):
+#     U_final = []
+#     for u in U_kraus:
+#         phase = np.angle(u)
+#         x2 = 0.5* (  phase[0,0] + phase[1,3] - phase[2,2] - phase[3,1])
+#         x3 = 0.5* (  phase[0,0] - phase[1,3] + phase[2,2] - phase[3,1])
+#         x4 = 0.5* (  phase[0,0] - phase[1,3] - phase[2,2] + phase[3,1])
+#         Ur = qt.Qobj( np.diag([ 1, np.exp(1j*x3), np.exp(1j*x4), np.exp(1j*(x3+x4)) ]))
+#         Ul = qt.Qobj( np.diag([ 1, 1, np.exp(1j*x2), np.exp(1j*x2) ]))
+#         U_final.append( Ul * u * Ur)
+#     return U_final
 
+# def cnot_fidelity_log_noise_wrong(arg_all):
+#     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
+#      H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx] = arg_all
+#     pulse_args = {'drive_amp_A': drive_amp_A ,
+#                 'drive_freq_A': w_0_2 + 2*np.pi*detune_A,
+#                 'drive_amp_B': drive_amp_B ,
+#                 'drive_freq_B': w_1_2 + 2*np.pi*detune_B,
+#                 'gate_time': tg }
+#     tlist = np.linspace(0, tg, num=int(tg))  # total time
 
-def get_transition_freq_cnot(args, trans_goal='02-45_22-45'):
-# def get_transition_freq(args, trans_goal='00-14_20-14'):
+#     U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
+#     p0_kraus = qt.to_kraus(qt.to_super(U_noise))
+#     if len(c_op_list) != 0:
+#         p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
 
-    [n_theta1, n_theta2, n_theta1_dress, n_theta2_dress, n_theta1_truc, n_theta2_truc,
-    eval_tot, order_sort, H0, trunc_states, eket0, eket1, eket_tot  ] = args
+#     p0_kraus_zz = cnot_phase_correct(p0_kraus)
+#     p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
+#     f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=qt.Qobj(cnot().full()))
+#     return np.log10(1-f_noise)
 
-    transition_ik_jk = []
-    w_ik = []
-    w_jk = []
-    n_theta1_ik = []
-    n_theta2_ik = []
-    n_theta1_jk = []
-    n_theta2_jk = []
-    thresh = 0.01
-    for idx in range(len(logi_space)):
-        for jdx in range(idx+1, len(logi_space)):
-            state_i = logi_space[idx]
-            state_j = logi_space[jdx]
+# def cnot_fidelity_log_notg(arg_optimize, *args):
+#     [drive_amp_A, drive_amp_B, detune_A, detune_B] = arg_optimize
 
-            i = order_sort.index(state_i)
-            j = order_sort.index(state_j)
-            for k in np.arange(0, len(eval_tot)):
+#     [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, tg] = args
 
-                if (( np.abs(n_theta1_dress[i,k]) > thresh or np.abs(n_theta2_dress[i,k]) > thresh ) and (
-                    np.abs(n_theta1_dress[j,k]) > thresh or np.abs(n_theta2_dress[j,k]) > thresh ) ):
-                    transition_ik_jk.append(f'{state_i}-{order_sort[k]}_{state_j}-{order_sort[k]}')
+#     arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
+#      H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx]
 
-                    w_ik.append( 2*np.pi*( np.abs( eval_tot[i] - eval_tot[k] )))
-                    w_jk.append( 2*np.pi*( np.abs( eval_tot[j] - eval_tot[k] )))
+#     return cnot_fidelity_log(arg_all)
 
-                    n_theta1_ik.append(np.abs(n_theta1_dress[i ,k]))
-                    n_theta2_ik.append(np.abs(n_theta2_dress[i ,k]))
-                    n_theta1_jk.append(np.abs(n_theta1_dress[j ,k]))
-                    n_theta2_jk.append(np.abs(n_theta2_dress[j ,k]))
+# def get_fidelity_cnot_1A0(arg_de, *args):
+#     drive_amp, tg, detune = arg_de
+
+#     (w_00_14, w_20_14, n_theta1_00_14, n_theta2_00_14, n_theta1_20_14,
+#     n_theta2_20_14, state_tot, H_qbt_drive, n1n1) = args
+
+#     if n1n1:
+#         pulse_args = {'drive_amp_A': drive_amp* (n_theta1_20_14/n_theta1_00_14) ,
+#                     'drive_freq_A': w_00_14 + 2*np.pi*detune,
+#                     'drive_amp_B': drive_amp ,
+#                     'drive_freq_B': w_20_14 + 2*np.pi*detune,
+#                     'gate_time': tg }
+#     else:
+#         pulse_args = {'drive_amp_A': drive_amp* (n_theta1_20_14/n_theta2_00_14) ,
+#                     'drive_freq_A': w_00_14 + 2*np.pi*detune,
+#                     'drive_amp_B': drive_amp ,
+#                     'drive_freq_B': w_20_14 + 2*np.pi*detune,
+#                     'gate_time': tg }
+#     tlist = np.linspace(0, tg, num=int(tg))  # total time
+#     prop = qt.propagator( H=H_qbt_drive,
+#                           t=tlist,
+#                           args=pulse_args,
+#                         #   c_op_list=c_op_list,
+#                           )[-1]  # get the propagator at the final time step
+#     fidelity = cnot_fidelity( prop, state_tot )
+#     return np.log10(1-fidelity)
+
+# def get_transition_freq_cnot(args, trans_goal='02-45_22-45'):
+# # def get_transition_freq(args, trans_goal='00-14_20-14'):
+
+#     [n_theta1, n_theta2, n_theta1_dress, n_theta2_dress, n_theta1_truc, n_theta2_truc,
+#     eval_tot, order_sort, H0, trunc_states, eket0, eket1, eket_tot  ] = args
+
+#     transition_ik_jk = []
+#     w_ik = []
+#     w_jk = []
+#     n_theta1_ik = []
+#     n_theta2_ik = []
+#     n_theta1_jk = []
+#     n_theta2_jk = []
+#     thresh = 0.01
+#     for idx in range(len(logi_space)):
+#         for jdx in range(idx+1, len(logi_space)):
+#             state_i = logi_space[idx]
+#             state_j = logi_space[jdx]
+
+#             i = order_sort.index(state_i)
+#             j = order_sort.index(state_j)
+#             for k in np.arange(0, len(eval_tot)):
+
+#                 if (( np.abs(n_theta1_dress[i,k]) > thresh or np.abs(n_theta2_dress[i,k]) > thresh ) and (
+#                     np.abs(n_theta1_dress[j,k]) > thresh or np.abs(n_theta2_dress[j,k]) > thresh ) ):
+#                     transition_ik_jk.append(f'{state_i}-{order_sort[k]}_{state_j}-{order_sort[k]}')
+
+#                     w_ik.append( 2*np.pi*( np.abs( eval_tot[i] - eval_tot[k] )))
+#                     w_jk.append( 2*np.pi*( np.abs( eval_tot[j] - eval_tot[k] )))
+
+#                     n_theta1_ik.append(np.abs(n_theta1_dress[i ,k]))
+#                     n_theta2_ik.append(np.abs(n_theta2_dress[i ,k]))
+#                     n_theta1_jk.append(np.abs(n_theta1_dress[j ,k]))
+#                     n_theta2_jk.append(np.abs(n_theta2_dress[j ,k]))
 
     # print('ik_jk' + ';         w_ik' + ';     w_jk' + ';  n_theta1_ik' + ';  n_theta2_ik' + ';  n_theta1_jk' + ';  n_theta2_jk' )
     # for i in range(len(transition_ik_jk)):
@@ -556,101 +552,139 @@ def get_transition_freq_cnot(args, trans_goal='02-45_22-45'):
     # '00-14_20-14', '00-41_20-41', '02-80_20-80', '02-12_22-12',
     # '02-82_22-82', '02-45_22-45', '20-21_22-21', '20-28_22-28']
 
-    idx = transition_ik_jk.index(trans_goal)
-    # print(transition_ik_jk)
-# Trans ;  w_ij;    n_theta1; n_theta2; sum
-# 00-14 ;  45.925 ;  0.032 ;  0.006 ;  0.038
-# 20-14 ;  24.289 ;  0.046 ;  0.001 ;  0.047
+#     idx = transition_ik_jk.index(trans_goal)
+#     # print(transition_ik_jk)
+# # Trans ;  w_ij;    n_theta1; n_theta2; sum
+# # 00-14 ;  45.925 ;  0.032 ;  0.006 ;  0.038
+# # 20-14 ;  24.289 ;  0.046 ;  0.001 ;  0.047
 
-    w_00_14 = w_ik[idx]
-    w_20_14 = w_jk[idx]
-    n_theta1_00_14 = n_theta1_ik[idx]
-    n_theta2_00_14 = n_theta2_ik[idx]
-    n_theta1_20_14 = n_theta1_jk[idx]
-    n_theta2_20_14 = n_theta2_jk[idx]
-    return w_00_14, w_20_14, n_theta1_00_14, n_theta2_00_14, n_theta1_20_14, n_theta2_20_14
+#     w_00_14 = w_ik[idx]
+#     w_20_14 = w_jk[idx]
+#     n_theta1_00_14 = n_theta1_ik[idx]
+#     n_theta2_00_14 = n_theta2_ik[idx]
+#     n_theta1_20_14 = n_theta1_jk[idx]
+#     n_theta2_20_14 = n_theta2_jk[idx]
+#     return w_00_14, w_20_14, n_theta1_00_14, n_theta2_00_14, n_theta1_20_14, n_theta2_20_14
 
-def get_pop(args, *argz, state_0='00'):
+# def get_pop(args, *argz, state_0='00'):
 
-    drive_amp_A, drive_amp_B, tg, detune_A, detune_B = args
-    (n_theta1_20_14, n_theta1_00_14, w_00_14, w_20_14,
-     trunc_states, logi_space, H_qbt_drive, e_ops ) = argz
+#     drive_amp_A, drive_amp_B, tg, detune_A, detune_B = args
+#     (n_theta1_20_14, n_theta1_00_14, w_00_14, w_20_14,
+#      trunc_states, logi_space, H_qbt_drive, e_ops ) = argz
 
-    pulse_args = {'drive_amp_A': drive_amp_A* (n_theta1_20_14/n_theta1_00_14) ,
-                'drive_freq_A': w_00_14 + 2*np.pi*detune_A,
-                'drive_amp_B': drive_amp_B ,
-                'drive_freq_B': w_20_14 + 2*np.pi*detune_B,
-                'gate_time': tg }
+#     pulse_args = {'drive_amp_A': drive_amp_A* (n_theta1_20_14/n_theta1_00_14) ,
+#                 'drive_freq_A': w_00_14 + 2*np.pi*detune_A,
+#                 'drive_amp_B': drive_amp_B ,
+#                 'drive_freq_B': w_20_14 + 2*np.pi*detune_B,
+#                 'gate_time': tg }
 
-    tlist = np.linspace(0, tg, num=1000)  # total time
-    options = qt.Options(nsteps=10000, store_states=True)
-    result = qt.mesolve(
-        H=H_qbt_drive,
-        rho0=qt.basis( len(trunc_states), logi_space.index(state_0) ),
-        tlist=tlist,
-        e_ops=e_ops,
-        args=pulse_args,
-        options=options
-    )
-    return result.expect[0][-1]
-
-
-
+#     tlist = np.linspace(0, tg, num=1000)  # total time
+#     options = qt.Options(nsteps=10000, store_states=True)
+#     result = qt.mesolve(
+#         H=H_qbt_drive,
+#         rho0=qt.basis( len(trunc_states), logi_space.index(state_0) ),
+#         tlist=tlist,
+#         e_ops=e_ops,
+#         args=pulse_args,
+#         options=options
+#     )
+#     return result.expect[0][-1]
 
 
 ###################################################################
 # CZ-gate
 
-def cz_fidelity_optimize(arg, *args):
-    detune, drive_amp = arg # Independent arguments that can be optimized over
-    [H_qbt_drive, W_target, state_logi, tg] = args # System arguments
-    pulse_args = {'drive_amp_A': drive_amp,
-                'drive_freq_A': W_target + 2*np.pi*detune,
-                'gate_time': tg}
-    tlist = np.linspace(0, tg, num=int(3*tg))  # total time
-    prop = qt.propagator( H=H_qbt_drive,
-                          t=tlist,
-                          args=pulse_args,)[-1]  # get the propagator at the final time step
-    fidelity = cz_fidelity( prop, state_logi )
-    return np.log10(1-fidelity)
+# def cz_fidelity_optimize(arg, *args):
+#     detune, drive_amp = arg # Independent arguments that can be optimized over
+#     [H_qbt_drive, W_target, state_logi, tg] = args # System arguments
+#     pulse_args = {'drive_amp_A': drive_amp,
+#                 'drive_freq_A': W_target + 2*np.pi*detune,
+#                 'gate_time': tg}
+#     tlist = np.linspace(0, tg, num=int(3*tg))  # total time
+#     prop = qt.propagator( H=H_qbt_drive,
+#                           t=tlist,
+#                           args=pulse_args,)[-1]  # get the propagator at the final time step
+#     fidelity = cz_fidelity( prop, state_logi )
+#     return np.log10(1-fidelity)
 
-def cz_fidelity_parallel(arg, *args):
-    tg, detune, drive_amp = arg # Independent arguments that can be optimized over
-    [num_cpus, H_qbt_drive, W_target, state_logi] = args # System arguments
+# def cz_fidelity_parallel(arg, *args):
+#     tg, detune, drive_amp = arg # Independent arguments that can be optimized over
+#     [num_cpus, H_qbt_drive, W_target, state_logi] = args # System arguments
 
-    pulse_args = {'drive_amp_A': drive_amp,
-                'drive_freq_A': W_target + 2*np.pi*detune,
-                'gate_time': tg}
-    tlist = np.linspace(0, tg, num=int(3*tg))  # total time
-    prop = qt.propagator( H=H_qbt_drive,
-                        t=tlist,
-                        args=pulse_args,
-                        options=qt.Options( num_cpus=1 ),
-                        num_cpus=num_cpus,
-                        parallel=True,
-                        )[-1]  # get the propagator at the final time step
-    fidelity = cz_fidelity_log_noise( prop, state_logi )
-    return np.log10(1-fidelity)
+#     pulse_args = {'drive_amp_A': drive_amp,
+#                 'drive_freq_A': W_target + 2*np.pi*detune,
+#                 'gate_time': tg}
+#     tlist = np.linspace(0, tg, num=int(3*tg))  # total time
+#     prop = qt.propagator( H=H_qbt_drive,
+#                         t=tlist,
+#                         args=pulse_args,
+#                         options=qt.Options( num_cpus=1 ),
+#                         num_cpus=num_cpus,
+#                         parallel=True,
+#                         )[-1]  # get the propagator at the final time step
+#     fidelity = cz_fidelity_log_noise( prop, state_logi )
+#     return np.log10(1-fidelity)
 
+# def cz_fidelity_log(arg_all):
+#     [tg, drive_amp, detune, n_cpu, hspace, W_20_50, H_drive, logic_idx] = arg_all
 
-def cz_fidelity_log_noise(arg_optimize, *args):
-    [tg, drive_amp, detune] = arg_optimize # Independent arguments that can be optimized over
-    [H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx] = args # System arguments
-    pulse_args = {'drive_amp_A': drive_amp,
-                'drive_freq_A': W_target + 2*np.pi*detune,
-                'gate_time': tg}
-    tlist = np.linspace(0, tg, num=int(tg))  # total time
+#     pulse_args = {'drive_amp_A': drive_amp,
+#                 'drive_freq_A': W_20_50 + 2*np.pi*detune,
+#                 'gate_time': tg}
+#     tlist = np.linspace(0, tg, num=int(tg))  # total time
 
-    U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
-    p0_kraus = qt.to_kraus(qt.to_super(U_noise))
-    if len(c_op_list) != 0:
-        p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
+#     sesolve_args = []
+#     prop = np.zeros((len(hspace), len(logic_idx)), dtype=np.complex128)
+#     if n_cpu > 1:
+#         options = qt.Options(num_cpus=n_cpu, nsteps=1e4)
+#         for i in logic_idx:
+#             sesolve_args.append([H_drive, i, tlist, pulse_args, options])
+#         pool = Pool(processes=n_cpu)
+#         for i, res in pool.imap_unordered(sesolve_parallel, sesolve_args):
+#             prop[:, logic_idx.index(i)] = res.states[-1].full().flatten()
+#     else:
+#         options = qt.Options(num_cpus=5, nsteps=1e4)
+#         for i in logic_idx:
+#             sesolve_args.append([H_drive, i, tlist, pulse_args, options])
+#         for se_arg in sesolve_args:
+#             i, res = sesolve_parallel(se_arg)
+#             prop[:, logic_idx.index(i)] = res.states[-1].full().flatten()
 
-    p0_kraus_zz = cz_phase_correct(p0_kraus)
-    p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
-    f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=cz_gate())
-    return np.log10(1-f_noise)
+#     Uc = truncate_2(qt.Qobj(prop), logic_idx)
+#     Uz = remove_global_phase(qt.tensor( rz(dphi(Uc, (2,2))),
+#                                         rz(dphi(Uc, (1,1)))))
+#     Uc_reshaped = qt.Qobj(Uc.data, dims=[[2, 2], [2, 2]])
+#     Ucprime = remove_global_phase(Uz * Uc_reshaped)
+#     fidelity = qt.average_gate_fidelity(Ucprime, target=cz_gate())
+#     return np.log10(1-fidelity)
 
+# def cz_fidelity_log_noise_qutip(args_indep, *args):
+#     tg, drive_amp, detune = args_indep # Independent arguments that can be optimized over
+#     [H0, drive_term, W_target, max_steps, n_cpu, c_op_list] = args # System arguments
+
+#     H_qbt_drive = [H0, [2*np.pi* drive_term, drive_gauss_A] ]
+
+#     pulse_args = {'drive_amp_A': drive_amp,
+#                 'drive_freq_A': W_target + 2*np.pi*detune,
+#                 'gate_time': tg}
+#     tlist = np.linspace(0, tg, num=3*int(tg))  # total time
+#     options =qt.Options(max_step=max_steps, nsteps=1e4, num_cpus=1 )
+#     p = qt.propagator( H=H_qbt_drive,
+#                             t=tlist,
+#                             c_op_list=c_op_list,
+#                             options=options,
+#                             args=pulse_args,
+#                             num_cpus=n_cpu,
+#                             parallel=True,
+#                             )[-1]  # get the propagator at the final time step
+#     p0_kraus = qt.to_kraus(qt.to_super(p))
+
+#     # the following could lead to error
+#     p0_kraus = [truncate(i, 4) for i in p0_kraus]
+#     p0_kraus_zz = cz_phase_correct(p0_kraus)
+#     p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
+#     f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=cz_gate())
+#     return np.log10(1-f_noise)
 
 def cz_phase_correct(U_kraus):
     U_final = []
@@ -661,87 +695,42 @@ def cz_phase_correct(U_kraus):
         U_final.append(remove_global_phase(Uz * Uc_reshaped))
     return U_final
 
-
-def cz_fidelity_log_noise_qutip(args_indep, *args):
-    tg, drive_amp, detune = args_indep # Independent arguments that can be optimized over
-    [H0, drive_term, W_target, max_steps, n_cpu, c_op_list] = args # System arguments
-
-    H_qbt_drive = [H0, [2*np.pi* drive_term, drive_gauss_A] ]
+def cz_fidelity_log(arg_all):
+    [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx] = arg_all
 
     pulse_args = {'drive_amp_A': drive_amp,
                 'drive_freq_A': W_target + 2*np.pi*detune,
                 'gate_time': tg}
-    tlist = np.linspace(0, tg, num=3*int(tg))  # total time
-    options =qt.Options(max_step=max_steps, nsteps=1e4, num_cpus=1 )
-    p = qt.propagator( H=H_qbt_drive,
-                            t=tlist,
-                            c_op_list=c_op_list,
-                            options=options,
-                            args=pulse_args,
-                            num_cpus=n_cpu,
-                            parallel=True,
-                            )[-1]  # get the propagator at the final time step
-    p0_kraus = qt.to_kraus(qt.to_super(p))
+    tlist = np.linspace(0, tg, num=int(tg))  # total time
 
-    # the following could lead to error
-    p0_kraus = [truncate(i, 4) for i in p0_kraus]
+    U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
+    print('no.2')
+    U_noise = qt.to_super(U_noise)
+    print('no.3')
+    p0_kraus = qt.to_kraus(U_noise)
+    print('no.4')
+    if len(c_op_list) != 0:
+        p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
+
     p0_kraus_zz = cz_phase_correct(p0_kraus)
     p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
     f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=cz_gate())
     return np.log10(1-f_noise)
 
+def cz_fidelity_log_optimize(arg_optimize, *args):
+    [tg, drive_amp, detune] = arg_optimize # Independent arguments that can be optimized over
+    [H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx] = args # System arguments
 
+    arg_all = [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx]
 
-def get_jump_op(state_i, *args):
+    return cz_fidelity_log(arg_all)
 
-    truc1, gamma_decay, gamma_dephase, eket_tot = args
-    # t_1
-    ladder_0i = qt.basis(truc1,0) * qt.basis(truc1, state_i).dag()
-    a_0i_I = qt.tensor(ladder_0i, qt.qeye(truc1))
-    a_I_0i = qt.tensor(qt.qeye(truc1), ladder_0i)
-    jump_t1_a = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state_i])* a_0i_I ).data @ eket_tot.conj().T )
-    jump_t1_b = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state_i])* a_I_0i ).data @ eket_tot.conj().T )
-    # t_phi
-    proj_ii = qt.basis(truc1, state_i).proj()
-    a_ii_I = qt.tensor(proj_ii, qt.qeye(truc1))
-    a_I_ii = qt.tensor(qt.qeye(truc1), proj_ii)
-    jump_tphi_a = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_ii_I  ).data @ eket_tot.conj().T)
-    jump_tphi_b = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_I_ii  ).data @ eket_tot.conj().T)
-    return [jump_t1_a, jump_t1_b, jump_tphi_a, jump_tphi_b]
+def sesolve_parallel(argz):
+    """Parallel SESolve function for solving the Schrodinger equation."""
+    H, psi0, tlist, pulse_args, options = argz
+    return psi0, qt.sesolve(H, qt.basis(H[0].shape[0], psi0), tlist, options=options, args=pulse_args)
 
-
-
-def get_jump_op_charge_pick(state, *args):
-
-    dim_0, dim_1, gamma_decay, gamma_dephase, eket_tot, qubit_a = args
-    if qubit_a:
-        # t_1
-        ladder_0i = qt.basis(dim_0,0) * qt.basis(dim_0, state).dag()
-        a_0i_I = qt.tensor(ladder_0i, qt.qeye(dim_1))
-        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_0i_I ).data @ eket_tot.conj().T )
-        # t_phi
-        proj_ii = qt.basis(dim_0, state).proj()
-        a_ii_I = qt.tensor(proj_ii, qt.qeye(dim_1))
-        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_ii_I  ).data @ eket_tot.conj().T)
-    else: # qubit_b
-        # t_1
-        ladder_0j = qt.basis(dim_1,0) * qt.basis(dim_1, state).dag()
-        a_I_0i = qt.tensor(qt.qeye(dim_0), ladder_0j)
-        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_I_0i ).data @ eket_tot.conj().T )
-        # t_phi
-        proj_ii = qt.basis(dim_1, state).proj()
-        a_I_ii = qt.tensor(qt.qeye(dim_0), proj_ii)
-        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_I_ii  ).data @ eket_tot.conj().T)
-    return [jump_t1, jump_tphi]
-
-
-def cz_fidelity_optimize(arg, *args):
-    [tg, drive_amp, detune] = arg # Independent arguments that can be optimized over
-    [n_cpu, hspace, W_20_50, H_drive, logic_idx] = args # System arguments
-    arg_all = [tg, drive_amp, detune, n_cpu, hspace, W_20_50, H_drive, logic_idx]
-    return cz_fidelity(arg_all)
-
-def cz_fidelity_log(arg_all):
+def cz_fidelity_log_old(arg_all):
     [tg, drive_amp, detune, n_cpu, hspace, W_20_50, H_drive, logic_idx] = arg_all
 
     pulse_args = {'drive_amp_A': drive_amp,
@@ -773,6 +762,45 @@ def cz_fidelity_log(arg_all):
     Ucprime = remove_global_phase(Uz * Uc_reshaped)
     fidelity = qt.average_gate_fidelity(Ucprime, target=cz_gate())
     return np.log10(1-fidelity)
+
+def get_jump_op(state_i, *args):
+    truc1, gamma_decay, gamma_dephase, eket_tot = args
+    # t_1
+    ladder_0i = qt.basis(truc1,0) * qt.basis(truc1, state_i).dag()
+    a_0i_I = qt.tensor(ladder_0i, qt.qeye(truc1))
+    a_I_0i = qt.tensor(qt.qeye(truc1), ladder_0i)
+    jump_t1_a = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state_i])* a_0i_I ).data @ eket_tot.conj().T )
+    jump_t1_b = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state_i])* a_I_0i ).data @ eket_tot.conj().T )
+    # t_phi
+    proj_ii = qt.basis(truc1, state_i).proj()
+    a_ii_I = qt.tensor(proj_ii, qt.qeye(truc1))
+    a_I_ii = qt.tensor(qt.qeye(truc1), proj_ii)
+    jump_tphi_a = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_ii_I  ).data @ eket_tot.conj().T)
+    jump_tphi_b = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_I_ii  ).data @ eket_tot.conj().T)
+    return [jump_t1_a, jump_t1_b, jump_tphi_a, jump_tphi_b]
+
+def get_jump_op_charge_pick(state, *args):
+
+    dim_0, dim_1, gamma_decay, gamma_dephase, eket_tot, qubit_a = args
+    if qubit_a:
+        # t_1
+        ladder_0i = qt.basis(dim_0,0) * qt.basis(dim_0, state).dag()
+        a_0i_I = qt.tensor(ladder_0i, qt.qeye(dim_1))
+        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_0i_I ).data @ eket_tot.conj().T )
+        # t_phi
+        proj_ii = qt.basis(dim_0, state).proj()
+        a_ii_I = qt.tensor(proj_ii, qt.qeye(dim_1))
+        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_ii_I  ).data @ eket_tot.conj().T)
+    else: # qubit_b
+        # t_1
+        ladder_0j = qt.basis(dim_1,0) * qt.basis(dim_1, state).dag()
+        a_I_0i = qt.tensor(qt.qeye(dim_0), ladder_0j)
+        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_I_0i ).data @ eket_tot.conj().T )
+        # t_phi
+        proj_ii = qt.basis(dim_1, state).proj()
+        a_I_ii = qt.tensor(qt.qeye(dim_0), proj_ii)
+        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_I_ii  ).data @ eket_tot.conj().T)
+    return [jump_t1, jump_tphi]
 
 
 ###################################################################
@@ -983,11 +1011,11 @@ def parallel_mesolve(n, N, H, tlist, c_op_list, args, options, proj_idx, dims=No
     )
     return output
 
-def sesolve_parallel(argz):
+def parallel_sesolve(n, N, H, tlist, args, options):
     """Parallel SESolve function for solving the Schrodinger equation."""
-    H, psi0, tlist, pulse_args, options = argz
-    return psi0, qt.sesolve(H, qt.basis(H[0].shape[0], psi0), tlist, options=options, args=pulse_args)
-
+    psi0 = qt.basis(N, n)
+    output = qt.sesolve(H, psi0, tlist, [], args, options, _safe_mode=False)
+    return output
 
 def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
     """
@@ -1008,20 +1036,33 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
             - For noiseless systems: A `Qobj` representing the truncated propagator for logical states.
             - For noisy systems: A `Qobj` representing the superoperator propagator for the final time step.
     """
+    dimz = len(logi_idx)
     H0 = H[0][0] if isinstance(H[0], list) else H[0] if isinstance(H, list) else H
     if len(c_op_list) == 0:
+        N = H0.shape[0]
         options =qt.Options(max_step=0, nsteps=1e4, num_cpus=num_cpus)
-        # Computes the propagator for noiseless systems.
-        prop = np.zeros((H0.shape[0], len(logi_idx)), dtype=np.complex128)
-        for i in logi_idx:
-            res = qt.sesolve(H, qt.basis(H[0].shape[0], i), tlist, options=options, args=pulse_args)
-            prop[:, logi_idx.index(i)] = res.states[-1].full().flatten()
-        Uc = truncate_2(qt.Qobj(prop), logi_idx)
-        return Uc
+
+        if num_cpus > 1:
+            u = np.zeros([N, dimz, len(tlist)], dtype=complex)
+            output = qt.parallel.parallel_map(parallel_sesolve, logi_idx,
+                                    task_args=(N, H, tlist, pulse_args, options),
+                                    num_cpus=num_cpus)
+            for n in range(dimz):
+                for k, t in enumerate(tlist):
+                    u[:, n, k] = output[n].states[k].full().T
+            prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
+            return truncate_2(prop, logi_idx)
+        else:
+            # Computes the propagator for noiseless systems.
+            prop = np.zeros((H0.shape[0], dimz), dtype=np.complex128)
+            for i in logi_idx:
+                res = qt.sesolve(H, qt.basis(H[0].shape[0], i), tlist, options=options, args=pulse_args)
+                prop[:, logi_idx.index(i)] = res.states[-1].full().flatten()
+            Uc = truncate_2(qt.Qobj(prop), logi_idx)
+            return Uc
     else:
         options =qt.Options(max_step=1e-3, nsteps=1e4, num_cpus=num_cpus)
         # Computes the propagator for noisy systems.
-        dimz = len(logi_idx)
         proj_idx = [(i, j) for j in logi_idx for i in logi_idx]
         N = H0.shape[0]
         u = np.zeros([N * N, dimz * dimz, len(tlist)], dtype=complex)
@@ -1036,8 +1077,6 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
                 for k, t in enumerate(tlist):
                     u[:, n, k] = qt.superoperator.mat2vec(output[n].states[k].full()).T
         else:
-            # print("Hamiltonian (H):", H)
-            # print("Collapse operators (c_ops):", c_op_list)
             for n, idx in enumerate(proj_idx):
                 row_idx, col_idx = idx
                 rho0 = qt.states.projection(N, row_idx, col_idx)

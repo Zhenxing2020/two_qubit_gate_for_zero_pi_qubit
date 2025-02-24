@@ -191,6 +191,37 @@ def generate_evaltot_3ncut():
     np.save(folder_save+'eket_tot.npy', eket_tot.toarray())
 
 
+def generate_eval(Ec0=1.0, truc1=300, n_cut=90, phi_cut=300):
+    zp = scq.Circuit(ut.zp_yml, from_file=False)
+    zp.Ec0 = Ec0
+    zp.configure(transformation_matrix=np.linalg.inv(ut.transform_2zeropi))
+
+    ##############################################################################################
+    ### Construct subsystem, calculate eigenvalues
+    system_hierarchy = [[1,2],  [5,6]]
+    subsystem_trunc_dims = [10, 10]
+    zp.configure(system_hierarchy=system_hierarchy,
+                subsystem_trunc_dims=subsystem_trunc_dims)
+    zp.Φ1 = 0.001
+    zp.Φ2 = 0.001
+    zp.cutoff_ext_1, zp.cutoff_ext_5 = phi_cut, phi_cut
+    zp.cutoff_n_2, zp.cutoff_n_6 = n_cut, n_cut
+
+    ### the two-line code below takes time when truc1 is large
+    eval0, _ = zp.subsystems[0].eigensys(evals_count=truc1)
+    eval1, _ = zp.subsystems[1].eigensys(evals_count=truc1)
+
+    sorted_idx0 = np.argsort(eval0)
+    eval0 = eval0[sorted_idx0]
+    eval0 = eval0 - eval0[0]
+    sorted_idx1 = np.argsort(eval1)
+    eval1 = eval1[sorted_idx1]
+    eval1 = eval1 - eval1[0]
+    folder_save = f'data/3ncut_two_zeropi/truc1={truc1}_flux=0.001/'
+    os.mkdir(folder_save)
+    pd.DataFrame(eval0).to_csv(folder_save+ 'eval0.txt', index=False, header=True)
+    pd.DataFrame(eval1).to_csv(folder_save+ 'eval1.txt', index=False, header=True)
+
 if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
     print("Start Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
@@ -200,7 +231,8 @@ if __name__ == '__main__':
     # generate_data_3ncut()
     # reduce_eket()
     # generate_evaltot_3ncut()
-    generate_nop_3ncut()
+    # generate_nop_3ncut()
+    generate_eval()
 
     print("\nCurrent Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 

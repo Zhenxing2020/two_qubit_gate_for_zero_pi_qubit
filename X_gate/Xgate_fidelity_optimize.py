@@ -16,118 +16,6 @@ import utils_2Q_gate_zp as ut
 settings.OVERLAP_THRESHOLD = 0.3
 max_step, nsteps = 1e-3, 1e4
 
-
-# Optimize fidelity with differential evolution
-def fidelity_optimize_x():
-    """
-    Perform optimization of fidelity using differential evolution.
-
-    The function optimizes gate parameters for high fidelity in a quantum system
-    using the `differential_evolution` method from `scipy.optimize`. It also evaluates
-    fidelity for various truncations of the Hilbert space and prints results.
-    """
-
-    # Drive parameters
-    drive_phi, drive_theta = False, True
-
-    # Parameter bounds
-    amp1_bounds = (0.1, 0.45)
-    amp2_bounds = (0.025, 0.08)
-    detune1_bounds = (-0.15, 0.01)
-    detune2_bounds = (-0.06, 0.01)
-    tg_bound = (0, 0.01)
-
-    # Target gate times
-    tg_vec = np.arange(10, 20, step=5).tolist()
-
-    # Optimization parameters
-    workers, popsize = 100, 10
-    recombination, tol, mutation = 0.7, 0.01, (0.5, 1.0)
-
-    # Truncations
-    truc1, truc_full = 30, 50
-
-    # charge and phase basis
-    ncut, phi_cut = 30, 100
-
-    print('drive_phi =', drive_phi, ', drive_theta =', drive_theta)
-    print('amp1_bounds =', amp1_bounds, ', amp2_bounds =', amp2_bounds, ', tg_bound =', tg_bound)
-    print('detune1_bounds =', detune1_bounds, ', detune2_bounds =', detune2_bounds)
-    print('workers =', workers, ', popsize =', popsize)
-    print('recombination =', recombination, ', tol =', tol, ', mutation =', mutation)
-
-    # Initialize system
-    [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = zero_pi_initialize(
-        drive_phi, drive_theta, truncation=truc1, ncut=ncut, phi_cut=phi_cut
-    )
-    [H0_full, drive_full, _, _, _] = zero_pi_initialize(
-        drive_phi, drive_theta, truncation=truc_full, ncut=ncut, phi_cut=phi_cut
-    )
-    hspace_full = np.arange(truc_full).tolist()
-
-    print('truc1 =', truc1, ', truc2 (in optimization) =', len(hspace_charge))
-    print('truc1_full =', truc_full, ', truc2_full =', len(hspace_full))
-#############################################################
-
-    fidelity = []
-    drive_param = []
-    fidelity_full = []
-    n_cpu = 1
-    args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu]
-
-    for jdx, tg in tqdm(enumerate(tg_vec)):
-        tg_bounds = (tg + tg_bound[0], tg + tg_bound[1])
-        bounds = (tg_bounds, amp1_bounds, amp2_bounds, detune1_bounds, detune2_bounds)
-
-        # Optimize fidelity using differential evolution
-        res = sp.optimize.differential_evolution(
-            func=xgate_fidelity_parallel,
-            bounds=bounds,
-            args=args,
-            disp=True,
-            callback=print_soln,
-            init="sobol",
-            workers=workers,
-            popsize=popsize,
-            mutation=mutation,
-            recombination=recombination,
-            tol=tol,
-            polish=False,
-        )
-
-        fidelity.append(res.fun)
-        drive_param.append(res.x)
-
-        # Print optimization results
-        print(res, '\n')
-        print(f'\ntg = {np.array(tg_vec[:jdx + 1]).tolist()}')
-        print(f'\nlog of gate error (truc1={len(hspace_charge)}) = ')
-        for i in range(0, len(fidelity), 4):
-            print(', '.join(map(str, np.round(fidelity[i:i + 4], 8))), ',')
-
-        print(f'\ndrive_param (truc1={len(hspace_charge)}) = ')
-        for param in drive_param:
-            print(np.round(param, 6).tolist(), ',')
-
-        # Evaluate fidelity for optimal parameters in the full system
-        tg, drive_amp_A, drive_amp_B, detune_A, detune_B = drive_param[jdx]
-
-        n_cpu2 = 30
-        argz = [
-            H0_full, drive_full, w_trans_1, w_trans_2, hspace_full, n_cpu2,
-            tg, drive_amp_A, drive_amp_B, detune_A, detune_B
-        ]
-        fidelity_full.append(xgate_fidelity_log(argz))
-
-        print(f'\nlog of gate error (truc_full={truc_full}) = ')
-        for i in range(0, len(fidelity_full), 4):
-            print(', '.join(map(str, np.round(fidelity_full[i:i + 4], 8))), ',')
-
-        print("\n***Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')), '\n')
-
-    print('amp1_bounds =', amp1_bounds, ', amp2_bounds =', amp2_bounds)
-    print('detune1_bounds =', detune1_bounds, ', detune2_bounds =', detune2_bounds)
-
 def import_para():
     drive_phi, drive_theta = False, True
     # drive_phi, drive_theta =  True, False
@@ -194,16 +82,16 @@ def import_para_noise():
     """
     Imports parameters and computes gate fidelities for noisy systems.
     """
-    # drive_phi, drive_theta, truc = False, True, 300
-    drive_phi, drive_theta, truc = True, False, 300
+    # drive_phi, drive_theta, truc = True, False, 300
+    drive_phi, drive_theta, truc = False, True, 150
     drive_0 = True
     folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
     f_xgate = pd.read_csv('data/'+folder)
     params = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
-                      ]].to_numpy()[[ 1,2, 4,5, 7,8, 10,11, 13,14, 16,17,18],:]
-    #[[0,3,6,9,12,15],:]
+                      ]].to_numpy()[[0,3,9,12,17],:]
+    # [[ 1,2, 4,5, 7,8, 10,11, 13,14, 16,17,18],:]  , 0,3,9,12,17,
+    #
     num_cpus, n_job = 4, 1*len(params)
-
     logi_state = [0, 2]
 
     truncation=1000
@@ -240,24 +128,37 @@ def import_para_noise():
     # hspace_charge = np.arange(truc).tolist()
 
     hspace_len = len(hspace_charge)
+    t1_other = 5 # μs
     gamma_decay_logi =  1 / 1600e3
-    gamma_dephase_logi = 1 / 9e3
-    gamma_decay_other =  1 / 2e3
-    gamma_dephase_other = 1 / 2e3
+    gamma_dephase_logi = 1 / 100e3
+    gamma_decay_other =  1 / 1e3 / t1_other
+    gamma_dephase_other = 1 / 1e3 / t1_other
+
+    if drive_theta:
+        gamma_decay_old   = [0, gamma_decay_other,  gamma_decay_logi]  + [gamma_decay_other]  * (hspace_len-3)
+        gamma_dephase_old = [0, gamma_dephase_other, gamma_dephase_logi] + [gamma_dephase_other] * (hspace_len-3)
+    else:
+        gamma_decay_old   = [0,  gamma_decay_logi]  + [gamma_decay_other]  * (hspace_len-2)
+        gamma_dephase_old = [0,  gamma_dephase_logi] + [gamma_dephase_other] * (hspace_len-2)
+
+    folder_1 = 'data/data_xgate_gamma_'
+    folder_2 = 'theta.txt' if drive_theta else 'phi.txt'
+    gamma_new = pd.read_csv(folder_1 + folder_2)
+    gamma_decay_0 = gamma_new[f'decay_{t1_other}us_0'].to_numpy()
+    gamma_decay_2 = gamma_new[f'decay_{t1_other}us_2'].to_numpy()
+    gamma_dephase_new = gamma_new['gamma_dephase'].to_numpy()
+
     jump_t1   = []
     jump_tphi = []
-    gamma_decay   = [0, gamma_decay_other,  gamma_decay_logi]  + [gamma_decay_other]  * (hspace_len-3)
-    gamma_dephase = [0, gamma_dephase_other, gamma_dephase_logi] + [gamma_dephase_other] * (hspace_len-3)
     for i in range(1,hspace_len):
-        jump_t1.append( np.sqrt(gamma_decay[i]) * qt.basis(hspace_len,0) * qt.basis(hspace_len,i).dag() )
-        jump_tphi.append( np.sqrt(2*gamma_dephase[i]) * qt.basis(hspace_len,i).proj() )
+        jump_t1.append( np.sqrt(gamma_decay_0[i]) * qt.basis(hspace_len,0) * qt.basis(hspace_len,i).dag() )
+        jump_tphi.append( np.sqrt(2*gamma_dephase_new[i]) * qt.basis(hspace_len,i).proj() )
 
     logi_idx = [hspace_charge.index(s) for s in logi_state]
     H0_truc = ut.truncate_2(H0, hspace_charge)
     drive_truc = ut.truncate_2(drive_term, hspace_charge)
     H_qbt_drive = [H0_truc, [drive_truc, ut.drive_gauss_A],
                             [drive_truc, ut.drive_gauss_B],]
-    print('"new" is Tphi_logi  0 ---> 100μs')
     print('drive_phi=', drive_phi, '; drive_theta = ', drive_theta, '; truc = ', truc)
     print('hspace_len=', hspace_len)
     print('params =')
@@ -303,3 +204,115 @@ if __name__ == '__main__':
 
 
 
+
+
+# # Optimize fidelity with differential evolution
+# def fidelity_optimize_x():
+#     """
+#     Perform optimization of fidelity using differential evolution.
+
+#     The function optimizes gate parameters for high fidelity in a quantum system
+#     using the `differential_evolution` method from `scipy.optimize`. It also evaluates
+#     fidelity for various truncations of the Hilbert space and prints results.
+#     """
+
+#     # Drive parameters
+#     drive_phi, drive_theta = False, True
+
+#     # Parameter bounds
+#     amp1_bounds = (0.1, 0.45)
+#     amp2_bounds = (0.025, 0.08)
+#     detune1_bounds = (-0.15, 0.01)
+#     detune2_bounds = (-0.06, 0.01)
+#     tg_bound = (0, 0.01)
+
+#     # Target gate times
+#     tg_vec = np.arange(10, 20, step=5).tolist()
+
+#     # Optimization parameters
+#     workers, popsize = 100, 10
+#     recombination, tol, mutation = 0.7, 0.01, (0.5, 1.0)
+
+#     # Truncations
+#     truc1, truc_full = 30, 50
+
+#     # charge and phase basis
+#     ncut, phi_cut = 30, 100
+
+#     print('drive_phi =', drive_phi, ', drive_theta =', drive_theta)
+#     print('amp1_bounds =', amp1_bounds, ', amp2_bounds =', amp2_bounds, ', tg_bound =', tg_bound)
+#     print('detune1_bounds =', detune1_bounds, ', detune2_bounds =', detune2_bounds)
+#     print('workers =', workers, ', popsize =', popsize)
+#     print('recombination =', recombination, ', tol =', tol, ', mutation =', mutation)
+
+#     # Initialize system
+#     [H0, drive_term, w_trans_1, w_trans_2, hspace_charge] = zero_pi_initialize(
+#         drive_phi, drive_theta, truncation=truc1, ncut=ncut, phi_cut=phi_cut
+#     )
+#     [H0_full, drive_full, _, _, _] = zero_pi_initialize(
+#         drive_phi, drive_theta, truncation=truc_full, ncut=ncut, phi_cut=phi_cut
+#     )
+#     hspace_full = np.arange(truc_full).tolist()
+
+#     print('truc1 =', truc1, ', truc2 (in optimization) =', len(hspace_charge))
+#     print('truc1_full =', truc_full, ', truc2_full =', len(hspace_full))
+# #############################################################
+
+#     fidelity = []
+#     drive_param = []
+#     fidelity_full = []
+#     n_cpu = 1
+#     args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu]
+
+#     for jdx, tg in tqdm(enumerate(tg_vec)):
+#         tg_bounds = (tg + tg_bound[0], tg + tg_bound[1])
+#         bounds = (tg_bounds, amp1_bounds, amp2_bounds, detune1_bounds, detune2_bounds)
+
+#         # Optimize fidelity using differential evolution
+#         res = sp.optimize.differential_evolution(
+#             func=xgate_fidelity_parallel,
+#             bounds=bounds,
+#             args=args,
+#             disp=True,
+#             callback=print_soln,
+#             init="sobol",
+#             workers=workers,
+#             popsize=popsize,
+#             mutation=mutation,
+#             recombination=recombination,
+#             tol=tol,
+#             polish=False,
+#         )
+
+#         fidelity.append(res.fun)
+#         drive_param.append(res.x)
+
+#         # Print optimization results
+#         print(res, '\n')
+#         print(f'\ntg = {np.array(tg_vec[:jdx + 1]).tolist()}')
+#         print(f'\nlog of gate error (truc1={len(hspace_charge)}) = ')
+#         for i in range(0, len(fidelity), 4):
+#             print(', '.join(map(str, np.round(fidelity[i:i + 4], 8))), ',')
+
+#         print(f'\ndrive_param (truc1={len(hspace_charge)}) = ')
+#         for param in drive_param:
+#             print(np.round(param, 6).tolist(), ',')
+
+#         # Evaluate fidelity for optimal parameters in the full system
+#         tg, drive_amp_A, drive_amp_B, detune_A, detune_B = drive_param[jdx]
+
+#         n_cpu2 = 30
+#         argz = [
+#             H0_full, drive_full, w_trans_1, w_trans_2, hspace_full, n_cpu2,
+#             tg, drive_amp_A, drive_amp_B, detune_A, detune_B
+#         ]
+#         fidelity_full.append(xgate_fidelity_log(argz))
+
+#         print(f'\nlog of gate error (truc_full={truc_full}) = ')
+#         for i in range(0, len(fidelity_full), 4):
+#             print(', '.join(map(str, np.round(fidelity_full[i:i + 4], 8))), ',')
+
+#         print("\n***Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')), '\n')
+
+#     print('amp1_bounds =', amp1_bounds, ', amp2_bounds =', amp2_bounds)
+#     print('detune1_bounds =', detune1_bounds, ', detune2_bounds =', detune2_bounds)

@@ -1,0 +1,644 @@
+cz_fidelity_optimize.py
+Start Mountain Time: 2025-02-19 11:37:29.908060-07:00
+gate_time_vector: [173, 174, 177, 179, 180, 182, 184, 185]
+
+truc1= 300 , truc_tot= 1000 , charge_pick= True
+truc_tot_2= 1000
+amp_bounds= (0.007, 0.0088) , detune_bounds= (0.0128, 0.0142) , tg_bound= (-0.01, 0.01)
+W_20_50 =  15.983
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387differential_evolution step 1: f(x)= -4.01099
+Best Solution: [173.00334116, 0.00828703, 0.0138334]
+Convergence: 0.041
+----------------------------
+differential_evolution step 2: f(x)= -4.01099
+Best Solution: [173.00334116, 0.00828703, 0.0138334]
+Convergence: 0.052
+----------------------------
+differential_evolution step 3: f(x)= -4.01099
+Best Solution: [173.00334116, 0.00828703, 0.0138334]
+Convergence: 0.0661
+----------------------------
+differential_evolution step 4: f(x)= -4.01099
+Best Solution: [173.00334116, 0.00828703, 0.0138334]
+Convergence: 0.0928
+----------------------------
+differential_evolution step 5: f(x)= -4.01099
+Best Solution: [173.00334116, 0.00828703, 0.0138334]
+Convergence: 0.1364
+----------------------------
+differential_evolution step 6: f(x)= -4.01099
+Best Solution: [173.00334116, 0.00828703, 0.0138334]
+Convergence: 0.2114
+----------------------------
+differential_evolution step 7: f(x)= -4.01099
+Best Solution: [173.00334116, 0.00828703, 0.0138334]
+Convergence: 0.3924
+----------------------------
+differential_evolution step 8: f(x)= -4.01126
+Best Solution: [172.9983259, 0.00828279, 0.01382111]
+Convergence: 0.4226
+----------------------------
+differential_evolution step 9: f(x)= -4.01126
+Best Solution: [172.9983259, 0.00828279, 0.01382111]
+Convergence: 0.5196
+----------------------------
+differential_evolution step 10: f(x)= -4.01152
+Best Solution: [172.99746812, 0.00828266, 0.01382242]
+Convergence: 1.1261
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.0115179509411805
+       x: [ 1.730e+02  8.283e-03  1.382e-02]
+     nit: 10
+    nfev: 352 
+
+
+tg =  [173]
+
+log of gate error (truc=200) = 
+-4.01151795 ,
+
+drive_param (truc=200) = 
+[172.997468, 0.008283, 0.013822] ,
+1it [05:59, 359.75s/it]
+log of gate error (truc=1000) = 
+-3.95979874 ,
+
+amp_bounds= (0.007, 0.0088) , detune_bounds= (0.0128, 0.0142) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-02-19 11:43:29.817980-07:00
+differential_evolution step 1: f(x)= -3.6265
+Best Solution: [173.99993293, 0.00828935, 0.01372642]
+Convergence: 0.0369
+----------------------------
+differential_evolution step 2: f(x)= -3.6265
+Best Solution: [173.99993293, 0.00828935, 0.01372642]
+Convergence: 0.0478
+----------------------------
+differential_evolution step 3: f(x)= -3.6265
+Best Solution: [173.99993293, 0.00828935, 0.01372642]
+Convergence: 0.0503
+----------------------------
+differential_evolution step 4: f(x)= -4.04508
+Best Solution: [173.99842868, 0.00823901, 0.01376809]
+Convergence: 0.0559
+----------------------------
+differential_evolution step 5: f(x)= -4.04508
+Best Solution: [173.99842868, 0.00823901, 0.01376809]
+Convergence: 0.0695
+----------------------------
+differential_evolution step 6: f(x)= -4.04508
+Best Solution: [173.99842868, 0.00823901, 0.01376809]
+Convergence: 0.0919
+----------------------------
+differential_evolution step 7: f(x)= -4.04508
+Best Solution: [173.99842868, 0.00823901, 0.01376809]
+Convergence: 0.1415
+----------------------------
+differential_evolution step 8: f(x)= -4.04508
+Best Solution: [173.99842868, 0.00823901, 0.01376809]
+Convergence: 0.1807
+----------------------------
+differential_evolution step 9: f(x)= -4.04508
+Best Solution: [173.99842868, 0.00823901, 0.01376809]
+Convergence: 0.2367
+----------------------------
+differential_evolution step 10: f(x)= -4.05618
+Best Solution: [173.99583492, 0.00822912, 0.01373384]
+Convergence: 0.3971
+----------------------------
+differential_evolution step 11: f(x)= -4.05631
+Best Solution: [173.9996169, 0.00822792, 0.01374042]
+Convergence: 0.5926
+----------------------------
+differential_evolution step 12: f(x)= -4.05631
+Best Solution: [173.9996169, 0.00822792, 0.01374042]
+Convergence: 1.2967
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.056314061119952
+       x: [ 1.740e+02  8.228e-03  1.374e-02]
+     nit: 12
+    nfev: 416 
+
+
+tg =  [173, 174]
+
+log of gate error (truc=200) = 
+-4.01151795, -4.05631406 ,
+
+drive_param (truc=200) = 
+[172.997468, 0.008283, 0.013822] ,
+[173.999617, 0.008228, 0.01374] ,
+2it [13:45, 422.19s/it]
+log of gate error (truc=1000) = 
+-3.95979874, -4.00430735 ,
+
+amp_bounds= (0.007, 0.0088) , detune_bounds= (0.0128, 0.0142) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-02-19 11:51:15.722629-07:00
+differential_evolution step 1: f(x)= -3.84763
+Best Solution: [176.99264513, 0.00806763, 0.01365214]
+Convergence: 0.0461
+----------------------------
+differential_evolution step 2: f(x)= -3.84763
+Best Solution: [176.99264513, 0.00806763, 0.01365214]
+Convergence: 0.0638
+----------------------------
+differential_evolution step 3: f(x)= -4.00779
+Best Solution: [176.99013263, 0.00810733, 0.01354806]
+Convergence: 0.0775
+----------------------------
+differential_evolution step 4: f(x)= -4.00779
+Best Solution: [176.99013263, 0.00810733, 0.01354806]
+Convergence: 0.0954
+----------------------------
+differential_evolution step 5: f(x)= -4.18385
+Best Solution: [177.00578989, 0.00806283, 0.01352635]
+Convergence: 0.0997
+----------------------------
+differential_evolution step 6: f(x)= -4.18385
+Best Solution: [177.00578989, 0.00806283, 0.01352635]
+Convergence: 0.1055
+----------------------------
+differential_evolution step 7: f(x)= -4.18385
+Best Solution: [177.00578989, 0.00806283, 0.01352635]
+Convergence: 0.1172
+----------------------------
+differential_evolution step 8: f(x)= -4.19565
+Best Solution: [177.00941995, 0.00807682, 0.01355201]
+Convergence: 0.1301
+----------------------------
+differential_evolution step 9: f(x)= -4.19565
+Best Solution: [177.00941995, 0.00807682, 0.01355201]
+Convergence: 0.1753
+----------------------------
+differential_evolution step 10: f(x)= -4.22608
+Best Solution: [177.00578989, 0.00807471, 0.01352635]
+Convergence: 0.1941
+----------------------------
+differential_evolution step 11: f(x)= -4.22608
+Best Solution: [177.00578989, 0.00807471, 0.01352635]
+Convergence: 0.2589
+----------------------------
+differential_evolution step 12: f(x)= -4.22962
+Best Solution: [177.0058675, 0.0080711, 0.01350327]
+Convergence: 0.3865
+----------------------------
+differential_evolution step 13: f(x)= -4.22962
+Best Solution: [177.0058675, 0.0080711, 0.01350327]
+Convergence: 0.4414
+----------------------------
+differential_evolution step 14: f(x)= -4.22962
+Best Solution: [177.0058675, 0.0080711, 0.01350327]
+Convergence: 0.9962
+----------------------------
+differential_evolution step 15: f(x)= -4.23064
+Best Solution: [177.00911584, 0.00807108, 0.01350604]
+Convergence: 1.6609
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.23064068625572
+       x: [ 1.770e+02  8.071e-03  1.351e-02]
+     nit: 15
+    nfev: 512 
+
+
+tg =  [173, 174, 177]
+
+log of gate error (truc=200) = 
+-4.01151795, -4.05631406, -4.23064069 ,
+
+drive_param (truc=200) = 
+[172.997468, 0.008283, 0.013822] ,
+[173.999617, 0.008228, 0.01374] ,
+[177.009116, 0.008071, 0.013506] ,
+3it [24:39, 527.87s/it]
+log of gate error (truc=1000) = 
+-3.95979874, -4.00430735, -4.17512481 ,
+
+amp_bounds= (0.007, 0.0088) , detune_bounds= (0.0128, 0.0142) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-02-19 12:02:09.348328-07:00
+differential_evolution step 1: f(x)= -3.60042
+Best Solution: [179.00342673, 0.00792632, 0.01348048]
+Convergence: 0.0521
+----------------------------
+differential_evolution step 2: f(x)= -4.02383
+Best Solution: [179.00432218, 0.00797492, 0.01347783]
+Convergence: 0.0546
+----------------------------
+differential_evolution step 3: f(x)= -4.04201
+Best Solution: [178.99926434, 0.00795059, 0.01324537]
+Convergence: 0.0612
+----------------------------
+differential_evolution step 4: f(x)= -4.04201
+Best Solution: [178.99926434, 0.00795059, 0.01324537]
+Convergence: 0.0738
+----------------------------
+differential_evolution step 5: f(x)= -4.18322
+Best Solution: [178.99635313, 0.00799414, 0.01339248]
+Convergence: 0.1036
+----------------------------
+differential_evolution step 6: f(x)= -4.21993
+Best Solution: [179.00101086, 0.00798045, 0.01332618]
+Convergence: 0.126
+----------------------------
+differential_evolution step 7: f(x)= -4.21993
+Best Solution: [179.00101086, 0.00798045, 0.01332618]
+Convergence: 0.1555
+----------------------------
+differential_evolution step 8: f(x)= -4.29854
+Best Solution: [179.005449, 0.00796332, 0.01336148]
+Convergence: 0.1955
+----------------------------
+differential_evolution step 9: f(x)= -4.29854
+Best Solution: [179.005449, 0.00796332, 0.01336148]
+Convergence: 0.242
+----------------------------
+differential_evolution step 10: f(x)= -4.30921
+Best Solution: [179.00589907, 0.00796759, 0.01337173]
+Convergence: 0.2704
+----------------------------
+differential_evolution step 11: f(x)= -4.30921
+Best Solution: [179.00589907, 0.00796759, 0.01337173]
+Convergence: 0.395
+----------------------------
+differential_evolution step 12: f(x)= -4.31758
+Best Solution: [179.00545981, 0.00797367, 0.01336006]
+Convergence: 0.6468
+----------------------------
+differential_evolution step 13: f(x)= -4.31758
+Best Solution: [179.00545981, 0.00797367, 0.01336006]
+Convergence: 1.3578
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.317579675371422
+       x: [ 1.790e+02  7.974e-03  1.336e-02]
+     nit: 13
+    nfev: 448 
+
+
+tg =  [173, 174, 177, 179]
+
+log of gate error (truc=200) = 
+-4.01151795, -4.05631406, -4.23064069, -4.31757968 ,
+
+drive_param (truc=200) = 
+[172.997468, 0.008283, 0.013822] ,
+[173.999617, 0.008228, 0.01374] ,
+[177.009116, 0.008071, 0.013506] ,
+[179.00546, 0.007974, 0.01336] ,
+4it [33:27, 527.84s/it]
+log of gate error (truc=1000) = 
+-3.95979874, -4.00430735, -4.17512481, -4.26685023 ,
+
+amp_bounds= (0.007, 0.0088) , detune_bounds= (0.0128, 0.0142) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-02-19 12:10:57.146215-07:00
+differential_evolution step 1: f(x)= -3.60386
+Best Solution: [179.99532297, 0.00796258, 0.01315549]
+Convergence: 0.047
+----------------------------
+differential_evolution step 2: f(x)= -3.60386
+Best Solution: [179.99532297, 0.00796258, 0.01315549]
+Convergence: 0.0589
+----------------------------
+differential_evolution step 3: f(x)= -4.20323
+Best Solution: [180.00274892, 0.00791909, 0.01334886]
+Convergence: 0.0576
+----------------------------
+differential_evolution step 4: f(x)= -4.30068
+Best Solution: [180.00545885, 0.00792347, 0.01325151]
+Convergence: 0.0635
+----------------------------
+differential_evolution step 5: f(x)= -4.30068
+Best Solution: [180.00545885, 0.00792347, 0.01325151]
+Convergence: 0.0671
+----------------------------
+differential_evolution step 6: f(x)= -4.30068
+Best Solution: [180.00545885, 0.00792347, 0.01325151]
+Convergence: 0.08
+----------------------------
+differential_evolution step 7: f(x)= -4.30068
+Best Solution: [180.00545885, 0.00792347, 0.01325151]
+Convergence: 0.0966
+----------------------------
+differential_evolution step 8: f(x)= -4.32509
+Best Solution: [180.00706188, 0.00792061, 0.01330943]
+Convergence: 0.137
+----------------------------
+differential_evolution step 9: f(x)= -4.32509
+Best Solution: [180.00706188, 0.00792061, 0.01330943]
+Convergence: 0.1532
+----------------------------
+differential_evolution step 10: f(x)= -4.33346
+Best Solution: [180.00968417, 0.00791729, 0.01326177]
+Convergence: 0.1908
+----------------------------
+differential_evolution step 11: f(x)= -4.33676
+Best Solution: [180.00411596, 0.00792061, 0.01326545]
+Convergence: 0.223
+----------------------------
+differential_evolution step 12: f(x)= -4.34623
+Best Solution: [180.0021313, 0.00792465, 0.01328363]
+Convergence: 0.4168
+----------------------------
+differential_evolution step 13: f(x)= -4.34623
+Best Solution: [180.0021313, 0.00792465, 0.01328363]
+Convergence: 0.867
+----------------------------
+differential_evolution step 14: f(x)= -4.34623
+Best Solution: [180.0021313, 0.00792465, 0.01328363]
+Convergence: 1.5966
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.346229080877928
+       x: [ 1.800e+02  7.925e-03  1.328e-02]
+     nit: 14
+    nfev: 480 
+
+
+tg =  [173, 174, 177, 179, 180]
+
+log of gate error (truc=200) = 
+-4.01151795, -4.05631406, -4.23064069, -4.31757968 ,
+-4.34622908 ,
+
+drive_param (truc=200) = 
+[172.997468, 0.008283, 0.013822] ,
+[173.999617, 0.008228, 0.01374] ,
+[177.009116, 0.008071, 0.013506] ,
+[179.00546, 0.007974, 0.01336] ,
+[180.002131, 0.007925, 0.013284] ,
+5it [42:25, 531.57s/it]
+log of gate error (truc=1000) = 
+-3.95979874, -4.00430735, -4.17512481, -4.26685023 ,
+-4.29071166 ,
+
+amp_bounds= (0.007, 0.0088) , detune_bounds= (0.0128, 0.0142) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-02-19 12:19:55.326000-07:00
+differential_evolution step 1: f(x)= -4.23895
+Best Solution: [182.00766478, 0.00780874, 0.01316567]
+Convergence: 0.0464
+----------------------------
+differential_evolution step 2: f(x)= -4.23895
+Best Solution: [182.00766478, 0.00780874, 0.01316567]
+Convergence: 0.0528
+----------------------------
+differential_evolution step 3: f(x)= -4.23895
+Best Solution: [182.00766478, 0.00780874, 0.01316567]
+Convergence: 0.069
+----------------------------
+differential_evolution step 4: f(x)= -4.23895
+Best Solution: [182.00766478, 0.00780874, 0.01316567]
+Convergence: 0.0874
+----------------------------
+differential_evolution step 5: f(x)= -4.36931
+Best Solution: [181.99977441, 0.00781635, 0.01311347]
+Convergence: 0.1087
+----------------------------
+differential_evolution step 6: f(x)= -4.38135
+Best Solution: [181.99785291, 0.00782058, 0.01315441]
+Convergence: 0.1231
+----------------------------
+differential_evolution step 7: f(x)= -4.38135
+Best Solution: [181.99785291, 0.00782058, 0.01315441]
+Convergence: 0.1478
+----------------------------
+differential_evolution step 8: f(x)= -4.38135
+Best Solution: [181.99785291, 0.00782058, 0.01315441]
+Convergence: 0.1596
+----------------------------
+differential_evolution step 9: f(x)= -4.38135
+Best Solution: [181.99785291, 0.00782058, 0.01315441]
+Convergence: 0.161
+----------------------------
+differential_evolution step 10: f(x)= -4.38135
+Best Solution: [181.99785291, 0.00782058, 0.01315441]
+Convergence: 0.1943
+----------------------------
+differential_evolution step 11: f(x)= -4.3901
+Best Solution: [181.99522225, 0.00781959, 0.0131223]
+Convergence: 0.3072
+----------------------------
+differential_evolution step 12: f(x)= -4.3901
+Best Solution: [181.99522225, 0.00781959, 0.0131223]
+Convergence: 0.4278
+----------------------------
+differential_evolution step 13: f(x)= -4.39791
+Best Solution: [182.00291026, 0.00782458, 0.0131284]
+Convergence: 0.6355
+----------------------------
+differential_evolution step 14: f(x)= -4.40303
+Best Solution: [181.99745796, 0.00782275, 0.01313418]
+Convergence: 0.9898
+----------------------------
+differential_evolution step 15: f(x)= -4.40373
+Best Solution: [182.00291026, 0.00782458, 0.01314469]
+Convergence: 1.5116
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.403732750908219
+       x: [ 1.820e+02  7.825e-03  1.314e-02]
+     nit: 15
+    nfev: 512 
+
+
+tg =  [173, 174, 177, 179, 180, 182]
+
+log of gate error (truc=200) = 
+-4.01151795, -4.05631406, -4.23064069, -4.31757968 ,
+-4.34622908, -4.40373275 ,
+
+drive_param (truc=200) = 
+[172.997468, 0.008283, 0.013822] ,
+[173.999617, 0.008228, 0.01374] ,
+[177.009116, 0.008071, 0.013506] ,
+[179.00546, 0.007974, 0.01336] ,
+[180.002131, 0.007925, 0.013284] ,
+[182.00291, 0.007825, 0.013145] ,
+6it [51:52, 543.69s/it]
+log of gate error (truc=1000) = 
+-3.95979874, -4.00430735, -4.17512481, -4.26685023 ,
+-4.29071166, -4.35360198 ,
+
+amp_bounds= (0.007, 0.0088) , detune_bounds= (0.0128, 0.0142) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-02-19 12:29:22.542203-07:00
+differential_evolution step 1: f(x)= -3.89949
+Best Solution: [183.99302528, 0.00768327, 0.01288475]
+Convergence: 0.0422
+----------------------------
+differential_evolution step 2: f(x)= -4.3437
+Best Solution: [183.99697572, 0.00771488, 0.01298156]
+Convergence: 0.0455
+----------------------------
+differential_evolution step 3: f(x)= -4.3437
+Best Solution: [183.99697572, 0.00771488, 0.01298156]
+Convergence: 0.0543
+----------------------------
+differential_evolution step 4: f(x)= -4.3437
+Best Solution: [183.99697572, 0.00771488, 0.01298156]
+Convergence: 0.0731
+----------------------------
+differential_evolution step 5: f(x)= -4.4026
+Best Solution: [183.99658495, 0.00772268, 0.0129792]
+Convergence: 0.0896
+----------------------------
+differential_evolution step 6: f(x)= -4.4026
+Best Solution: [183.99658495, 0.00772268, 0.0129792]
+Convergence: 0.1054
+----------------------------
+differential_evolution step 7: f(x)= -4.40789
+Best Solution: [184.00267494, 0.00772359, 0.01299922]
+Convergence: 0.1311
+----------------------------
+differential_evolution step 8: f(x)= -4.40789
+Best Solution: [184.00267494, 0.00772359, 0.01299922]
+Convergence: 0.2116
+----------------------------
+differential_evolution step 9: f(x)= -4.41237
+Best Solution: [183.99937276, 0.0077336, 0.01299415]
+Convergence: 0.3253
+----------------------------
+differential_evolution step 10: f(x)= -4.42433
+Best Solution: [183.99871264, 0.00773061, 0.01299922]
+Convergence: 0.4487
+----------------------------
+differential_evolution step 11: f(x)= -4.42433
+Best Solution: [183.99871264, 0.00773061, 0.01299922]
+Convergence: 0.6184
+----------------------------
+differential_evolution step 12: f(x)= -4.42433
+Best Solution: [183.99871264, 0.00773061, 0.01299922]
+Convergence: 2.1533
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.424331877072611
+       x: [ 1.840e+02  7.731e-03  1.300e-02]
+     nit: 12
+    nfev: 416 
+
+
+tg =  [173, 174, 177, 179, 180, 182, 184]
+
+log of gate error (truc=200) = 
+-4.01151795, -4.05631406, -4.23064069, -4.31757968 ,
+-4.34622908, -4.40373275, -4.42433188 ,
+
+drive_param (truc=200) = 
+[172.997468, 0.008283, 0.013822] ,
+[173.999617, 0.008228, 0.01374] ,
+[177.009116, 0.008071, 0.013506] ,
+[179.00546, 0.007974, 0.01336] ,
+[180.002131, 0.007925, 0.013284] ,
+[182.00291, 0.007825, 0.013145] ,
+[183.998713, 0.007731, 0.012999] ,
+7it [59:11, 509.61s/it]
+log of gate error (truc=1000) = 
+-3.95979874, -4.00430735, -4.17512481, -4.26685023 ,
+-4.29071166, -4.35360198, -4.37522052 ,
+
+amp_bounds= (0.007, 0.0088) , detune_bounds= (0.0128, 0.0142) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-02-19 12:36:41.999436-07:00
+differential_evolution step 1: f(x)= -4.12649
+Best Solution: [185.00391872, 0.0076692, 0.01282695]
+Convergence: 0.0425
+----------------------------
+differential_evolution step 2: f(x)= -4.12649
+Best Solution: [185.00391872, 0.0076692, 0.01282695]
+Convergence: 0.0551
+----------------------------
+differential_evolution step 3: f(x)= -4.12649
+Best Solution: [185.00391872, 0.0076692, 0.01282695]
+Convergence: 0.0582
+----------------------------
+differential_evolution step 4: f(x)= -4.20643
+Best Solution: [185.00256203, 0.00769718, 0.01289394]
+Convergence: 0.0577
+----------------------------
+differential_evolution step 5: f(x)= -4.26474
+Best Solution: [185.00719892, 0.00766348, 0.01291983]
+Convergence: 0.066
+----------------------------
+differential_evolution step 6: f(x)= -4.32515
+Best Solution: [185.00416933, 0.00769158, 0.01297463]
+Convergence: 0.0758
+----------------------------
+differential_evolution step 7: f(x)= -4.32515
+Best Solution: [185.00416933, 0.00769158, 0.01297463]
+Convergence: 0.1445
+----------------------------
+differential_evolution step 8: f(x)= -4.38416
+Best Solution: [185.0071685, 0.00767983, 0.01294213]
+Convergence: 0.18
+----------------------------
+differential_evolution step 9: f(x)= -4.38416
+Best Solution: [185.0071685, 0.00767983, 0.01294213]
+Convergence: 0.2131
+----------------------------
+differential_evolution step 10: f(x)= -4.38416
+Best Solution: [185.0071685, 0.00767983, 0.01294213]
+Convergence: 0.2943
+----------------------------
+differential_evolution step 11: f(x)= -4.38416
+Best Solution: [185.0071685, 0.00767983, 0.01294213]
+Convergence: 0.3591
+----------------------------
+differential_evolution step 12: f(x)= -4.39544
+Best Solution: [185.00325445, 0.00768181, 0.01291791]
+Convergence: 0.517
+----------------------------
+differential_evolution step 13: f(x)= -4.39544
+Best Solution: [185.00325445, 0.00768181, 0.01291791]
+Convergence: 0.7281
+----------------------------
+differential_evolution step 14: f(x)= -4.39803
+Best Solution: [184.99995998, 0.00768293, 0.01292311]
+Convergence: 0.7922
+----------------------------
+differential_evolution step 15: f(x)= -4.39923
+Best Solution: [185.0005086, 0.00768366, 0.01293064]
+Convergence: 1.046
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -4.39923105402537
+       x: [ 1.850e+02  7.684e-03  1.293e-02]
+     nit: 15
+    nfev: 512 
+
+
+tg =  [173, 174, 177, 179, 180, 182, 184, 185]
+
+log of gate error (truc=200) = 
+-4.01151795, -4.05631406, -4.23064069, -4.31757968 ,
+-4.34622908, -4.40373275, -4.42433188, -4.39923105 ,
+
+drive_param (truc=200) = 
+[172.997468, 0.008283, 0.013822] ,
+[173.999617, 0.008228, 0.01374] ,
+[177.009116, 0.008071, 0.013506] ,
+[179.00546, 0.007974, 0.01336] ,
+[180.002131, 0.007925, 0.013284] ,
+[182.00291, 0.007825, 0.013145] ,
+[183.998713, 0.007731, 0.012999] ,
+[185.000509, 0.007684, 0.012931] ,
+8it [1:07:29, 505.65s/it]8it [1:07:29, 506.14s/it]
+
+log of gate error (truc=1000) = 
+-3.95979874, -4.00430735, -4.17512481, -4.26685023 ,
+-4.29071166, -4.35360198, -4.37522052, -4.35591297 ,
+
+amp_bounds= (0.007, 0.0088) , detune_bounds= (0.0128, 0.0142) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-02-19 12:44:59.163442-07:00
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+109125.22user 680.69system 1:07:31elapsed 2710%CPU (0avgtext+0avgdata 513544maxresident)k
+0inputs+176outputs (1major+42612272minor)pagefaults 0swaps

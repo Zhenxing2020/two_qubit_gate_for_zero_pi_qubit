@@ -28,18 +28,21 @@ import os
 ## Optimize fidelity with differential evolution and sweep
 ###################################################################
 def fidelity_sweep():
-    n_cpu = 1
+    n_cpu_optimize = 1
     c_op_list = []
-    args_truc = [H_drive_part, W_20_50, n_cpu, c_op_list, logi_idx_part]
+    args_truc = [H_drive_part, W_20_50, n_cpu_optimize, c_op_list, logi_idx_part]
+    args_truc2 = [H_drive_part, W_20_50, n_cpu_optimize, c_op_list, logi_idx_part]
     fidelity = []
     drive_param = []
     fidelity_full = []
-    for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
-    # for jdx, tg in tqdm(enumerate(tg_vec)):
+    # for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
+    for jdx, tg in tqdm(enumerate(tg_vec)):
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
         bounds = (tg_bounds, amp_bound, detune_bound)
+        print("\noptimize Time:", datetime.now(pytz.timezone('America/Denver')))
+        # print('args_truc==args_truc2', args_truc==args_truc2)
         res = sp.optimize.differential_evolution(
-            func=ut.cz_fidelity_log_noise,
+            func=ut.cz_fidelity_log_optimize,
             bounds=bounds,
             args=args_truc,
             disp=True,
@@ -50,17 +53,18 @@ def fidelity_sweep():
             mutation=mutation,
             recombination=recombination,
             tol=tol,
-            x0=x0_vec[jdx,:3],
+            # x0=x0_vec[jdx,:3],
             polish=False, # 'True' will make the for-loop break
             )
+        print("\nfinish optimize Time:", datetime.now(pytz.timezone('America/Denver')))
         fidelity.append(res.fun)
         drive_param.append(res.x.tolist())
 
         print(res, '\n')
-        # print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
-        print('\ntg = ')
-        for i in range(0, len(fidelity), 4):
-            print(', '.join(map(str, np.round(np.array((x0_vec[:,0])[:jdx+1])[i:i+4], 8))), ',')
+        print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
+        # print('\ntg = ')
+        # for i in range(0, len(fidelity), 4):
+            # print(', '.join(map(str, np.round(np.array((x0_vec[:,0])[:jdx+1])[i:i+4], 8))), ',')
         print(f'\nlog of gate error (truc={len_part}) = ')
         for i in range(0, len(fidelity), 4):
             print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
@@ -68,10 +72,18 @@ def fidelity_sweep():
         for i in drive_param:
             print(np.round(i,6).tolist(),',')
 
-        n_cpu_full = 50
+        print("Full Time:", datetime.now(pytz.timezone('America/Denver')))
+        n_cpu_parallel = 16
         tg, drive_amp, detune = drive_param[jdx]
-        arg_all = [tg, drive_amp, detune, n_cpu_full, hspace_False, W_20_50, H_drive_False, logi_idx_False]
+
+        arg_all = [tg, drive_amp, detune,
+                   H_drive_False, W_20_50, n_cpu_parallel, c_op_list, logi_idx_False]
         fidelity_full.append(ut.cz_fidelity_log(arg_all))
+
+        # arg_all = [tg, drive_amp, detune,
+        #            n_cpu_parallel, hspace_False, W_20_50, H_drive_False, logi_idx_False]
+        # fidelity_full.append(ut.cz_fidelity_log_old(arg_all))
+
         print(f'\nlog of gate error (truc={len(eval_tot)}) = ')
         for i in range(0, len(fidelity_full), 4):
             print(', '.join(map(str, np.round(fidelity_full[i:i+4], 8))), ',')
@@ -104,13 +116,19 @@ if __name__ == '__main__':
     n_theta0_False = qt.Qobj(2*np.pi* np.load(folder+'n_theta0_dress.npy'))
     n_theta1_False = qt.Qobj(2*np.pi* np.load(folder+'n_theta1_dress.npy'))
 
-    # amp_bound, detune_bound, tg_bound = [(0.008, 0.012), (0.012, 0.018), (0, 0.01)]
-    # amp_bound, detune_bound, tg_bound = [(0.007, 0.00875), (0.012, 0.015), (0, 0.01)]
-    amp_bound, detune_bound, tg_bound = [(0.003, 0.046), (0.005, 0.035), (-0.01, 0.01)]
+    # amp_bound, detune_bound, tg_bound = [(0.0085, 0.0106), (0.013, 0.0175), (-0.01, 0.01)] # tg141-157
+    # amp_bound, detune_bound, tg_bound = [(0.008, 0.0092), (0.013, 0.0155), (-0.01, 0.01)] # tg160-171
+    # amp_bound, detune_bound, tg_bound = [(0.007, 0.0088), (0.0128, 0.0142), (-0.01, 0.01)] # tg173-185
+    # amp_bound, detune_bound, tg_bound = [(0.007, 0.008), (0.012, 0.0132), (-0.01, 0.01)] # tg186-195
+    amp_bound, detune_bound, tg_bound = [(0.0068, 0.0075), (0.01175, 0.0125), (-0.01, 0.01)] # tg195-201
 
-    # tg_vec = np.arange(27, 38, 1)
-    cz = pd.read_csv('data/data_cz_3ncut_truc1=300.txt')
-    x0_vec = cz[['tg', 'drive_amp', 'detune']].to_numpy()[2::3,:]
+    # tg_vec = [141, 145, 149, 151, 153, 154, 157]
+    # tg_vec = [160, 161, 162, 163, 165, 168, 170, 171,]
+    # tg_vec = [173, 174, 177, 179, 180, 182, 184, 185]
+    # tg_vec = np.arange(186, 195, 1)
+    tg_vec = [2, 3] #np.arange(195, 201, 1)
+    # cz = pd.read_csv('data/data_cz_3ncut_truc1=300.txt')
+    # x0_vec = cz[['tg', 'drive_amp', 'detune']].to_numpy()[2::3,:]
     # x0_vec = np.array([
 # [20.040941, 0.045968, 0.030859, -0.74640732],
 #  [26.095068, 0.045891, 0.015649, -0.37350652],
@@ -126,10 +144,10 @@ if __name__ == '__main__':
 
 
     print('gate_time_vector:', np.array(tg_vec).tolist()) if 'tg_vec' in globals() else None
-    for i in x0_vec:
-        print(i.tolist(), ',')
+    # for i in x0_vec:
+    #     print(i.tolist(), ',')
 
-    workers, popsize = 100, 10
+    workers, popsize = 2, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     drive_term = n_theta1_dress
     logi_state = ['0-0', '0-2', '2-0', '2-2']
@@ -137,28 +155,28 @@ if __name__ == '__main__':
 
     hspace_part = [
 '0-0', '5-0', '0-2', '2-0', '2-2', '5-2', '5-1', '0-1', '2-1', '1-0' ,
-'0-5', '2-5', '1-2', '9-0', '4-0', '2-4', '5-5', '1-1', '5-4', '1-5' ,
-'9-2', '0-4', '4-2', '2-8', '0-8', '9-1', '2-12', '2-9', '0-9', '0-12' ,
-'12-0', '2-16', '0-16', '5-8', '1-8', '4-5', '2-13', '2-21', '0-18', '2-20' ,
-'9-4', '4-9', '8-0', '2-18', '0-21', '2-24', '1-4', '18-0', '5-26', '0-13' ,
+# '0-5', '2-5', '1-2', '9-0', '4-0', '2-4', '5-5', '1-1', '5-4', '1-5' ,
+# '9-2', '0-4', '4-2', '2-8', '0-8', '9-1', '2-12', '2-9', '0-9', '0-12' ,
+# '12-0', '2-16', '0-16', '5-8', '1-8', '4-5', '2-13', '2-21', '0-18', '2-20' ,
+# '9-4', '4-9', '8-0', '2-18', '0-21', '2-24', '1-4', '18-0', '5-26', '0-13' ,
 
-'13-0', '0-26', '15-0', '2-26', '1-12', '5-16', '8-1', '0-24', '15-1', '2-35' ,
-'15-4', '2-33', '2-45', '0-33', '2-39', '0-45', '5-12', '0-39', '5-9', '8-12' ,
-'5-33', '12-2', '4-4', '1-9', '4-1', '5-34', '2-30', '2-46', '1-16', '0-34' ,
-'2-34', '8-2', '5-21', '2-52', '0-52', '0-42', '2-42', '2-59', '0-59', '5-18' ,
-'0-65', '5-24', '2-55', '0-55', '0-20', '9-8', '8-9', '22-0', '1-25', '8-5' ,
+# '13-0', '0-26', '15-0', '2-26', '1-12', '5-16', '8-1', '0-24', '15-1', '2-35' ,
+# '15-4', '2-33', '2-45', '0-33', '2-39', '0-45', '5-12', '0-39', '5-9', '8-12' ,
+# '5-33', '12-2', '4-4', '1-9', '4-1', '5-34', '2-30', '2-46', '1-16', '0-34' ,
+# '2-34', '8-2', '5-21', '2-52', '0-52', '0-42', '2-42', '2-59', '0-59', '5-18' ,
+# '0-65', '5-24', '2-55', '0-55', '0-20', '9-8', '8-9', '22-0', '1-25', '8-5' ,
 
-'12-1', '4-8', '2-53', '2-36', '2-25', '5-20', '5-13', '9-24', '15-8', '1-30' ,
-'0-25', '1-20', '5-25', '9-5', '1-13', '1-24', '13-2', '1-33', '18-1', '0-68' ,
-'18-2', '20-0', '2-44', '9-12', '4-25', '9-9', '5-30', '0-83', '5-39', '9-16' ,
-'0-36', '0-73', '12-4', '18-5', '22-2', '15-16', '1-21', '5-35', '9-13', '2-60' ,
-'2-57', '15-2', '15-5', '2-28', '13-1', '4-12', '0-35', '9-20', '2-54', '1-18' ,
+# '12-1', '4-8', '2-53', '2-36', '2-25', '5-20', '5-13', '9-24', '15-8', '1-30' ,
+# '0-25', '1-20', '5-25', '9-5', '1-13', '1-24', '13-2', '1-33', '18-1', '0-68' ,
+# '18-2', '20-0', '2-44', '9-12', '4-25', '9-9', '5-30', '0-83', '5-39', '9-16' ,
+# '0-36', '0-73', '12-4', '18-5', '22-2', '15-16', '1-21', '5-35', '9-13', '2-60' ,
+# '2-57', '15-2', '15-5', '2-28', '13-1', '4-12', '0-35', '9-20', '2-54', '1-18' ,
 
-'0-81', '24-1', '4-39', '0-30', '1-26', '8-4', '4-16', '12-5', '1-35', '8-8' ,
-'24-0', '12-9', '5-44', '0-77', '4-21', '0-57', '5-28', '1-39', '25-0', '8-18' ,
-'1-28', '4-44', '33-0', '5-42', '12-12', '0-54', '13-12', '9-26', '4-24', '20-9' ,
-'8-26', '24-4', '8-16', '0-46', '13-4', '1-34', '37-1', '0-44', '18-16', '22-4' ,
-'1-45', '0-78', '9-25', '5-36', '24-9', '1-44', '4-35', '18-8', '0-53', '1-60' ,
+# '0-81', '24-1', '4-39', '0-30', '1-26', '8-4', '4-16', '12-5', '1-35', '8-8' ,
+# '24-0', '12-9', '5-44', '0-77', '4-21', '0-57', '5-28', '1-39', '25-0', '8-18' ,
+# '1-28', '4-44', '33-0', '5-42', '12-12', '0-54', '13-12', '9-26', '4-24', '20-9' ,
+# '8-26', '24-4', '8-16', '0-46', '13-4', '1-34', '37-1', '0-44', '18-16', '22-4' ,
+# '1-45', '0-78', '9-25', '5-36', '24-9', '1-44', '4-35', '18-8', '0-53', '1-60' ,
     ]
     H0_full = qt.Qobj(np.diag(eval_tot))
     H0_False = qt.Qobj(np.diag(eval_False))
