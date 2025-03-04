@@ -231,56 +231,65 @@ def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, labels=Non
 
 if __name__ == "__main__":
 
-    truc1, truc_tot, charge_pick  = 300, 1000, True
-    normalize = False
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
-    eval_tot = pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    n_theta0_dress = pd.read_csv(folder+ 'n_theta0_dress.txt').to_numpy()
-    n_theta1_dress = pd.read_csv(folder+ 'n_theta1_dress.txt').to_numpy()
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
+    truc_full = 1000
+    folder = f'../../data/3ncut_two_zeropi/truc1=300_truc2=1000_pick=True/'
+    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
+    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
+    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
+    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
+    n_theta0_dress = ut.truncate_2(n_theta0_dress, np.arange(truc_full))
+    n_theta1_dress = ut.truncate_2(n_theta1_dress, np.arange(truc_full))
 
-    truc_tot_2 = 500
-    truc_list = np.arange(truc_tot_2)
-    hspace_full = hspace_full[:truc_tot_2]
-    eval_tot = eval_tot[:truc_tot_2]
-    n_theta0_dress = ut.truncate_2(n_theta0_dress, truc_list)
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, truc_list)
-
-    A = 0.02
+    num_states_tot = 400
     logi_state = ['0-0', '0-2', '2-0', '2-2']
     logi_index = [hspace_full.index(i) for i in logi_state]
-    core_states = logi_state + ['8-2']
-    idx_0 = hspace_full.index('0-2')
-    idx_1 = hspace_full.index('2-2')
-    idx_2 = hspace_full.index('8-2')
 
-    W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
-    W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
+    ### CNOT gate
+    # drive_term = n_theta0_dress
+    # state_mid = '8-2'
+    # idx_0 = hspace_full.index('0-2')
+    # idx_1 = hspace_full.index('2-2')
+    # idx_2 = hspace_full.index(state_mid)
+    # core_states = logi_state + [state_mid]
+    # W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
+    # W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
+    # wd = [W_0_2, W_1_2]
+    # A = [0.02, 0.02]
 
-    drive_term = n_theta0_dress
+    ### CZ 
+    drive_term = n_theta1_dress
+    state_mid = '5-0'
+    core_states = logi_state + [state_mid]
+    wd = [eval_tot[hspace_full.index(state_mid)] - eval_tot[hspace_full.index('2-0')]]
+    A = [0.02]
 
     # hspace_index_2 = trunc_by_thresh(hspace_index, drive_term, thresh=1e-2)
-
     # G = make_rate_graph(drive_term, eval_tot, wd, A, labels = hspace_full)
     # df = make_leakage_df(core_states, drive_term, eval_tot, wd, A, labels = hspace_full, n_cpu=100)
 
-    A = [0.02, 0.02]
-    wd = [W_0_2, W_1_2]
-    num = 200
-    states_short = trunc_by_graph_estimate(num, core_states, drive_term, eval_tot, wd, A, labels=hspace_full,
-                                         path_func=shortest_path_to_core)
-    states_all = trunc_by_graph_estimate(num, core_states, drive_term, eval_tot, wd, A, labels=hspace_full,
+
+
+    states_all = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, eval_tot, wd, A, labels=hspace_full,
                                          path_func=all_path_to_core)
-
-    print(f'state_short ({num}/{truc_tot_2}) :')
-    data = states_short
-    dim = 10
-    for i in range(0, len(data), dim):  # Step size of 10
-        print(", ".join(f"'{x}'" for x in data[i:i + dim]), ',')
-
-    print(f'state_all ({num}/{truc_tot_2}) :')
+    print(f'state_all ({num_states_tot}/{truc_full}) :')
     data = states_all
-    dim = 10
-    for i in range(0, len(data), dim):  # Step size of 10
-        print(", ".join(f"'{x}'" for x in data[i:i + dim]), ',')
+    for i in range(0, len(data), 10):  # Step size of 10
+        if i%50==0:
+            print('')        
+        print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
 
+    states_all_index = [hspace_full.index(i) for i in states_all]
+    data = states_all_index
+    print(f'\nstate_all_index ({num_states_tot}/{truc_full}) :')
+    for i in range(0, len(data), 10):  # Step size of 10
+        if i%50==0:
+            print('')        
+        print(", ".join(f"{x}" for x in data[i:i + 10]), ',')
+    # states_short = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, eval_tot, wd, A, labels=hspace_full,
+    #                                      path_func=shortest_path_to_core)
+    # print(f'state_short ({num}/{truc_full}) :')
+    # data = states_short
+    # for i in range(0, len(data), 10):  # Step size of 10
+    #     if i%50==0:
+    #         print('')          
+    #     print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')    

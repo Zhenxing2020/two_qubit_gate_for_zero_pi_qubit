@@ -392,25 +392,6 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
 ###################################################################
 # CNOT-gate
 
-def cnot_fidelity(prop):
-    # prop = state_tot[:4]
-    prop = qt.Qobj(prop, dims=[[2, 2], [2, 2]])
-    # XI = qt.tensor(qt.sigmax(), qt.qeye(2))
-    # Uc_prime = XI* swap()* Uc* swap()* XI # for |14> state
-    Uc_prime = swap()* prop* swap() # for |45> state
-    phase = np.angle(Uc_prime)
-    x1 = 0.5* (- phase[1,1] + phase[2,3] - phase[3,2] + phase[0,0])
-    x2 = 0.5* (  phase[1,1] - phase[2,3] - phase[3,2] + phase[0,0])
-    x3 = 0.5* (- phase[1,1] - phase[2,3] + phase[3,2] + phase[0,0])
-    U_bef = qt.Qobj(np.diag([1, np.exp(1j* x1), np.exp(1j* x2), np.exp(1j* (x1+x2))])
-            , dims=[[2, 2], [2, 2]])
-    U_aft = qt.Qobj(np.diag([1, np.exp(1j* x3), 1, np.exp(1j* x3)])
-            , dims=[[2, 2], [2, 2]])
-    U_final = np.exp(-1j* phase[0,0])* U_bef* Uc_prime* U_aft
-    # fidelity = gate_fidelity( cnot(), U_final)
-    fidelity = qt.average_gate_fidelity(U_final, target=cnot())
-    return fidelity
-
 def cnot_fidelity_log(arg_all):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
      H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx] = arg_all
@@ -421,10 +402,15 @@ def cnot_fidelity_log(arg_all):
                 'gate_time': tg }
     tlist = np.linspace(0, tg, num=int(tg))  # total time
 
-    U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
-
-    f_ideal = cnot_fidelity( U_noise)
-    return np.log10(1-f_ideal)
+    prop = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
+    if prop.isoper:
+        U_final = cnot_phase_correct( prop)
+    else:
+        U_kraus = qt.to_kraus(qt.to_super(prop))
+        U_kraus_zz = [cnot_phase_correct(truncate_2(u, logi_idx)) for u in U_kraus ]
+        U_final = qt.kraus_to_super(U_kraus_zz)
+    fidelity = qt.average_gate_fidelity(U_final, target=cnot())
+    return np.log10(1-fidelity)
 
 def cnot_fidelity_log_optimize(arg_optimize, *args):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg_optimize
@@ -434,6 +420,20 @@ def cnot_fidelity_log_optimize(arg_optimize, *args):
      H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx]
 
     return cnot_fidelity_log(arg_all)
+
+def cnot_phase_correct(prop):
+    prop = qt.Qobj(prop, dims=[[2, 2], [2, 2]])
+    Uc_prime = swap()* prop* swap() # for |45> state
+    phase = np.angle(Uc_prime)
+    x1 = 0.5* (- phase[1,1] + phase[2,3] - phase[3,2] + phase[0,0])
+    x2 = 0.5* (  phase[1,1] - phase[2,3] - phase[3,2] + phase[0,0])
+    x3 = 0.5* (- phase[1,1] - phase[2,3] + phase[3,2] + phase[0,0])
+    U_bef = qt.Qobj(np.diag([1, np.exp(1j* x1), np.exp(1j* x2), np.exp(1j* (x1+x2))])
+            , dims=[[2, 2], [2, 2]])
+    U_aft = qt.Qobj(np.diag([1, np.exp(1j* x3), 1, np.exp(1j* x3)])
+            , dims=[[2, 2], [2, 2]])
+    U_zz = np.exp(-1j* phase[0,0])* U_bef* Uc_prime* U_aft
+    return U_zz
 
 # def cnot_phase_correct(U_kraus):
 #     U_final = []
@@ -594,6 +594,83 @@ def cnot_fidelity_log_optimize(arg_optimize, *args):
 ###################################################################
 # CZ-gate
 
+
+def cz_phase_correct(U_kraus):
+    U_final = []
+    for u in U_kraus:
+        Uz = remove_global_phase(qt.tensor( rz(dphi(u, (2,2))),
+                                            rz(dphi(u, (1,1)))))
+        Uc_reshaped = qt.Qobj(u.data, dims=[[2, 2], [2, 2]])
+        U_final.append(remove_global_phase(Uz * Uc_reshaped))
+    return U_final
+
+def cz_fidelity_log(arg_all):
+    [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx] = arg_all
+
+    pulse_args = {'drive_amp_A': drive_amp,
+                'drive_freq_A': W_target + 2*np.pi*detune,
+                'gate_time': tg}
+    tlist = np.linspace(0, tg, num=int(tg))  # total time
+
+    U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
+    p0_kraus = qt.to_kraus(qt.to_super(U_noise))
+    if len(c_op_list) != 0:
+        p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
+
+    p0_kraus_zz = cz_phase_correct(p0_kraus)
+    p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
+    f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=cz_gate())
+    return np.log10(1-f_noise)
+
+def cz_fidelity_log_optimize(arg_optimize, *args):
+    [tg, drive_amp, detune] = arg_optimize # Independent arguments that can be optimized over
+    [H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx] = args # System arguments
+
+    arg_all = [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx]
+
+    return cz_fidelity_log(arg_all)
+
+def sesolve_parallel(argz):
+    """Parallel SESolve function for solving the Schrodinger equation."""
+    H, psi0, tlist, pulse_args, options = argz
+    return psi0, qt.sesolve(H, qt.basis(H[0].shape[0], psi0), tlist, options=options, args=pulse_args)
+
+def cz_fidelity_log_old(arg_all):
+    [tg, drive_amp, detune, n_cpu, hspace, W_20_50, H_drive, logic_idx] = arg_all
+
+    pulse_args = {'drive_amp_A': drive_amp,
+                'drive_freq_A': W_20_50 + 2*np.pi*detune,
+                'gate_time': tg}
+    tlist = np.linspace(0, tg, num=int(tg))  # total time
+
+    sesolve_args = []
+    prop = np.zeros((len(hspace), len(logic_idx)), dtype=np.complex128)
+    if n_cpu > 1:
+        options = qt.Options(num_cpus=n_cpu, nsteps=1e4)
+        for i in logic_idx:
+            sesolve_args.append([H_drive, i, tlist, pulse_args, options])
+        pool = Pool(processes=n_cpu)
+        for i, res in pool.imap_unordered(sesolve_parallel, sesolve_args):
+            prop[:, logic_idx.index(i)] = res.states[-1].full().flatten()
+    else:
+        options = qt.Options(num_cpus=5, nsteps=1e4)
+        for i in logic_idx:
+            sesolve_args.append([H_drive, i, tlist, pulse_args, options])
+        for se_arg in sesolve_args:
+            i, res = sesolve_parallel(se_arg)
+            prop[:, logic_idx.index(i)] = res.states[-1].full().flatten()
+
+    Uc = truncate_2(qt.Qobj(prop), logic_idx)
+    Uz = remove_global_phase(qt.tensor( rz(dphi(Uc, (2,2))),
+                                        rz(dphi(Uc, (1,1)))))
+    Uc_reshaped = qt.Qobj(Uc.data, dims=[[2, 2], [2, 2]])
+    Ucprime = remove_global_phase(Uz * Uc_reshaped)
+    fidelity = qt.average_gate_fidelity(Ucprime, target=cz_gate())
+    return np.log10(1-fidelity)
+
+
+
+
 # def cz_fidelity_optimize(arg, *args):
 #     detune, drive_amp = arg # Independent arguments that can be optimized over
 #     [H_qbt_drive, W_target, state_logi, tg] = args # System arguments
@@ -685,123 +762,6 @@ def cnot_fidelity_log_optimize(arg_optimize, *args):
 #     p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
 #     f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=cz_gate())
 #     return np.log10(1-f_noise)
-
-def cz_phase_correct(U_kraus):
-    U_final = []
-    for u in U_kraus:
-        Uz = remove_global_phase(qt.tensor( rz(dphi(u, (2,2))),
-                                            rz(dphi(u, (1,1)))))
-        Uc_reshaped = qt.Qobj(u.data, dims=[[2, 2], [2, 2]])
-        U_final.append(remove_global_phase(Uz * Uc_reshaped))
-    return U_final
-
-def cz_fidelity_log(arg_all):
-    [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx] = arg_all
-
-    pulse_args = {'drive_amp_A': drive_amp,
-                'drive_freq_A': W_target + 2*np.pi*detune,
-                'gate_time': tg}
-    tlist = np.linspace(0, tg, num=int(tg))  # total time
-
-    U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
-    print('no.2')
-    U_noise = qt.to_super(U_noise)
-    print('no.3')
-    p0_kraus = qt.to_kraus(U_noise)
-    print('no.4')
-    if len(c_op_list) != 0:
-        p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
-
-    p0_kraus_zz = cz_phase_correct(p0_kraus)
-    p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
-    f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=cz_gate())
-    return np.log10(1-f_noise)
-
-def cz_fidelity_log_optimize(arg_optimize, *args):
-    [tg, drive_amp, detune] = arg_optimize # Independent arguments that can be optimized over
-    [H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx] = args # System arguments
-
-    arg_all = [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx]
-
-    return cz_fidelity_log(arg_all)
-
-def sesolve_parallel(argz):
-    """Parallel SESolve function for solving the Schrodinger equation."""
-    H, psi0, tlist, pulse_args, options = argz
-    return psi0, qt.sesolve(H, qt.basis(H[0].shape[0], psi0), tlist, options=options, args=pulse_args)
-
-def cz_fidelity_log_old(arg_all):
-    [tg, drive_amp, detune, n_cpu, hspace, W_20_50, H_drive, logic_idx] = arg_all
-
-    pulse_args = {'drive_amp_A': drive_amp,
-                'drive_freq_A': W_20_50 + 2*np.pi*detune,
-                'gate_time': tg}
-    tlist = np.linspace(0, tg, num=int(tg))  # total time
-
-    sesolve_args = []
-    prop = np.zeros((len(hspace), len(logic_idx)), dtype=np.complex128)
-    if n_cpu > 1:
-        options = qt.Options(num_cpus=n_cpu, nsteps=1e4)
-        for i in logic_idx:
-            sesolve_args.append([H_drive, i, tlist, pulse_args, options])
-        pool = Pool(processes=n_cpu)
-        for i, res in pool.imap_unordered(sesolve_parallel, sesolve_args):
-            prop[:, logic_idx.index(i)] = res.states[-1].full().flatten()
-    else:
-        options = qt.Options(num_cpus=5, nsteps=1e4)
-        for i in logic_idx:
-            sesolve_args.append([H_drive, i, tlist, pulse_args, options])
-        for se_arg in sesolve_args:
-            i, res = sesolve_parallel(se_arg)
-            prop[:, logic_idx.index(i)] = res.states[-1].full().flatten()
-
-    Uc = truncate_2(qt.Qobj(prop), logic_idx)
-    Uz = remove_global_phase(qt.tensor( rz(dphi(Uc, (2,2))),
-                                        rz(dphi(Uc, (1,1)))))
-    Uc_reshaped = qt.Qobj(Uc.data, dims=[[2, 2], [2, 2]])
-    Ucprime = remove_global_phase(Uz * Uc_reshaped)
-    fidelity = qt.average_gate_fidelity(Ucprime, target=cz_gate())
-    return np.log10(1-fidelity)
-
-def get_jump_op(state_i, *args):
-    truc1, gamma_decay, gamma_dephase, eket_tot = args
-    # t_1
-    ladder_0i = qt.basis(truc1,0) * qt.basis(truc1, state_i).dag()
-    a_0i_I = qt.tensor(ladder_0i, qt.qeye(truc1))
-    a_I_0i = qt.tensor(qt.qeye(truc1), ladder_0i)
-    jump_t1_a = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state_i])* a_0i_I ).data @ eket_tot.conj().T )
-    jump_t1_b = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state_i])* a_I_0i ).data @ eket_tot.conj().T )
-    # t_phi
-    proj_ii = qt.basis(truc1, state_i).proj()
-    a_ii_I = qt.tensor(proj_ii, qt.qeye(truc1))
-    a_I_ii = qt.tensor(qt.qeye(truc1), proj_ii)
-    jump_tphi_a = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_ii_I  ).data @ eket_tot.conj().T)
-    jump_tphi_b = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_I_ii  ).data @ eket_tot.conj().T)
-    return [jump_t1_a, jump_t1_b, jump_tphi_a, jump_tphi_b]
-
-def get_jump_op_charge_pick(state, *args):
-
-    dim_0, dim_1, gamma_decay, gamma_dephase, eket_tot, qubit_a = args
-    if qubit_a:
-        # t_1
-        ladder_0i = qt.basis(dim_0,0) * qt.basis(dim_0, state).dag()
-        a_0i_I = qt.tensor(ladder_0i, qt.qeye(dim_1))
-        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_0i_I ).data @ eket_tot.conj().T )
-        # t_phi
-        proj_ii = qt.basis(dim_0, state).proj()
-        a_ii_I = qt.tensor(proj_ii, qt.qeye(dim_1))
-        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_ii_I  ).data @ eket_tot.conj().T)
-    else: # qubit_b
-        # t_1
-        ladder_0j = qt.basis(dim_1,0) * qt.basis(dim_1, state).dag()
-        a_I_0i = qt.tensor(qt.qeye(dim_0), ladder_0j)
-        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_I_0i ).data @ eket_tot.conj().T )
-        # t_phi
-        proj_ii = qt.basis(dim_1, state).proj()
-        a_I_ii = qt.tensor(qt.qeye(dim_0), proj_ii)
-        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_I_ii  ).data @ eket_tot.conj().T)
-    return [jump_t1, jump_tphi]
-
 
 ###################################################################
 # X-gate
@@ -970,6 +930,7 @@ def xgate_fidelity_log_noise(args_indep, *args):
 
     tlist = np.linspace(0, tg, num=3 * int(tg))
     U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
+    # print(f'len(c_op_list)={len(c_op_list)}', U_noise)
     return np.log10(1 - get_fidelity_super_operator(U_noise, logi_idx, gate_target, c_op_list))
 
 def xgate_fidelity_optimize(arg, *args):
@@ -1204,3 +1165,79 @@ def find_overlap(eket, *arg):
     sorted_top_indices = [tuple(zip(top_indices_2d[0], top_indices_2d[1]))[i] for i in sorted_indices]
     sorted_top_values = top_values[sorted_indices]
     return sorted_top_indices, sorted_top_values
+
+
+def get_jump_op(state_i, *args):
+    truc1, gamma_decay, gamma_dephase, eket_tot = args
+    # t_1
+    ladder_0i = qt.basis(truc1,0) * qt.basis(truc1, state_i).dag()
+    a_0i_I = qt.tensor(ladder_0i, qt.qeye(truc1))
+    a_I_0i = qt.tensor(qt.qeye(truc1), ladder_0i)
+    jump_t1_a = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state_i])* a_0i_I ).data @ eket_tot.conj().T )
+    jump_t1_b = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state_i])* a_I_0i ).data @ eket_tot.conj().T )
+    # t_phi
+    proj_ii = qt.basis(truc1, state_i).proj()
+    a_ii_I = qt.tensor(proj_ii, qt.qeye(truc1))
+    a_I_ii = qt.tensor(qt.qeye(truc1), proj_ii)
+    jump_tphi_a = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_ii_I  ).data @ eket_tot.conj().T)
+    jump_tphi_b = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_I_ii  ).data @ eket_tot.conj().T)
+    return [jump_t1_a, jump_t1_b, jump_tphi_a, jump_tphi_b]
+
+def get_jump_op_charge_pick(state, *args):
+
+    dim_0, dim_1, gamma_decay, gamma_dephase, eket_tot, qubit_a = args
+    if qubit_a:
+        # t_1
+        ladder_0i = qt.basis(dim_0,0) * qt.basis(dim_0, state).dag()
+        a_0i_I = qt.tensor(ladder_0i, qt.qeye(dim_1))
+        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_0i_I ).data @ eket_tot.conj().T )
+        # t_phi
+        proj_ii = qt.basis(dim_0, state).proj()
+        a_ii_I = qt.tensor(proj_ii, qt.qeye(dim_1))
+        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_ii_I  ).data @ eket_tot.conj().T)
+    else: # qubit_b
+        # t_1
+        ladder_0j = qt.basis(dim_1,0) * qt.basis(dim_1, state).dag()
+        a_I_0i = qt.tensor(qt.qeye(dim_0), ladder_0j)
+        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_I_0i ).data @ eket_tot.conj().T )
+        # t_phi
+        proj_ii = qt.basis(dim_1, state).proj()
+        a_I_ii = qt.tensor(qt.qeye(dim_0), proj_ii)
+        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_I_ii  ).data @ eket_tot.conj().T)
+    return [jump_t1, jump_tphi]
+
+
+def zeropi_eval(flux=0, truncation=10):
+    ncut, phi_cut = 90, 300
+    # Define system parameters (in GHz)
+    EL = 0.377  # Inductive energy
+    EJ = 6.013  # Josephson energy # 5.412, 6.013
+    EC_phi = 1.142  # Phi mode charging energy
+    EC_theta = 0.092  # Theta mode charging energy
+
+    # Compute derived parameters
+    E_CJ = 2 * EC_phi
+    E_C = 2 / (1 / EC_theta - 1 / EC_phi)
+
+    # Create the grid for the phi coordinate
+    phi_grid = scq.Grid1d(-6 * np.pi, 6 * np.pi, phi_cut)
+
+    # Initialize the Zero-Pi qubit system
+    zero_pi = scq.ZeroPi(
+        grid=phi_grid,
+        EJ=EJ,
+        EL=EL,
+        ECJ=E_CJ,
+        EC=E_C,
+        dEJ=0.0,
+        ng=0.0,
+        flux=flux,
+        ncut=ncut,
+        truncated_dim=truncation,
+    )
+
+    # Compute the eigenvalues and construct the Hamiltonian
+    evals, _ = zero_pi.eigensys(evals_count=truncation)
+    evals = np.sort(evals)
+    evals = evals - evals[0]
+    return evals

@@ -192,57 +192,29 @@ def import_False():
 
 def import_select():
 
-    # cz300_se_3ncut= pd.read_csv('data/data_cz_3ncut_truc1=300_select.txt')
-    # x0_vec = cz300_se_3ncut[['tg', 'drive_amp', 'detune']].to_numpy()[[0, 5, 15, 25, 30],:]
-    x0_vec = np.array([
-[30.016865, 0.119046, 0.056799, -0.032063, -0.030732] ,
-[40.016766, 0.104833, 0.049914, -0.030496, -0.028693] ,
-[50.008813, 0.090273, 0.046546, -0.027498, -0.025767] ,
-[60.024831, 0.074075, 0.039782, -0.020488, -0.019859] ,
-[69.994995, 0.065867, 0.034625, -0.016253, -0.015833] ,
-[80.005168, 0.061271, 0.032441, -0.015181, -0.014477] ,
-[90.004882, 0.057133, 0.030909, -0.013363, -0.01325] ,
-[100.006167, 0.053076, 0.029316, -0.01188, -0.01157] ,
-[110.008706, 0.049616, 0.028206, -0.01119, -0.010777] ,
-[119.999923, 0.046969, 0.027146, -0.010649, -0.010409] ,
-[129.995414, 0.044102, 0.026819, -0.010756, -0.010313] ,
-[140.005331, 0.041394, 0.025794, -0.010206, -0.009612] ,
+    cnot = pd.read_csv('data/data_cnot_fidelity_3ncut.txt')
+    x0_vec = cnot[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
+                      ]].to_numpy()[1::5, :]
+    # [0::3,:]
 
-[149.996866, 0.039078, 0.024359, -0.009107, -0.008681] ,
-[160.000133, 0.036595, 0.022959, -0.008237, -0.007826] ,
-[169.993992, 0.034622, 0.02211, -0.007681, -0.007266] ,
-[179.996641, 0.032821, 0.02095, -0.006902, -0.006534] ,
-[189.997344, 0.030915, 0.019755, -0.006194, -0.005848] ,
-[200.001513, 0.029121, 0.018721, -0.005572, -0.005265] ,
-[209.996351, 0.02774, 0.017771, -0.005024, -0.004777] ,
-[219.997562, 0.026349, 0.016887, -0.00455, -0.004302] ,
-[230.001715, 0.025067, 0.016064, -0.00409, -0.003877] ,
-[239.989977, 0.023957, 0.015387, -0.003744, -0.003546] ,
-[249.992868, 0.022922, 0.014688, -0.003423, -0.003252] ,
-[260.000623, 0.021992, 0.014066, -0.003138, -0.002978] ,
-[269.994868, 0.021106, 0.013544, -0.002882, -0.002747] ,
-[280.000886, 0.020289, 0.013002, -0.002675, -0.002543] ,
-[290.001675, 0.019575, 0.01252, -0.00247, -0.002353] ,
-[300.003294, 0.018943, 0.012103, -0.002317, -0.002203] ,
-[310.008159, 0.018298, 0.011686, -0.002157, -0.002061] ,
-[319.999489, 0.01768, 0.011265, -0.002005, -0.001905] ,
-[330.004173, 0.017153, 0.010944, -0.001891, -0.001804] ,
-[340.0063, 0.016618, 0.010608, -0.001774, -0.00169] ,
-    ])[[0, 5, 15, 25, 30],:]
     ### Get fidelity for input params (pick=True)
     truc1, truc_tot, charge_pick = 300, 1000, True
     truc_full = 500
+    num_cpus, n_job = 16, len(x0_vec)
 
     folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
-    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
+    hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
+    hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
+    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
+    eket_tot = ssp.csr_matrix(np.load(folder+ 'eket_tot.npy'))[:truc_full]
+    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
     n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
     n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
-    truc_list = np.arange(truc_full)
-    hspace_full = hspace_full[:truc_full]
-    eval_tot = eval_tot[:truc_full]
-    n_theta0_dress = ut.truncate_2(n_theta0_dress, truc_list)
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, truc_list)
+
+    dim_0 = len(hspace_0)
+    dim_1 = len(hspace_1)
+    n_theta0_dress = ut.truncate_2(n_theta0_dress, np.arange(truc_full))
+    n_theta1_dress = ut.truncate_2(n_theta1_dress, np.arange(truc_full))
 
     mid_state = '8-2'
     idx_0 = hspace_full.index('0-2')
@@ -251,40 +223,31 @@ def import_select():
     W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
     W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
     logi_state = ['0-0', '0-2', '2-0', '2-2']
-
-    num_cpus, n_job = 16, len(x0_vec)
-    c_op_list = []
-    H0_full = qt.Qobj(np.diag(eval_tot))
-
     hspace_select = [
-    '0-0', '0-2', '2-0', '8-2', '2-2', '12-2', '4-9', '1-2', '1-0', '5-2' ,
-    '5-0', '8-5', '22-2', '9-2', '2-1', '5-8', '5-5', '0-1', '34-2', '2-5' ,
-    '13-2', '4-2', '8-0', '1-1', '0-5', '8-9', '15-2', '26-2', '30-2', '1-4' ,
-    '9-0', '20-2', '20-5', '12-5', '4-0', '15-5', '5-1', '18-2', '12-0', '24-2' ,
-    '26-5', '1-5', '15-0', '13-0', '25-2', '35-2', '8-1', '33-2', '9-5', '4-5' ,
 
-    '12-8', '9-8', '1-8', '37-2', '5-12', '25-0', '9-4', '1-25', '22-5', '56-2' ,
-    '18-4', '13-9', '4-4', '2-4', '15-4', '50-2', '13-5', '9-9', '5-9', '4-1' ,
-    # '20-0', '25-5', '15-9', '18-5', '9-1', '30-5', '2-21', '26-9', '1-13', '20-9' ,
-    # '45-2', '18-0', '5-16', '22-0', '34-5', '15-1', '5-4', '0-21', '20-4', '26-0' ,
-    # '25-4', '25-1', '0-4', '9-12', '24-5', '37-5', '24-0', '1-18', '12-9', '44-2' ,
+'0-0', '0-2', '2-0', '8-2', '2-2', '12-2', '4-9', '1-2', '1-0', '5-2' ,
+'5-0', '8-5', '22-2', '9-2', '2-1', '5-8', '5-5', '0-1', '34-2', '2-5' ,
+'13-2', '4-2', '8-0', '1-1', '0-5', '8-9', '15-2', '26-2', '30-2', '1-4' ,
+'9-0', '20-2', '20-5', '12-5', '4-0',
+'15-5', '5-1', '18-2', '12-0', '24-2' ,
+'26-5', '1-5', '15-0', '13-0', '25-2',
+ '35-2', '8-1', '33-2', '9-5', '4-5' ,
 
-    # '25-8', '2-12', '41-2', '4-16', '4-12', '4-21', '8-12', '18-9', '18-1', '45-0' ,
-    # '24-9', '26-8', '39-2', '4-8', '8-4', '34-0', '22-8', '35-4', '12-4', '30-0' ,
-    # '12-1', '28-2', '18-8', '0-8', '35-5', '35-0', '9-16', '37-0', '2-8', '1-9' ,
-    # '13-8', '46-2', '2-26', '46-0', '2-9', '41-0', '4-13', '39-0', '2-25', '0-12' ,
-    # '22-9', '33-0', '33-4', '22-4', '54-2', '8-18', '28-1', '0-45', '50-0', '24-1' ,
+'12-8', '9-8', '1-8', '37-2', '5-12',
+# '25-0', '9-4', '1-25', '22-5', '56-2' ,
+# '18-4', '13-9', '4-4', '2-4', '15-4', '50-2', '13-5', '9-9', '5-9', '4-1' ,
+# '20-0', '25-5', '15-9', '18-5', '9-1', '30-5', '2-21', '26-9', '1-13', '20-9' ,
+# '45-2', '18-0', '5-16', '22-0', '34-5', '15-1', '5-4', '0-21', '20-4', '26-0' ,
+'25-4', '25-1', '0-4', '9-12', '24-5',
+# '37-5', '24-0', '1-18', '12-9', '44-2' ,
 
-    # '28-5', '30-1', '15-8', '34-1', '22-1', '20-1', '13-16', '12-18', '0-9', '24-8' ,
-    # '13-1', '51-2', '33-5', '2-30', '1-21', '4-18', '59-0', '15-12', '0-25', '8-24' ,
-    # '8-8', '9-18', '44-0', '26-1', '65-0', '56-0', '41-1', '41-4', '5-30', '39-4' ,
-    # '30-4', '58-0', '5-13', '18-12', '0-30', '45-4', '0-39', '13-4', '46-1', '28-0' ,
-    # '2-18', '0-24', '0-13', '9-13', '30-8', '69-0', '41-5', '33-1', '37-8', '4-24' ,
     ]
     index_select = [hspace_full.index(i) for i in hspace_select]
     len_select = len(hspace_select)
+    H0_full = qt.Qobj(np.diag(eval_tot))
     H0_select = ut.truncate_2( H0_full, index_select)
     n_theta0_select = ut.truncate_2(n_theta0_dress, index_select)
+    eket_tot = eket_tot[index_select]
     logi_idx_select = [hspace_select.index(i) for i in logi_state]
     H_drive_select = [ H0_select,   [n_theta0_select, ut.drive_gauss_A],
                                     [n_theta0_select, ut.drive_gauss_B]  ]
@@ -296,15 +259,98 @@ def import_select():
     print('params =')
     for para in x0_vec:
         print(para.tolist(), ',')
-    print(f'\nhspace_truc (len={len_select}) = [')
+    print(f'\nhspace_select (len={len_select}) = [')
     for i in range(0, len(hspace_select), 10):
         print(", ".join(f"'{x}'" for x in hspace_select[i:i + 10]), ',')
     print(']')
-    arg_select = [H_drive_select, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_select]
-    f_select = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_optimize)(args_indep, *arg_select)
-                                                for args_indep in x0_vec)
-    print(f' fidelity (dim={len(hspace_select)},{charge_pick}) =', np.round(f_select, 8).tolist())
 
+    # #################################################################
+    # ### ideal fidelity
+    # c_op_list = [qt.Qobj(np.zeros((len_select, len_select)))]
+    c_op_list = []
+    arg_select = [H_drive_select, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_select]
+    f_ideal = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_optimize)(args_indep, *arg_select)
+                                                for args_indep in x0_vec)
+    print(f'\nf_ideal (dim={len(hspace_select)},{charge_pick})  = [')
+    for i in range(0, len(f_ideal), 4):
+        print(', '.join(map(str, np.round(f_ideal[i:i+4], 8).tolist())), ',')
+    print(']')
+
+
+    #################################################################
+    ### Noisey fidelity
+    tphi_logi = 100 # μs
+    t1_other = 5 # μs
+    gamma_decay_logi =  1 / 1600e3
+    gamma_dephase_logi = 1 / 1e3 / tphi_logi
+    gamma_decay_other =  1 / 1e3 / t1_other
+    gamma_dephase_other = 1 / 1e3 / t1_other
+    gamma_decay_old   = [0, gamma_decay_other,  gamma_decay_logi]  + [gamma_decay_other]  * 300
+    gamma_dephase_old = [0, gamma_dephase_other, gamma_dephase_logi] + [gamma_dephase_other] * 300
+
+    folder = f'../../data/3ncut_two_zeropi/truc1=500/'
+    gamma_q0 = pd.read_csv(folder+ 'data_gamma_qubit0.txt')
+    gamma_q1 = pd.read_csv(folder+ 'data_gamma_qubit1.txt')
+    gamma_decay_28_q0 = gamma_q0['t1_50us_28'].to_numpy() *50 /t1_other
+    gamma_decay_28_q1 = gamma_q1['t1_50us_28'].to_numpy() *50 /t1_other
+    gamma_decay_08_q0 = gamma_q0['t1_50us_08'].to_numpy() *50 /t1_other
+    gamma_decay_08_q1 = gamma_q1['t1_50us_08'].to_numpy() *50 /t1_other
+    gamma_decay_01_q0 = gamma_q0['t1_50us_01'].to_numpy() *50 /t1_other
+    gamma_decay_01_q1 = gamma_q1['t1_50us_01'].to_numpy() *50 /t1_other
+    gamma_dephase_50us_q0 = gamma_q0['tphi_50us'].to_numpy() *50 /t1_other
+    gamma_dephase_50us_q1 = gamma_q1['tphi_50us'].to_numpy() *50 /t1_other
+    gamma_dephase_1e6_q0 = gamma_q0['tphi_1e6'].to_numpy()
+    gamma_dephase_1e6_q1 = gamma_q1['tphi_1e6'].to_numpy()
+
+    gamma_decay_28_q0[2] = gamma_decay_logi
+    gamma_decay_28_q1[2] = gamma_decay_logi
+    gamma_decay_08_q0[2] = gamma_decay_logi
+    gamma_decay_08_q1[2] = gamma_decay_logi
+    gamma_decay_01_q0[2] = gamma_decay_logi
+    gamma_decay_01_q1[2] = gamma_decay_logi
+    gamma_dephase_50us_q0[2] = gamma_dephase_logi
+    gamma_dephase_50us_q1[2] = gamma_dephase_logi
+    gamma_dephase_1e6_q0[2] = gamma_dephase_logi
+    gamma_dephase_1e6_q1[2] = gamma_dephase_logi
+
+    jump_t1   = []
+    jump_tphi = []
+    if charge_pick:
+        qubit_a = True
+        arg_a = [dim_0, dim_1, gamma_decay_old, gamma_dephase_old, eket_tot, qubit_a] # old gamma
+        # arg_a = [dim_0, dim_1, gamma_decay_new_q0, gamma_dephase_new_q0, eket_tot, qubit_a] # new gamma
+        jump_op_a = Parallel(n_jobs=100)(delayed(ut.get_jump_op_charge_pick)(state, *arg_a) for state in range(1,dim_0))
+
+        qubit_a = False
+        arg_b = [dim_0, dim_1, gamma_decay_old, gamma_dephase_old, eket_tot, qubit_a] # old gamma
+        # arg_b = [dim_0, dim_1, gamma_decay_new_q1, gamma_dephase_new_q1, eket_tot, qubit_a] # new gamma
+        jump_op_b = Parallel(n_jobs=100)(delayed(ut.get_jump_op_charge_pick)(state, *arg_b) for state in range(1,dim_1))
+        jump_t1_list = np.array(jump_op_a)[:,0].tolist() + np.array(jump_op_b)[:,0].tolist()
+        jump_tphi_list = np.array(jump_op_a)[:,1].tolist() + np.array(jump_op_b)[:,1].tolist()
+        jump_t1_list = [qt.Qobj(matrix) for matrix in jump_t1_list]
+        jump_tphi_list = [qt.Qobj(matrix) for matrix in jump_tphi_list]
+    else:
+        args = [truc1, gamma_decay_old, gamma_dephase_old, eket_tot]
+        jump_op = Parallel(n_jobs=100)(delayed(ut.get_jump_op)(state, *args) for state in range(1,truc1))
+        jump_t1 = np.array(jump_op)[:,:2]
+        jump_tphi = np.array(jump_op)[:,2:]
+        jump_t1_list = [qt.Qobj(matrix) for row in jump_t1 for matrix in row]
+        jump_tphi_list = [qt.Qobj(matrix) for row in jump_tphi for matrix in row]
+    print("gamma_decay_logi = ", gamma_decay_logi, "gamma_dephase_logi = ", gamma_dephase_logi)
+    print("gamma_decay_other = ", gamma_decay_other, "gamma_dephase_other = ", gamma_dephase_other)
+    print(f"T1_logi = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
+    print(f"Tphi_logi = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None
+    print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
+    print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
+
+    c_op_list = jump_t1_list + jump_tphi_list
+    arg_select = [H_drive_select, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_select]
+    f_noise = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_optimize)(args_indep, *arg_select)
+                                                for args_indep in x0_vec)
+    print(f'\nf_noise (dim={len(hspace_select)},{charge_pick})  = [')
+    for i in range(0, len(f_noise), 4):
+        print(', '.join(map(str, np.round(f_noise[i:i+4], 8).tolist())), ',')
+    print(']')
 
 if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
