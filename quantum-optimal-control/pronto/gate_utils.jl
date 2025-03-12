@@ -41,6 +41,15 @@ function fid_coherent(U0::Matrix, G::Matrix)
     return (1/(d * (d + 1))) * (real(my_tr(M' * M, d)) + abs(my_tr(M, d))^2)
     # return 1/(d+1) + abs(tr(M))^2 / (d*(d+1))
 end
+function fid_coherent2(U0::Matrix, G::Matrix)
+    M = U0' * G
+    d = size(U0)[1]
+    # return (1/(d * (d + 1))) * (tr(M' * M) + abs(tr(M))^2)
+
+    return (1/(d * (d + 1))) * (d + abs(my_tr(M, d))^2)
+    # return (1/(d * (d + 1))) * (real(my_tr(M' * M, d)) + abs(my_tr(M, d))^2)
+    # return 1/(d+1) + abs(tr(M))^2 / (d*(d+1))
+end
 
 function batch_evol(Ht, logical_states, tlist)
 
@@ -66,7 +75,7 @@ function batch_evol(Ht, logical_states, tlist)
 end
 
 
-function plot_evolution(hspace, tlist, props, logical, intermediate; divide=11, suptitle="", savename="", s=0)
+function plot_evolution(hspace, tlist, props, logical, intermediate; divide=10, suptitle="", savename="", s=0)
     
     # Get population of logical states, intermediate states, and other states < or >= divide
     pops = zeros((2, 5, length(tlist)))
@@ -110,6 +119,59 @@ function plot_evolution(hspace, tlist, props, logical, intermediate; divide=11, 
         ax[i].plot(tlist, pops[i, 3, :], label=intermediate)
         ax[i].plot(tlist, pops[i, 4, :], label="others < $divide")
         ax[i].plot(tlist, pops[i, 5, :], label="others >= $divide")
+        ax[i].legend()
+        start = hspace[i]
+        ax[i].set_title("Start in $start")
+        ax[i].set_xlabel("time (ns)")
+        ax[i].set_ylabel("population")
+    end
+    if suptitle != ""
+        plt.suptitle(suptitle)
+    end
+    if savename != ""
+        plt.savefig(savename)
+    end
+    return pops, f
+end
+
+
+
+function plot_evolution2(hspace, tlist, props, logical, states_to_plot; suptitle="", savename="", s=0, scale = 2)
+    
+    # Get population of logical states, intermediate states, and other states < or >= divide
+    logical_idx = [findfirst(x->x==i, hspace) for i in logical]
+    plot_idx = [findfirst(x->x==i, hspace) for i in states_to_plot]
+    pops = zeros((2, length(plot_idx)+1, length(tlist)))
+    dim = props[1][1].data.size[1]
+    others = []
+    for i = 1:dim
+        if (i in logical_idx) | (i in plot_idx)
+            continue
+        else
+            push!(others, i)
+        end
+
+    end
+    # print(logical_idx, " ", int_idx, " ", others_low, " ", others_high)
+    kg = KernelFactors.gaussian(s)
+    f, ax = plt.subplots(ncols=2, figsize=(8*scale,3*scale))
+    for i = range(1, length(logical_idx))
+        props_i = props[i]
+        # states to plot
+        for j in 1:size(pops)[2]-1
+            pops[i,j,:] = imfilter(abs.([p.data[plot_idx[j]] for p in props_i]).^2, kg, "symmetric")
+            ax[i].plot(tlist, pops[i,j,:], label=states_to_plot[j])
+        end
+        # others
+        for o in others
+            pops[i,end,:] += imfilter(abs.([p.data[o] for p in props_i]).^2, kg, "symmetric")
+        end
+        ax[i].plot(tlist, pops[i,end,:], label="other")
+
+        # Gaussian Filter
+        for j in 1:size(pops)[2]
+            pops[i, j, :] = imfilter(pops[i, j, :], kg, "symmetric")
+        end
         ax[i].legend()
         start = hspace[i]
         ax[i].set_title("Start in $start")
