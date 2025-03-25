@@ -177,19 +177,7 @@ function gen_model(H0::Matrix{ComplexF64},
         end
     end
     )
-    ## TRYING IN INTERACTION PICTURE
-#     eval(quote
-#     @define_f model begin
-#         H = u[1] * im_to_re( -im * $H1[1])
-#         U = im_to_re(exp.(im * $H0 * t))
-#         Udag = im_to_re(exp.(-im * $H0 * t))
-#         for i in 2:length(u)
-#             H .+= u[i] * im_to_re( -im * $H1[i])
-#         end
-#         return kron(I($n_basis), U*H*Udag) * x
-#     end
-# end
-# )
+ 
     # Control + Level Penalties
     eval(quote
         @define_l model begin
