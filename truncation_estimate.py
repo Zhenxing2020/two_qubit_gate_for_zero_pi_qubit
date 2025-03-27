@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 import utils_2Q_gate_zp as ut
-
+import scqubits as scq
 
 def trunc_by_thresh(core_states_index, drive_term, thresh=1e-2, total_trunc=None):
     """
@@ -230,52 +230,65 @@ def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, labels=Non
     return list(df["i"].values[:n])
 
 if __name__ == "__main__":
+    truc_full = 300
 
-    truc_full = 1000
-    folder = f'../../data/3ncut_two_zeropi/truc1=300_truc2=1000_pick=True/'
-    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
-    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
-    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
-    n_theta0_dress = ut.truncate_2(n_theta0_dress, np.arange(truc_full))
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, np.arange(truc_full))
+    ## X-gate nphi
+    folder = '../data/3ncut_one_zeropi/'
+    evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc=1000_3ncut.h5').energy_table
+    n_phi = 2*np.pi* scq.read(folder + f'zeropi_0_n_phi_truc=1000_3ncut.h5').matrixelem_table
+    evals = evals - evals[0]
+    logi_state = [0, 2]
+    drive_term = n_phi
+    w_trans_1 = evals[9] - evals[0]
+    w_trans_2 = evals[9] - evals[2]
+    wd = [w_trans_1, w_trans_2]
+    core_states = logi_state + [9]
+    A = [0.02, 0.02]
+    hspace_full = np.arange(truc_full).tolist()
 
-    num_states_tot = 400
-    logi_state = ['0-0', '0-2', '2-0', '2-2']
-    logi_index = [hspace_full.index(i) for i in logi_state]
+    ### CZ & CNOT
+    # folder = f'../data/3ncut_two_zeropi/truc1=300_truc2=1000_pick=True/'
+    # evals = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
+    # hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
+    # n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
+    # n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
+    # n_theta0_dress = ut.truncate_2(n_theta0_dress, np.arange(truc_full))
+    # n_theta1_dress = ut.truncate_2(n_theta1_dress, np.arange(truc_full))
+    # logi_state = ['0-0', '0-2', '2-0', '2-2']
 
-    ### CNOT gate
+    # ## CNOT gate
     # drive_term = n_theta0_dress
     # state_mid = '8-2'
     # idx_0 = hspace_full.index('0-2')
     # idx_1 = hspace_full.index('2-2')
     # idx_2 = hspace_full.index(state_mid)
     # core_states = logi_state + [state_mid]
-    # W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
-    # W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
+    # W_0_2 = evals[idx_2] - evals[idx_0]
+    # W_1_2 = evals[idx_2] - evals[idx_1]
     # wd = [W_0_2, W_1_2]
     # A = [0.02, 0.02]
 
-    ### CZ 
-    drive_term = n_theta1_dress
-    state_mid = '5-0'
-    core_states = logi_state + [state_mid]
-    wd = [eval_tot[hspace_full.index(state_mid)] - eval_tot[hspace_full.index('2-0')]]
-    A = [0.02]
+    # ## CZ
+    # drive_term = n_theta1_dress
+    # state_mid = '5-0'
+    # core_states = logi_state + [state_mid]
+    # wd = [evals[hspace_full.index(state_mid)] - evals[hspace_full.index('2-0')]]
+    # A = [0.02]
 
     # hspace_index_2 = trunc_by_thresh(hspace_index, drive_term, thresh=1e-2)
-    # G = make_rate_graph(drive_term, eval_tot, wd, A, labels = hspace_full)
-    # df = make_leakage_df(core_states, drive_term, eval_tot, wd, A, labels = hspace_full, n_cpu=100)
+    # G = make_rate_graph(drive_term, evals, wd, A, labels = hspace_full)
+    # df = make_leakage_df(core_states, drive_term, evals, wd, A, labels = hspace_full, n_cpu=100)
 
 
-
-    states_all = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, eval_tot, wd, A, labels=hspace_full,
+    num_states_tot = 160
+    ### states_all
+    states_all = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
                                          path_func=all_path_to_core)
     print(f'state_all ({num_states_tot}/{truc_full}) :')
     data = states_all
     for i in range(0, len(data), 10):  # Step size of 10
         if i%50==0:
-            print('')        
+            print('')
         print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
 
     states_all_index = [hspace_full.index(i) for i in states_all]
@@ -283,13 +296,36 @@ if __name__ == "__main__":
     print(f'\nstate_all_index ({num_states_tot}/{truc_full}) :')
     for i in range(0, len(data), 10):  # Step size of 10
         if i%50==0:
-            print('')        
+            print('')
         print(", ".join(f"{x}" for x in data[i:i + 10]), ',')
-    # states_short = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, eval_tot, wd, A, labels=hspace_full,
-    #                                      path_func=shortest_path_to_core)
-    # print(f'state_short ({num}/{truc_full}) :')
-    # data = states_short
-    # for i in range(0, len(data), 10):  # Step size of 10
-    #     if i%50==0:
-    #         print('')          
-    #     print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')    
+
+    ### states_short
+    states_short = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
+                                         path_func=shortest_path_to_core)
+    print(f'\nstate_short ({num_states_tot}/{truc_full}) :')
+    data = states_short
+    for i in range(0, len(data), 10):  # Step size of 10
+        if i%50==0:
+            print('')
+        print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
+
+    states_short_index = [hspace_full.index(i) for i in states_short]
+    data = states_short_index
+    print(f'\nstate_short_index ({num_states_tot}/{truc_full}) :')
+    for i in range(0, len(data), 10):  # Step size of 10
+        if i%50==0:
+            print('')
+        print(", ".join(f"{x}" for x in data[i:i + 10]), ',')
+
+
+    list1 = states_all
+    list2 = states_short
+    common_elements = [item for item in list1 if item in list2]
+    only_in_list1 = [item for item in list1 if item not in list2]
+    only_in_list2 = [item for item in list2 if item not in list1]
+    unique_elements = only_in_list1 + only_in_list2
+
+    print(f"\nOnly in states_all:", len(only_in_list1), only_in_list1)
+    print('index only in states_all:', [list1.index(i) for i in only_in_list1])
+    print("Only in states_short:", len(only_in_list2), only_in_list2)
+    print('index only in states_short:', [list2.index(i) for i in only_in_list2])

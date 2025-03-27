@@ -1,0 +1,94 @@
+cnot_noise.py
+Start Mountain Time: 2025-03-08 00:21:17.881232-07:00
+
+mid_state =  8-2
+truc_full= 500
+num_cpus= 16 , n_job= 100
+params =
+[30.016865, 0.119046, 0.056799, -0.032063, -0.030732] ,
+[40.016766, 0.104833, 0.049914, -0.030496, -0.028693] ,
+[50.008813, 0.090273, 0.046546, -0.027498, -0.025767] ,
+[60.024831, 0.074075, 0.039782, -0.020488, -0.019859] ,
+[69.994995, 0.065867, 0.034625, -0.016253, -0.015833] ,
+[80.005168, 0.061271, 0.032441, -0.015181, -0.014477] ,
+[90.004882, 0.057133, 0.030909, -0.013363, -0.01325] ,
+[100.006167, 0.053076, 0.029316, -0.01188, -0.01157] ,
+[110.008706, 0.049616, 0.028206, -0.01119, -0.010777] ,
+[119.999923, 0.046969, 0.027146, -0.010649, -0.010409] ,
+[129.995414, 0.044102, 0.026819, -0.010756, -0.010313] ,
+[140.005331, 0.041394, 0.025794, -0.010206, -0.009612] ,
+[149.996866, 0.039078, 0.024359, -0.009107, -0.008681] ,
+
+hspace_select (len=160) = [
+'0-0', '0-2', '2-0', '8-2', '2-2', '12-2', '4-9', '1-2', '1-0', '5-2' ,
+'5-0', '8-5', '22-2', '9-2', '2-1', '5-8', '5-5', '0-1', '34-2', '2-5' ,
+'13-2', '4-2', '8-0', '1-1', '0-5', '8-9', '15-2', '26-2', '30-2', '1-4' ,
+'9-0', '20-2', '20-5', '12-5', '4-0', '15-5', '5-1', '18-2', '12-0', '24-2' ,
+'26-5', '1-5', '15-0', '13-0', '25-2', '35-2', '8-1', '33-2', '9-5', '4-5' ,
+'12-8', '9-8', '1-8', '37-2', '5-12', '25-0', '9-4', '1-25', '22-5', '56-2' ,
+'18-4', '13-9', '4-4', '2-4', '15-4', '50-2', '13-5', '9-9', '5-9', '4-1' ,
+'20-0', '25-5', '15-9', '18-5', '9-1', '30-5', '2-21', '26-9', '1-13', '20-9' ,
+'45-2', '18-0', '5-16', '22-0', '34-5', '15-1', '5-4', '0-21', '20-4', '26-0' ,
+'25-4', '25-1', '0-4', '9-12', '24-5', '37-5', '24-0', '1-18', '12-9', '44-2' ,
+'25-8', '2-12', '41-2', '4-16', '4-12', '4-21', '8-12', '18-9', '18-1', '45-0' ,
+'24-9', '26-8', '39-2', '4-8', '8-4', '34-0', '22-8', '35-4', '12-4', '30-0' ,
+'22-9', '33-0', '33-4', '22-4', '54-2', '8-18', '28-1', '0-45', '50-0', '24-1' ,
+'28-5', '30-1', '15-8', '34-1', '22-1', '20-1', '13-16', '12-18', '0-9', '24-8' ,
+'13-1', '51-2', '33-5', '2-30', '1-21', '4-18', '59-0', '15-12', '0-25', '8-24' ,
+'8-8', '9-18', '44-0', '26-1', '65-0', '56-0', '41-1', '41-4', '5-30', '39-4' ,
+]
+
+hspace_select_index = [
+0, 3, 4, 37, 13, 64, 63, 11, 2, 27 ,
+10, 68, 117, 46, 9, 62, 48, 1, 202, 24 ,
+70, 22, 14, 7, 8, 105, 73, 149, 190, 15 ,
+19, 115, 184, 111, 6, 123, 21, 102, 26, 122 ,
+230, 20, 33, 32, 142, 205, 30, 198, 81, 39 ,
+134, 108, 25, 215, 97, 69, 66, 107, 186, 398 ,
+130, 176, 31, 18, 98, 336, 118, 129, 75, 16 ,
+52, 226, 192, 164, 36, 283, 104, 331, 51, 265 ,
+298, 45, 116, 55, 301, 60, 38, 44, 145, 71 ,
+191, 119, 5, 157, 196, 322, 58, 72, 160, 293 ,
+275, 56, 258, 94, 76, 139, 127, 241, 79, 162 ,
+282, 280, 242, 50, 53, 103, 223, 259, 80, 95 ,
+268, 100, 247, 147, 373, 195, 131, 138, 188, 99 ,
+248, 154, 153, 169, 93, 91, 245, 286, 17, 234 ,
+57, 339, 296, 165, 83, 124, 246, 228, 59, 225 ,
+85, 229, 159, 121, 279, 224, 214, 320, 263, 297 ,
+]
+
+f_ideal (dim=160)  = [
+-0.33569627, -0.40679544, -0.49330759, -0.60429093 ,
+-0.7048299, -0.79956588, -0.88584488, -0.99338171 ,
+-1.14246543, -1.3230785, -1.5219125, -1.70217138 ,
+-1.84982992 ,
+]
+t1_tphi_other =  3
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_noise.py", line 169, in <module>
+    import_select()
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_noise.py", line 143, in import_select
+    jump_op_a = Parallel(n_jobs=100)(delayed(ut.get_jump_op_charge_pick)(state, *arg_a) for state in range(1,dim_0))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 1952, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 1595, in _get_outputs
+    yield from self._retrieve()
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 1699, in _retrieve
+    self._raise_error_fast()
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 1734, in _raise_error_fast
+    error_job.get_result(self.timeout)
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 736, in get_result
+    return self._return_or_raise()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/parallel.py", line 754, in _return_or_raise
+    raise self._result
+joblib.externals.loky.process_executor.TerminatedWorkerError: A worker process managed by the executor
+was unexpectedly terminated. This could be caused by a segmentation fault while calling the function or
+ by an excessive memory usage causing the Operating System to kill the worker.
+
+The exit codes of the workers are {SIGSEGV(-11)}
+Command exited with non-zero status 1
+790.83user 1731.67system 1:32.62elapsed 2723%CPU (0avgtext+0avgdata 1694920maxresident)k
+12900928inputs+24outputs (82962major+13791436minor)pagefaults 0swaps

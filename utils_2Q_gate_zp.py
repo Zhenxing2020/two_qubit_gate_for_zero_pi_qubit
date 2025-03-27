@@ -9,6 +9,7 @@ from sympy import symbols
 from joblib import Parallel, delayed
 from multiprocessing import Pool
 from IPython.display import display, Math
+import pandas as pd
 
 # max_step, nsteps = 1e-3, 1e4
 ### Define circuit and variable transform
@@ -918,7 +919,7 @@ def xgate_fidelity_log_noise(args_indep, *args):
         float: Logarithm of the infidelity for the X-gate in a noisy system.
     """
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = args_indep
-    [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, gate_target] = args
+    [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx] = args
 
     pulse_args = {
         'drive_amp_A': drive_amp_A,
@@ -931,7 +932,7 @@ def xgate_fidelity_log_noise(args_indep, *args):
     tlist = np.linspace(0, tg, num=3 * int(tg))
     U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
     # print(f'len(c_op_list)={len(c_op_list)}', U_noise)
-    return np.log10(1 - get_fidelity_super_operator(U_noise, logi_idx, gate_target, c_op_list))
+    return np.log10(1 - get_fidelity_super_operator(U_noise, logi_idx, qt.sigmax(), c_op_list))
 
 def xgate_fidelity_optimize(arg, *args):
     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg, drag] = args
@@ -1241,3 +1242,60 @@ def zeropi_eval(flux=0, truncation=10):
     evals = np.sort(evals)
     evals = evals - evals[0]
     return evals
+
+
+def get_collapse_op(t1tphi_other, eket_tot_select, hspace_0_dim, hspace_1_dim):
+
+    # tphi_logi = 100 # μs
+    # gamma_decay_logi =  1 / 1600e3
+    # gamma_dephase_logi = 1 / 1e3 / tphi_logi
+    # gamma_decay_other =  1 / 1e3 / t1tphi_other
+    # gamma_dephase_other = 1 / 1e3 / t1tphi_other
+    # gamma_decay_old   = [0, gamma_decay_other,  gamma_decay_logi]  + [gamma_decay_other]  * 300
+    # gamma_dephase_old = [0, gamma_dephase_other, gamma_dephase_logi] + [gamma_dephase_other] * 300
+
+    # if charge_pick == False:
+    #     args = [truc1, gamma_decay_old, gamma_dephase_old, eket_tot]
+    #     jump_op = Parallel(n_jobs=100)(delayed(ut.get_jump_op)(state, *args) for state in range(1,truc1))
+    #     jump_t1 = np.array(jump_op)[:,:2]
+    #     jump_tphi = np.array(jump_op)[:,2:]
+    #     jump_t1_list = [qt.Qobj(matrix) for row in jump_t1 for matrix in row]
+    #     jump_tphi_list = [qt.Qobj(matrix) for row in jump_tphi for matrix in row]
+
+    # if drive_theta:
+    #     gamma_decay   = [0, gamma_decay_other,  gamma_decay_logi]  + [gamma_decay_other]  * (hspace_len-3)
+    #     gamma_dephase = [0, gamma_dephase_other, gamma_dephase_logi] + [gamma_dephase_other] * (hspace_len-3)
+    # else:
+    #     gamma_decay   = [0,  gamma_decay_logi]  + [gamma_decay_other]  * (hspace_len-2)
+    #     gamma_dephase = [0,  gamma_dephase_logi] + [gamma_dephase_other] * (hspace_len-2)
+
+    # print("gamma_decay_logi = ", gamma_decay_logi, ", gamma_dephase_logi = ", gamma_dephase_logi)
+    # print("gamma_decay_other = ", gamma_decay_other, ", gamma_dephase_other = ", gamma_dephase_other)
+    # print(f"T1_logi = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
+    # print(f"Tphi_logi = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None
+    # print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
+    # print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
+
+    folder = f'../data/3ncut_two_zeropi/truc1=500/'
+    gamma_q0 = pd.read_csv(folder+ 'data_gamma_qubit0.txt')
+    gamma_q1 = pd.read_csv(folder+ 'data_gamma_qubit1.txt')
+    gamma_decay_48_q0 = gamma_q0['t1_50us_48'].to_numpy() *50 /t1tphi_other
+    gamma_decay_48_q1 = gamma_q1['t1_50us_48'].to_numpy() *50 /t1tphi_other
+    gamma_dephase_02_q0 = gamma_q0['tphi_02'].to_numpy() *50 /t1tphi_other
+    gamma_dephase_02_q1 = gamma_q1['tphi_02'].to_numpy() *50 /t1tphi_other
+
+    qubit_a = True
+    arg_a = [hspace_0_dim, hspace_1_dim, gamma_decay_48_q0, gamma_dephase_02_q0, eket_tot_select, qubit_a]
+    jump_op_a = Parallel(n_jobs=100)(delayed(get_jump_op_charge_pick)(state, *arg_a) for state in range(1,hspace_0_dim))
+
+    qubit_a = False
+    arg_b = [hspace_0_dim, hspace_1_dim, gamma_decay_48_q1, gamma_dephase_02_q1, eket_tot_select, qubit_a]
+    jump_op_b = Parallel(n_jobs=100)(delayed(get_jump_op_charge_pick)(state, *arg_b) for state in range(1,hspace_1_dim))
+    jump_t1_list = np.array(jump_op_a)[:,0].tolist() + np.array(jump_op_b)[:,0].tolist()
+    jump_tphi_list = np.array(jump_op_a)[:,1].tolist() + np.array(jump_op_b)[:,1].tolist()
+    jump_t1_list = [qt.Qobj(matrix) for matrix in jump_t1_list]
+    jump_tphi_list = [qt.Qobj(matrix) for matrix in jump_tphi_list]
+    c_op_list = jump_t1_list + jump_tphi_list
+
+    return c_op_list
+
