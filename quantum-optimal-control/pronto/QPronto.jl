@@ -79,14 +79,14 @@ function plot_results(res; savename = "control_plot_2.png", states_to_plot = [0,
     ax2.plot(ts, res_low_1, linewidth = 2, label = "others < |$divide⟩")
     ax2.plot(ts, res_high_1, linewidth = 2, label = "others > |$divide⟩")
     ax2.legend()
-    max_val_1 = maximum(res_low_1 .+ res_high_1)
-    avg_val_1 = mean(res_low_1 .+ res_high_1)
+    max_val_1 = round.([maximum(res_low_1), maximum(res_high_1)], digits=4)
+    avg_val_1 = round.([mean(res_low_1), mean(res_high_1)], digits=4)
     ax2.set_title("Max Other States $max_val_1" * " Avg $avg_val_1")
 
     ax3.plot(ts, res_low_2, linewidth = 2, label = "others < |$divide⟩")
     ax3.plot(ts, res_high_2, linewidth = 2, label = "others > |$divide⟩")
-    max_val_2 = maximum(res_low_2 .+ res_high_2)
-    avg_val_2 = mean(res_low_2 .+ res_high_2)
+    max_val_2 = round.([maximum(res_low_2), maximum(res_high_2)], digits=4)
+    avg_val_2 = round.([mean(res_low_2), mean(res_high_2)], digits=4)
     ax3.set_title("Max Other States $max_val_2" * " Avg $avg_val_2")
     ax3.legend()
 
@@ -99,7 +99,7 @@ end
 
 ## ----------------------------------- Imaginary/Real Helpers ----------------------------------- ##
 
-function im_to_re(x::Union{Matrix{Number},Matrix{ComplexF64}})
+function im_to_re(x::Matrix)
     Re = I(2)
     Im = [0 -1;
           1 0]
@@ -107,7 +107,7 @@ function im_to_re(x::Union{Matrix{Number},Matrix{ComplexF64}})
     return M
 end
 
-function im_to_re(x::Union{Vector{Num},Vector{ComplexF64}})
+function im_to_re(x::Vector)
     return [real(x) ; imag(x)]
 end
 
@@ -177,6 +177,7 @@ function gen_model(H0::Matrix{ComplexF64},
         end
     end
     )
+ 
     # Control + Level Penalties
     eval(quote
         @define_l model begin
