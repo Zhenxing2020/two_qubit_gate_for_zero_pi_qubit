@@ -767,7 +767,7 @@ def cz_fidelity_log_old(arg_all):
 ###################################################################
 # X-gate
 
-def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=200):
+def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=200, thresh=0.01):
     """
     Initialize the parameters and operators for the Zero-Pi qubit system.
 
@@ -839,7 +839,6 @@ def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=2
         drive_term = 0.976 * n_phi + 0.024 * n_theta
 
     # Determine the significant Hilbert space for the charge basis
-    thresh = 0.01
     hspace_charge = [0, 2]  # Start with the ground and first excited states
     for s in hspace_charge:
         for i in range(truncation):
@@ -979,7 +978,7 @@ def parallel_sesolve(n, N, H, tlist, args, options):
     output = qt.sesolve(H, psi0, tlist, [], args, options, _safe_mode=False)
     return output
 
-def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
+def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx, return_all=False):
     """
     Compute the propagator for a quantum system, supporting both noiseless and noisy systems.
 
@@ -1002,7 +1001,7 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
     H0 = H[0][0] if isinstance(H[0], list) else H[0] if isinstance(H, list) else H
     if len(c_op_list) == 0:
         N = H0.shape[0]
-        options =qt.Options(max_step=0, nsteps=1e4, num_cpus=num_cpus)
+        options =qt.Options(max_step=0, nsteps=1e6, num_cpus=num_cpus)
 
         if num_cpus > 1:
             u = np.zeros([N, dimz, len(tlist)], dtype=complex)
@@ -1012,8 +1011,12 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
             for n in range(dimz):
                 for k, t in enumerate(tlist):
                     u[:, n, k] = output[n].states[k].full().T
-            prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
-            return truncate_2(prop, logi_idx)
+            prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
+            if not return_all:
+                prop = prop[-1]
+                return truncate_2(prop, logi_idx)
+            else:
+                return [truncate_2(x, logi_idx) for x in prop]
         else:
             # Computes the propagator for noiseless systems.
             prop = np.zeros((H0.shape[0], dimz), dtype=np.complex128)

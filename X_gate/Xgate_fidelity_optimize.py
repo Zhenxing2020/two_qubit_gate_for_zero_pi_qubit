@@ -76,25 +76,28 @@ if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    # drive_phi, drive_theta, drive_0  = True, False, False
-    drive_phi, drive_theta, drive_0  = False, True, True
+    drive_phi, drive_theta, drive_0  = True, False, False
+    # drive_phi, drive_theta, drive_0  = False, True, True
     if drive_theta:
         amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.01, 0.05), (0.025, 0.2), (-0.17, -0.2), (0.1, 0.3)] # theta big
         # amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.01, 0.08), (0.003, 0.03), (0, 0.01), (0, 0.01)] # theta small
         tg_vec = np.arange(40, 50, step=1).tolist() # theta
     else:
-        amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.15, 0.3), (0, 0.3), (0.3, 0.5), (0.3, 0.5)] # phi
-        tg_vec = np.arange(10, 50, step=10).tolist() # phi
+        # amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.15, 0.3), (0, 0.3), (0.3, 0.5), (0.3, 0.5)] # phi
+        amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0, 0.3), (0, 0.3), (-0.5, 0.5), (-0.5, 0.5)] # phi small
+        # tg_vec = np.arange(10, 50, step=10).tolist() # phi
+        tg_vec = [400, 600, 800]
 
-    tg_bound = (-0.01, 0.01)
+    tg_bound = (-30, 30)
     folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
     f_xgate = pd.read_csv('data/'+folder)
     # x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2',
     #                     'detune_1', 'detune_2']].to_numpy()[[10, 12, 13, 15],:] #[[10,8,6,4,2],:]
 
-    workers, popsize = 100, 10
+    workers, popsize = 100, 20
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     truc1, truc_full = 150, 500 # theta
+    truc1, truc_full = 300, 600 # phi
     print('drive_phi=', drive_phi, ', drive_theta = ', drive_theta, ', drive_0 = ', drive_0)
     print('amp1_bounds=',amp1_bounds, ', amp2_bounds=',amp2_bounds, ', tg_bound=', tg_bound)
     print('detune1_bounds=',detune1_bounds, ', detune2_bounds=', detune2_bounds)
@@ -111,7 +114,7 @@ if __name__ == '__main__':
 
 #####################################################################
     truncation=1000
-    folder = '../../data/3ncut_one_zeropi/'
+    folder = '../3ncut_one_zeropi/'
     if drive_0:
         evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc={truncation}_3ncut.h5').energy_table
         n_Theta = 2*np.pi* scq.read(folder + f'zeropi_0_n_theta_truc={truncation}_3ncut.h5').matrixelem_table
