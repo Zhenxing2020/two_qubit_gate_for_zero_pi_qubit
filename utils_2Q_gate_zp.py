@@ -1124,7 +1124,7 @@ def top_population(pop_integral, hspace_full, num=10):
     # Sorting in descending order (optional)
     sorted_order = np.argsort(top_values)[::-1]
     top_indices = top_indices[sorted_order]
-    top_values = top_values[sorted_order]
+    top_values = np.round(top_values[sorted_order] / np.sum(top_values), 4)
     print("\nTop 10 values:", top_values.tolist())
     print("State of large population:", np.array(hspace_full)[top_indices.tolist()])
     return None
