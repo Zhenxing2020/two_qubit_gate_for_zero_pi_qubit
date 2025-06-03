@@ -1,0 +1,128 @@
+sigmaX_fidelity_optimize_tg.py
+Current Mountain Time: 2024-12-20 15:05:25.528889-07:00
+drive_phi= True , drive_theta =  False , Drag= 0
+amp1_bounds= (0, 0.005) , amp2_bounds= (0, 0.005) , tg_bound= (-1, 1)
+detune1_bounds= (-0.5, 0.5) , detune2_bounds= (-0.5, 0.5)
+workers= 150 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+tg_vec = 
+800, 600, 400, 1000 ,
+truc1 = 300 , truc2 (in optimization) = 159
+truc1_full = 500 , truc2_full = 500
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387differential_evolution step 1: f(x)= -0.176091
+Best Soln: [ 8.00925376e+02  4.35127746e-03  2.49506954e-03 -2.26785464e-01
+ -2.33651803e-01]
+convergence 1534949111094.1182
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.17609125905568973
+       x: [ 8.009e+02  4.351e-03  2.495e-03 -2.268e-01 -2.337e-01]
+     nit: 1
+    nfev: 128 
+
+
+tg =  [800]
+
+log of gate error (truc1=300) = 
+-0.17609126 ,
+
+drive_param (truc1=300) = 
+[800.925376, 0.004351, 0.002495, -0.226785, -0.233652] ,
+1it [22:23, 1343.24s/it]
+log of gate error (truc_full=500) = 
+-0.17609126 ,
+
+***Current Mountain Time: 2024-12-20 15:28:23.512970-07:00 
+
+differential_evolution step 1: f(x)= -0.176091
+Best Soln: [ 5.99046315e+02  2.55433807e-03  2.81152068e-03 -5.15470024e-02
+ -5.51893627e-02]
+convergence 75799048.8819
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.17609125923741978
+       x: [ 5.990e+02  2.554e-03  2.812e-03 -5.155e-02 -5.519e-02]
+     nit: 1
+    nfev: 128 
+
+
+tg =  [800, 600]
+
+log of gate error (truc1=300) = 
+-0.17609126, -0.17609126 ,
+
+drive_param (truc1=300) = 
+[800.925376, 0.004351, 0.002495, -0.226785, -0.233652] ,
+[599.046315, 0.002554, 0.002812, -0.051547, -0.055189] ,
+2it [39:35, 1160.38s/it]
+log of gate error (truc_full=500) = 
+-0.17609126, -0.17609126 ,
+
+***Current Mountain Time: 2024-12-20 15:45:35.894161-07:00 
+
+differential_evolution step 1: f(x)= -0.176091
+Best Soln: [4.00383962e+02 4.57733937e-03 4.15080111e-03 3.82072123e-01
+ 3.78722269e-01]
+convergence 1761161.3066
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.17609126692592517
+       x: [ 4.004e+02  4.577e-03  4.151e-03  3.821e-01  3.787e-01]
+     nit: 1
+    nfev: 128 
+
+
+tg =  [800, 600, 400]
+
+log of gate error (truc1=300) = 
+-0.17609126, -0.17609126, -0.17609127 ,
+
+drive_param (truc1=300) = 
+[800.925376, 0.004351, 0.002495, -0.226785, -0.233652] ,
+[599.046315, 0.002554, 0.002812, -0.051547, -0.055189] ,
+[400.383962, 0.004577, 0.004151, 0.382072, 0.378722] ,
+3it [51:10, 947.89s/it] 
+log of gate error (truc_full=500) = 
+-0.17609126, -0.17609126, -0.17609127 ,
+
+***Current Mountain Time: 2024-12-20 15:57:10.911444-07:00 
+
+differential_evolution step 1: f(x)= -0.176091
+Best Soln: [1.00074417e+03 3.78701039e-03 4.25763772e-03 1.58072701e-02
+ 2.16265768e-03]
+convergence 54839069693.3358
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.17609125905593984
+       x: [ 1.001e+03  3.787e-03  4.258e-03  1.581e-02  2.163e-03]
+     nit: 1
+    nfev: 128 
+
+
+tg =  [800, 600, 400, 1000]
+
+log of gate error (truc1=300) = 
+-0.17609126, -0.17609126, -0.17609127, -0.17609126 ,
+
+drive_param (truc1=300) = 
+[800.925376, 0.004351, 0.002495, -0.226785, -0.233652] ,
+[599.046315, 0.002554, 0.002812, -0.051547, -0.055189] ,
+[400.383962, 0.004577, 0.004151, 0.382072, 0.378722] ,
+[1000.744168, 0.003787, 0.004258, 0.015807, 0.002163] ,
+4it [1:19:26, 1243.08s/it]4it [1:19:26, 1191.56s/it]
+
+log of gate error (truc_full=500) = 
+-0.17609126, -0.17609126, -0.17609127, -0.17609126 ,
+
+***Current Mountain Time: 2024-12-20 16:25:26.513372-07:00 
+
+amp1_bounds= (0, 0.005) , amp2_bounds= (0, 0.005)
+detune1_bounds= (-0.5, 0.5) , detune2_bounds= (-0.5, 0.5)
+Current Mountain Time: 2024-12-20 16:25:26.514035-07:00
+124488.13user 111.60system 1:20:02elapsed 2594%CPU (0avgtext+0avgdata 577064maxresident)k
+0inputs+72outputs (47major+3424737minor)pagefaults 0swaps
