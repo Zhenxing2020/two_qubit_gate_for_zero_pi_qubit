@@ -396,7 +396,7 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
 
 def cnot_fidelity_log(arg_all):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
-     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx] = arg_all
+     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, mid_state] = arg_all
     pulse_args = {'drive_amp_A': drive_amp_A ,
                 'drive_freq_A': w_0_2 + 2*np.pi*detune_A,
                 'drive_amp_B': drive_amp_B ,
@@ -406,25 +406,28 @@ def cnot_fidelity_log(arg_all):
 
     prop = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
     if prop.isoper:
-        U_final = cnot_phase_correct( prop)
+        U_final = cnot_phase_correct(prop, mid_state)
     else:
         U_kraus = qt.to_kraus(qt.to_super(prop))
-        U_kraus_zz = [cnot_phase_correct(truncate_2(u, logi_idx)) for u in U_kraus ]
+        U_kraus_zz = [cnot_phase_correct(truncate_2(u, logi_idx), mid_state) for u in U_kraus ]
         U_final = qt.kraus_to_super(U_kraus_zz)
     fidelity = qt.average_gate_fidelity(U_final, target=cnot())
     return np.log10(1-fidelity)
 
 def cnot_fidelity_log_optimize(arg_optimize, *args):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg_optimize
-    [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx] = args
+    [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, mid_state] = args
 
     arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
-     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx]
+     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, mid_state]
 
     return cnot_fidelity_log(arg_all)
 
-def cnot_phase_correct(prop):
+def cnot_phase_correct(prop, mid_state):
     prop = qt.Qobj(prop, dims=[[2, 2], [2, 2]])
+    XI = qt.tensor(qt.sigmax(), qt.qeye(2))
+    if mid_state in [ '4-1', '1-4', '8-0' ]:
+        prop = XI* prop * XI  
     Uc_prime = swap()* prop* swap() # for |45> state
     phase = np.angle(Uc_prime)
     x1 = 0.5* (- phase[1,1] + phase[2,3] - phase[3,2] + phase[0,0])

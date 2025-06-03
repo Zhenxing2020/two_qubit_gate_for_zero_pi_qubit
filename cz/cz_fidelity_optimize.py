@@ -31,7 +31,7 @@ def fidelity_sweep():
     n_cpu_optimize = 1
     c_op_list = []
     args_truc = [H_drive_part, W_20_50, n_cpu_optimize, c_op_list, logi_idx_part]
-    args_truc2 = [H_drive_part, W_20_50, n_cpu_optimize, c_op_list, logi_idx_part]
+    # args_truc2 = [H_drive_part, W_20_50, n_cpu_optimize, c_op_list, logi_idx_part]
     fidelity = []
     drive_param = []
     fidelity_full = []
@@ -76,13 +76,13 @@ def fidelity_sweep():
         n_cpu_parallel = 16
         tg, drive_amp, detune = drive_param[jdx]
 
-        arg_all = [tg, drive_amp, detune,
-                   H_drive_False, W_20_50, n_cpu_parallel, c_op_list, logi_idx_False]
-        fidelity_full.append(ut.cz_fidelity_log(arg_all))
-
         # arg_all = [tg, drive_amp, detune,
-        #            n_cpu_parallel, hspace_False, W_20_50, H_drive_False, logi_idx_False]
-        # fidelity_full.append(ut.cz_fidelity_log_old(arg_all))
+        #            H_drive_False, W_20_50, n_cpu_parallel, c_op_list, logi_idx_False]
+        # fidelity_full.append(ut.cz_fidelity_log(arg_all))
+
+        arg_all = [tg, drive_amp, detune,
+                   n_cpu_parallel, hspace_False, W_20_50, H_drive_False, logi_idx_False]
+        fidelity_full.append(ut.cz_fidelity_log_old(arg_all))
 
         print(f'\nlog of gate error (truc={len(eval_tot)}) = ')
         for i in range(0, len(fidelity_full), 4):
@@ -120,13 +120,13 @@ if __name__ == '__main__':
     # amp_bound, detune_bound, tg_bound = [(0.008, 0.0092), (0.013, 0.0155), (-0.01, 0.01)] # tg160-171
     # amp_bound, detune_bound, tg_bound = [(0.007, 0.0088), (0.0128, 0.0142), (-0.01, 0.01)] # tg173-185
     # amp_bound, detune_bound, tg_bound = [(0.007, 0.008), (0.012, 0.0132), (-0.01, 0.01)] # tg186-195
-    amp_bound, detune_bound, tg_bound = [(0.0068, 0.0075), (0.01175, 0.0125), (-0.01, 0.01)] # tg195-201
+    amp_bound, detune_bound, tg_bound = [(0., 0.08), (-0.1, 0.1), (-0.01, 0.01)] # tg195-201
 
     # tg_vec = [141, 145, 149, 151, 153, 154, 157]
     # tg_vec = [160, 161, 162, 163, 165, 168, 170, 171,]
     # tg_vec = [173, 174, 177, 179, 180, 182, 184, 185]
     # tg_vec = np.arange(186, 195, 1)
-    tg_vec = [2, 3] #np.arange(195, 201, 1)
+    tg_vec = [20, 92] #np.arange(195, 201, 1)
     # cz = pd.read_csv('data/data_cz_3ncut_truc1=300.txt')
     # x0_vec = cz[['tg', 'drive_amp', 'detune']].to_numpy()[2::3,:]
     # x0_vec = np.array([
@@ -147,24 +147,26 @@ if __name__ == '__main__':
     # for i in x0_vec:
     #     print(i.tolist(), ',')
 
-    workers, popsize = 2, 10
+    workers, popsize = 50, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     drive_term = n_theta1_dress
     logi_state = ['0-0', '0-2', '2-0', '2-2']
-    W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
+    # W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
+    # W_20_50 = eval_tot[hspace_full.index('0-1')] - eval_tot[hspace_full.index('0-0')]
+    W_20_50 = eval_tot[hspace_full.index('0-1')] - eval_tot[hspace_full.index('0-0')]
 
     hspace_part = [
 '0-0', '5-0', '0-2', '2-0', '2-2', '5-2', '5-1', '0-1', '2-1', '1-0' ,
-# '0-5', '2-5', '1-2', '9-0', '4-0', '2-4', '5-5', '1-1', '5-4', '1-5' ,
-# '9-2', '0-4', '4-2', '2-8', '0-8', '9-1', '2-12', '2-9', '0-9', '0-12' ,
-# '12-0', '2-16', '0-16', '5-8', '1-8', '4-5', '2-13', '2-21', '0-18', '2-20' ,
-# '9-4', '4-9', '8-0', '2-18', '0-21', '2-24', '1-4', '18-0', '5-26', '0-13' ,
+'0-5', '2-5', '1-2', '9-0', '4-0', '2-4', '5-5', '1-1', '5-4', '1-5' ,
+'9-2', '0-4', '4-2', '2-8', '0-8', '9-1', '2-12', '2-9', '0-9', '0-12' ,
+'12-0', '2-16', '0-16', '5-8', '1-8', '4-5', '2-13', '2-21', '0-18', '2-20' ,
+'9-4', '4-9', '8-0', '2-18', '0-21', '2-24', '1-4', '18-0', '5-26', '0-13' ,
 
-# '13-0', '0-26', '15-0', '2-26', '1-12', '5-16', '8-1', '0-24', '15-1', '2-35' ,
-# '15-4', '2-33', '2-45', '0-33', '2-39', '0-45', '5-12', '0-39', '5-9', '8-12' ,
-# '5-33', '12-2', '4-4', '1-9', '4-1', '5-34', '2-30', '2-46', '1-16', '0-34' ,
-# '2-34', '8-2', '5-21', '2-52', '0-52', '0-42', '2-42', '2-59', '0-59', '5-18' ,
-# '0-65', '5-24', '2-55', '0-55', '0-20', '9-8', '8-9', '22-0', '1-25', '8-5' ,
+'13-0', '0-26', '15-0', '2-26', '1-12', '5-16', '8-1', '0-24', '15-1', '2-35' ,
+'15-4', '2-33', '2-45', '0-33', '2-39', '0-45', '5-12', '0-39', '5-9', '8-12' ,
+'5-33', '12-2', '4-4', '1-9', '4-1', '5-34', '2-30', '2-46', '1-16', '0-34' ,
+'2-34', '8-2', '5-21', '2-52', '0-52', '0-42', '2-42', '2-59', '0-59', '5-18' ,
+'0-65', '5-24', '2-55', '0-55', '0-20', '9-8', '8-9', '22-0', '1-25', '8-5' ,
 
 # '12-1', '4-8', '2-53', '2-36', '2-25', '5-20', '5-13', '9-24', '15-8', '1-30' ,
 # '0-25', '1-20', '5-25', '9-5', '1-13', '1-24', '13-2', '1-33', '18-1', '0-68' ,

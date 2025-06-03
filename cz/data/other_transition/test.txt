@@ -1,0 +1,77 @@
+cz_fidelity_optimize.py
+Start Mountain Time: 2025-05-26 15:02:48.714473-06:00
+gate_time_vector: [2, 3]
+
+truc1= 300 , truc_tot= 1000 , charge_pick= True
+truc_tot_2= 1000
+amp_bounds= (0.0068, 0.0075) , detune_bounds= (0.01175, 0.0125) , tg_bound= (-0.01, 0.01)
+W_20_50 =  15.983
+workers= 2 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387
+optimize Time: 2025-05-26 15:02:48.870384-06:00
+differential_evolution step 1: f(x)= -0.221849
+Best Solution: [1.99499041, 0.00691653, 0.01207904]
+Convergence: 1.0381
+----------------------------
+
+finish optimize Time: 2025-05-26 15:02:49.816950-06:00
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.22184874961635637
+       x: [ 1.995e+00  6.917e-03  1.208e-02]
+     nit: 1
+    nfev: 64 
+
+
+tg =  [2]
+
+log of gate error (truc=50) = 
+-0.22184875 ,
+
+drive_param (truc=50) = 
+[1.99499, 0.006917, 0.012079] ,
+Full Time: 2025-05-26 15:02:49.817558-06:00
+1it [00:01,  1.40s/it]
+log of gate error (truc=1000) = 
+-0.22184875 ,
+
+amp_bounds= (0.0068, 0.0075) , detune_bounds= (0.01175, 0.0125) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-05-26 15:02:50.274046-06:00
+
+optimize Time: 2025-05-26 15:02:50.274345-06:00
+differential_evolution step 1: f(x)= -0.21299
+Best Solution: [2.99543776, 0.00682187, 0.01210925]
+Convergence: 4.0234
+----------------------------
+
+finish optimize Time: 2025-05-26 15:02:52.310124-06:00
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.2129902522824482
+       x: [ 2.995e+00  6.822e-03  1.211e-02]
+     nit: 1
+    nfev: 64 
+
+
+tg =  [2, 3]
+
+log of gate error (truc=50) = 
+-0.22184875, -0.21299025 ,
+
+drive_param (truc=50) = 
+[1.99499, 0.006917, 0.012079] ,
+[2.995438, 0.006822, 0.012109] ,
+Full Time: 2025-05-26 15:02:52.310843-06:00
+2it [00:04,  2.57s/it]2it [00:04,  2.40s/it]
+
+log of gate error (truc=1000) = 
+-0.22184875, -0.21297865 ,
+
+amp_bounds= (0.0068, 0.0075) , detune_bounds= (0.01175, 0.0125) , tg_bound= (-0.01, 0.01)
+Current Mountain Time: 2025-05-26 15:02:53.667099-06:00
+workers= 2 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+43.22user 5.11system 0:06.73elapsed 717%CPU (0avgtext+0avgdata 494988maxresident)k
+2800inputs+8outputs (20major+456505minor)pagefaults 0swaps
