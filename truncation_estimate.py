@@ -233,18 +233,38 @@ if __name__ == "__main__":
     truc_full = 300
 
     ## X-gate nphi
+    # folder = '../data/3ncut_one_zeropi/'
+    # evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc=1000_3ncut.h5').energy_table
+    # n_phi = 2*np.pi* scq.read(folder + f'zeropi_0_n_phi_truc=1000_3ncut.h5').matrixelem_table
+    # evals = evals - evals[0]
+    # logi_state = [0, 2]
+    # drive_term = n_phi
+    # detune = [0.351830, 0.375322] # [0, 0]
+    # w_trans_1 = evals[9] - evals[0] + 2 * np.pi * detune[0]
+    # w_trans_2 = evals[9] - evals[2] + 2 * np.pi * detune[1]
+    # wd = [w_trans_1, w_trans_2]
+    # core_states = logi_state + [9]
+    # A = [0.214044, 0.120290] # [0.02, 0.02]
+    # hspace_full = np.arange(truc_full).tolist()
+    # print(f'Amplitude: A0={A[0]:.6f}, A1={A[1]:.6f}')
+    # print(f'detune_0={detune[0]:.6f}, detune_1={detune[1]:.6f}')
+
+    ## X-gate ntheta
     folder = '../data/3ncut_one_zeropi/'
     evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc=1000_3ncut.h5').energy_table
-    n_phi = 2*np.pi* scq.read(folder + f'zeropi_0_n_phi_truc=1000_3ncut.h5').matrixelem_table
+    n_theta = 2*np.pi* scq.read(folder + f'zeropi_0_n_theta_truc=1000_3ncut.h5').matrixelem_table
     evals = evals - evals[0]
     logi_state = [0, 2]
-    drive_term = n_phi
-    w_trans_1 = evals[9] - evals[0]
-    w_trans_2 = evals[9] - evals[2]
+    drive_term = n_theta
+    detune = [-0.00697 , -0.00204] # [0, 0]
+    w_trans_1 = evals[7] - evals[0] + 2 * np.pi * detune[0]
+    w_trans_2 = evals[7] - evals[2] + 2 * np.pi * detune[1]
     wd = [w_trans_1, w_trans_2]
-    core_states = logi_state + [9]
-    A = [0.02, 0.02]
-    hspace_full = np.arange(truc_full).tolist()
+    core_states = logi_state + [7]
+    A = [0.12, 0.0287] # [0.02, 0.02]
+    hspace_full = np.arange(truc_full).tolist()    
+    print(f'Amplitude: A0={A[0]:.6f}, A1={A[1]:.6f}')
+    print(f'detune_0={detune[0]:.6f}, detune_1={detune[1]:.6f}')
 
     ### CZ & CNOT
     # folder = f'../data/3ncut_two_zeropi/truc1=300_truc2=1000_pick=True/'
@@ -284,12 +304,12 @@ if __name__ == "__main__":
     ### states_all
     states_all = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
                                          path_func=all_path_to_core)
-    print(f'state_all ({num_states_tot}/{truc_full}) :')
-    data = states_all
-    for i in range(0, len(data), 10):  # Step size of 10
-        if i%50==0:
-            print('')
-        print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
+    # print(f'state_all ({num_states_tot}/{truc_full}) :')
+    # data = states_all
+    # for i in range(0, len(data), 10):  # Step size of 10
+    #     if i%50==0:
+    #         print('')
+    #     print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
 
     states_all_index = [hspace_full.index(i) for i in states_all]
     data = states_all_index
@@ -302,12 +322,12 @@ if __name__ == "__main__":
     ### states_short
     states_short = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
                                          path_func=shortest_path_to_core)
-    print(f'\nstate_short ({num_states_tot}/{truc_full}) :')
-    data = states_short
-    for i in range(0, len(data), 10):  # Step size of 10
-        if i%50==0:
-            print('')
-        print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
+    # print(f'\nstate_short ({num_states_tot}/{truc_full}) :')
+    # data = states_short
+    # for i in range(0, len(data), 10):  # Step size of 10
+    #     if i%50==0:
+    #         print('')
+    #     print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
 
     states_short_index = [hspace_full.index(i) for i in states_short]
     data = states_short_index

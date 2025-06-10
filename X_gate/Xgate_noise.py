@@ -20,16 +20,16 @@ def import_para_noise():
     """
     Imports parameters and computes gate fidelities for noisy systems.
     """
-    # drive_phi, drive_theta, truc = True, False, 300
-    drive_phi, drive_theta, truc = False, True, 150
+    drive_phi, drive_theta, truc = True, False, 300
+    # drive_phi, drive_theta, truc = False, True, 300
     drive_0 = True
     folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
     f_xgate = pd.read_csv('data/'+folder)
     params = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
-                      ]].to_numpy()#[[-5], :]
+                      ]].to_numpy() #[[0], :]
     # [[ 1,2, 4,5, 7,8, 10,11, 13,14, 16,17,18],:]  , 0,3,9,12,17,
     #
-    num_cpus, n_job = 4, 1*len(params)
+    num_cpus, n_job = 4, 2*len(params)
     logi_state = [0, 2]
 
     folder = '../../data/3ncut_one_zeropi/'
@@ -43,7 +43,7 @@ def import_para_noise():
         n_phi = 2*np.pi* scq.read(folder + f'zeropi_1_n_phi_truc=1000_3ncut.h5').matrixelem_table
 
     evals = evals - evals[0]
-    gate_target = qt.sigmax()
+    # gate_target = qt.sigmax()
     H0 = qt.Qobj(np.diag(evals))
     if drive_phi:
         w_trans_1 = evals[9] - evals[0]
@@ -61,45 +61,45 @@ def import_para_noise():
                 hspace_charge.append(i)
     hspace_charge.sort()
     # hspace_charge = np.arange(truc).tolist()
-
-    t1_other = 30 # μs
-
-    tphi_logi = 100 # μs
-    gamma_decay_logi =  1 / 1600e3
-    gamma_dephase_logi = 1 / 1e3 / tphi_logi
-    gamma_decay_other =  1 / 1e3 / t1_other
-    gamma_dephase_other = 1 / 1e3 / t1_other
-    idx_2 = 2 if drive_theta else 1
-
     hspace_len = len(hspace_charge)
-    if drive_theta:
-        gamma_decay_old   = [0, gamma_decay_other,  gamma_decay_logi]  + [gamma_decay_other]  * (hspace_len-3)
-        gamma_dephase_old = [0, gamma_dephase_other, gamma_dephase_logi] + [gamma_dephase_other] * (hspace_len-3)
-    else:
-        gamma_decay_old   = [0,  gamma_decay_logi]  + [gamma_decay_other]  * (hspace_len-2)
-        gamma_dephase_old = [0,  gamma_dephase_logi] + [gamma_dephase_other] * (hspace_len-2)
 
-    folder_1 = 'data/data_gamma_'
-    folder_2 = 'theta.txt' if drive_theta else 'phi.txt'
-    gamma_new = pd.read_csv(folder_1 + folder_2)
+    # t1_other = 30 # μs
 
-    ### 't1_50us_47', 't1_50us_27', 't1_50us_07'
-    ### 'tphi_50us_02', 'tphi_50us_07', 'tphi_1e6'
-    gamma_decay_new = gamma_new['t1_50us_47'].to_numpy()
-    gamma_dephase_new = gamma_new['tphi_50us_02'].to_numpy()
+    # tphi_logi = 100 # μs
+    # gamma_decay_logi =  1 / 1600e3
+    # gamma_dephase_logi = 1 / 1e3 / tphi_logi
+    # gamma_decay_other =  1 / 1e3 / t1_other
+    # gamma_dephase_other = 1 / 1e3 / t1_other
+    # idx_2 = 2 if drive_theta else 1
+
+    # if drive_theta:
+    #     gamma_decay_old   = [0, gamma_decay_other,  gamma_decay_logi]  + [gamma_decay_other]  * (hspace_len-3)
+    #     gamma_dephase_old = [0, gamma_dephase_other, gamma_dephase_logi] + [gamma_dephase_other] * (hspace_len-3)
+    # else:
+    #     gamma_decay_old   = [0,  gamma_decay_logi]  + [gamma_decay_other]  * (hspace_len-2)
+    #     gamma_dephase_old = [0,  gamma_dephase_logi] + [gamma_dephase_other] * (hspace_len-2)
+
+    # folder_1 = 'data/data_gamma_'
+    # folder_2 = 'theta.txt' if drive_theta else 'phi.txt'
+    # gamma_new = pd.read_csv(folder_1 + folder_2)
+
+    # ### 't1_50us_47', 't1_50us_27', 't1_50us_07'
+    # ### 'tphi_50us_02', 'tphi_50us_07', 'tphi_1e6'
+    # gamma_decay_new = gamma_new['t1_50us_47'].to_numpy()
     # gamma_dephase_new = gamma_new['tphi_50us_02'].to_numpy()
+    # # gamma_dephase_new = gamma_new['tphi_50us_02'].to_numpy()
 
-    print("gamma_decay_new[2] = ", gamma_decay_new[2], ", gamma_dephase_new[2] = ", gamma_dephase_new[2])
-    gamma_decay_new = gamma_decay_new *50 /t1_other
-    gamma_dephase_new = gamma_dephase_new *50 /t1_other
-    # gamma_dephase_new[idx_2] = gamma_dephase_logi
-    # gamma_decay_new[idx_2] = gamma_decay_logi
+    # print("gamma_decay_new[2] = ", gamma_decay_new[2], ", gamma_dephase_new[2] = ", gamma_dephase_new[2])
+    # gamma_decay_new = gamma_decay_new *50 /t1_other
+    # gamma_dephase_new = gamma_dephase_new *50 /t1_other
+    # # gamma_dephase_new[idx_2] = gamma_dephase_logi
+    # # gamma_decay_new[idx_2] = gamma_decay_logi
 
-    jump_t1   = []
-    jump_tphi = []
-    for i in range(1,hspace_len):
-        jump_t1.append( np.sqrt(gamma_decay_new[i]) * qt.basis(hspace_len,0) * qt.basis(hspace_len,i).dag() )
-        jump_tphi.append( np.sqrt(2*gamma_dephase_new[i]) * qt.basis(hspace_len,i).proj() )
+    # jump_t1   = []
+    # jump_tphi = []
+    # for i in range(1,hspace_len):
+    #     jump_t1.append( np.sqrt(gamma_decay_new[i]) * qt.basis(hspace_len,0) * qt.basis(hspace_len,i).dag() )
+    #     jump_tphi.append( np.sqrt(2*gamma_dephase_new[i]) * qt.basis(hspace_len,i).proj() )
 
     logi_idx = [hspace_charge.index(s) for s in logi_state]
     H0_truc = ut.truncate_2(H0, hspace_charge)
@@ -112,46 +112,41 @@ def import_para_noise():
     for para in params:
         print(para.tolist(), ',')
     print("num_cpus = ", num_cpus, ";   n_job = ", n_job)
-    print("gamma_decay_logi = ", gamma_decay_logi, ", gamma_dephase_logi = ", gamma_dephase_logi)
-    print("gamma_decay_other = ", gamma_decay_other, ", gamma_dephase_other = ", gamma_dephase_other)
-    print(f"T1_logi = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
-    print(f"Tphi_logi = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None
-    print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
-    print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
+    # print("gamma_decay_logi = ", gamma_decay_logi, ", gamma_dephase_logi = ", gamma_dephase_logi)
+    # print("gamma_decay_other = ", gamma_decay_other, ", gamma_dephase_other = ", gamma_dephase_other)
+    # print(f"T1_logi = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
+    # print(f"Tphi_logi = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None
+    # print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
+    # print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
 
     ############################################################
-    # c_op_list = [qt.Qobj(np.zeros((truc, truc)))]
-    # c_op_list = []
-    # args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, gate_target]
-    # f_ideal = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args)
-    #                                             for args_indep in params)
-    # print('\nf_ideal = [')
-    # for i in range(0, len(f_ideal), 4):
-    #     print(', '.join(map(str, f_ideal[i:i+4])), ',')
-    # print(']')
-    # print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
-    ############################################################
-    c_op_list = jump_t1 + jump_tphi
-    args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, gate_target]
-    f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args)
+    ### c_op_list = [qt.Qobj(np.zeros((truc, truc)))]
+    c_op_list = []
+    args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx]
+    f_ideal = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args)
                                                 for args_indep in params)
-    print('\nf_noise = [')
-    for i in range(0, len(f_noise), 4):
-        print(', '.join(map(str, f_noise[i:i+4])), ',')
+    print('\nf_ideal = [')
+    for i in range(0, len(f_ideal), 4):
+        print(', '.join(map(str, f_ideal[i:i+4])), ',')
     print(']')
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-
-
-
-
+    ############################################################
+    # c_op_list = jump_t1 + jump_tphi
+    # args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, gate_target]
+    # f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args)
+    #                                             for args_indep in params)
+    # print('\nf_noise = [')
+    # for i in range(0, len(f_noise), 4):
+    #     print(', '.join(map(str, f_noise[i:i+4])), ',')
+    # print(']')
+    # print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
 def import_select_phi():
     folder = 'data_xgate_phi_3ncut.txt'
     f_xgate = pd.read_csv('data/'+folder)
     x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
-                      ]].to_numpy()[ 9: ,:]
+                      ]].to_numpy()#[ 9: ,:]
     # [[-1], :]   [ 0::5 ,:]   [ [8, 15,16,17,18 ] ,:]   [ [6,7,8, 13 ] ,:]
 #     x0_vec = np.array([
 # [828.759495, 0.013563, 0.034964, -0.003029, -0.003182 ]
@@ -171,18 +166,44 @@ def import_select_phi():
     ### hspace_select
     # hspace_select = np.arange(truc).tolist()
     hspace_select =    [
-        ### charge_300
-0, 2, 3, 4, 8, 9, 10, 11, 15, 16 ,
-18, 19, 20, 23, 24, 25, 28, 31, 33, 35 ,
-37, 39, 40, 42, 43, 46, 47, 49, 51, 53 ,
-55, 56, 57, 60, 62, 64, 66, 67, 69, 70 ,
-73, 76, 77, 79, 81, 83, 85, 86, 88, 91 ,
+#### short_post
+0, 2, 10, 19, 37, 40, 42, 33, 15, 9 ,
+31, 47, 28, 77, 70, 20, 76, 51, 46, 66 ,
+62, 56, 69, 39, 83, 23, 35, 57, 67, 55 ,
+91, 53, 60, 24, 86, 85, 81, 121, 18, 79 ,
+128, 25, 101, 64, 95, 100, 123, 43, 92, 49 ,
 
-92, 95, 96, 98, 100, 101, 102, 104, 106, 108 ,
-110, 112, 113, 116, 118, 120, 121, 123, 126, 128 ,
-130, 132, 133, 136, 137, 139, 141, 143, 145, 146 ,
-148, 151, 153, 154, 156, 158, 159, 162, 164, 166 ,
-167, 169, 170, 173, 174, 176, 179, 181, 183, 185 ,
+98, 102, 120, 108, 118, 116, 3, 16, 104, 154 ,
+143, 126, 88, 112, 96, 113, 146, 73, 133, 132 ,
+11, 110, 136, 170, 139, 137, 166, 130, 156, 181 ,
+145, 153, 106, 230, 151, 169, 183, 167, 209, 174 ,
+162, 194, 158, 148, 179, 220, 159, 279, 253, 205 ,
+
+206, 176, 188, 164, 202, 186, 173, 141, 185, 196 ,
+226, 200, 227, 198, 248, 192, 232, 223, 229, 255 ,
+241, 281, 265, 305, 246, 294, 333, 190, 208, 218 ,
+262, 252, 213, 288, 257, 212, 275, 306, 264, 239 ,
+# 250, 326, 234, 237, 282, 297, 348, 216, 222, 273 ,
+
+# 313, 322, 291, 259, 319, 349, 336, 242, 337, 286 ,
+# 346, 299, 372, 8, 277, 290, 358, 267, 320, 363 ,
+# 370, 374, 397, 420, 398, 303, 271, 328, 269, 245 ,
+# 357, 315, 352, 293, 308, 302, 445, 388, 384, 340 ,
+# 472, 391, 366, 376, 330, 283, 424, 332, 343, 390 ,
+
+
+        ### charge_300
+# 0, 2, 3, 4, 8, 9, 10, 11, 15, 16 ,
+# 18, 19, 20, 23, 24, 25, 28, 31, 33, 35 ,
+# 37, 39, 40, 42, 43, 46, 47, 49, 51, 53 ,
+# 55, 56, 57, 60, 62, 64, 66, 67, 69, 70 ,
+# 73, 76, 77, 79, 81, 83, 85, 86, 88, 91 ,
+
+# 92, 95, 96, 98, 100, 101, 102, 104, 106, 108 ,
+# 110, 112, 113, 116, 118, 120, 121, 123, 126, 128 ,
+# 130, 132, 133, 136, 137, 139, 141, 143, 145, 146 ,
+# 148, 151, 153, 154, 156, 158, 159, 162, 164, 166 ,
+# 167, 169, 170, 173, 174, 176, 179, 181, 183, 185 ,
 
 # 186, 188, 190, 192, 194, 196, 198, 200, 202, 205 ,
 # 206, 208, 209, 212, 213, 216, 218, 220, 222, 223 ,
@@ -229,7 +250,7 @@ def import_select_phi():
     H_drive_select = [H0_select, [drive_select, ut.drive_gauss_A],
                                  [drive_select, ut.drive_gauss_B],]
 
-    num_cpus, n_job = 4, 100
+    num_cpus, n_job = 4, 2*len(x0_vec)
     print('truc = ', truc)
     print("num_cpus = ", num_cpus, ";   n_job = ", n_job)
     print('params =')
@@ -390,8 +411,8 @@ if __name__ == '__main__':
 
     # import_para()
     # import_para_noise()
-    # import_select_phi()
-    import_select_phi_x0()
+    import_select_phi()
+    # import_select_phi_x0()
 
 
 
