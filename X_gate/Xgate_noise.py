@@ -21,8 +21,18 @@ def import_para_noise():
     Imports parameters and computes gate fidelities for noisy systems.
     """
     # drive_phi, drive_theta, truc = True, False, 200
-    drive_phi, drive_theta, truc = False, True, 75
+    drive_phi, drive_theta, truc = False, True, 150
     drive_0 = True
+    ############################################################
+    t1_other = 170 # μs
+    gamma_decay_other =  1 / 1e3 / t1_other
+    gamma_dephase_other = 1 / 1e3 / t1_other    
+    # tphi_logi = 100 # μs
+    # gamma_decay_logi =  1 / 1600e3
+    # gamma_dephase_logi = 1 / 1e3 / tphi_logi
+    # # idx_2 = 2 if drive_theta else 1
+
+    ############################################################
     folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
     f_xgate = pd.read_csv('data/'+folder)
     params = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
@@ -31,7 +41,6 @@ def import_para_noise():
     #
     num_cpus, n_job = 4, 1*len(params)
     logi_state = [0, 2]
-
     folder = '../../data/3ncut_one_zeropi/'
     if drive_0:
         evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc=1000_3ncut.h5').energy_table
@@ -41,7 +50,6 @@ def import_para_noise():
         evals = 2*np.pi* scq.read(folder + f'zeropi_1_specdata_truc=1000_3ncut.h5').energy_table
         n_theta = 2*np.pi* scq.read(folder + f'zeropi_1_n_theta_truc=1000_3ncut.h5').matrixelem_table
         n_phi = 2*np.pi* scq.read(folder + f'zeropi_1_n_phi_truc=1000_3ncut.h5').matrixelem_table
-
     evals = evals - evals[0]
     H0 = qt.Qobj(np.diag(evals))
     if drive_phi:
@@ -62,20 +70,24 @@ def import_para_noise():
     hspace_charge.sort()
     ############################################################
     # hspace_charge = np.arange(truc).tolist()
-    hspace_len = len(hspace_charge)
-
     ############################################################
+    hspace_len = len(hspace_charge)
     logi_idx = [hspace_charge.index(s) for s in logi_state]
     H0_truc = ut.truncate_2(H0, hspace_charge)
     drive_truc = ut.truncate_2(drive_term, hspace_charge)
     H_qbt_drive = [H0_truc, [drive_truc, ut.drive_gauss_A],
-                            [drive_truc, ut.drive_gauss_B],]
+                            [drive_truc, ut.drive_gauss_B],]    
+    ############################################################
+    print("num_cpus = ", num_cpus, ";   n_job = ", n_job)
     print('drive_phi=', drive_phi, '; drive_theta = ', drive_theta, '; truc = ', truc)
     print('hspace_len=', hspace_len)
+    print(' hspace_charge = [')
+    for i in range(0, len(hspace_charge), 10):
+        print(', '.join(map(str, hspace_charge[i:i+10])), ',')
+    print(']')    
     print('params =')
     for para in params:
         print(para.tolist(), ',')
-    print("num_cpus = ", num_cpus, ";   n_job = ", n_job)
     ############################################################
     ### c_op_list = [qt.Qobj(np.zeros((truc, truc)))]
     c_op_list = []
@@ -88,15 +100,6 @@ def import_para_noise():
     print(']')
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    # ############################################################
-    t1_other = 170 # μs
-
-    tphi_logi = 100 # μs
-    gamma_decay_logi =  1 / 1600e3
-    gamma_dephase_logi = 1 / 1e3 / tphi_logi
-    gamma_decay_other =  1 / 1e3 / t1_other
-    gamma_dephase_other = 1 / 1e3 / t1_other
-    # # idx_2 = 2 if drive_theta else 1
 
     ############################################################
     ### old gamma decay and dephase
@@ -112,7 +115,7 @@ def import_para_noise():
     ### old gamma decay 
 
     folder_1 = 'data/data_gamma_'
-    folder_2 = 'theta.txt' if drive_theta else 'phi_truc200.txt'
+    folder_2 = 'theta.txt' if drive_theta else 'phi_truc160.txt'
     gamma_new = pd.read_csv(folder_1 + folder_2)
     gamma_dephase_new = gamma_new['tphi_50us_02'].to_numpy()
     ############################################################
@@ -141,49 +144,47 @@ def import_para_noise():
     ### new gamma decay 
 
     if drive_theta:
-        Gamma = gamma_decay_other / (n_theta[4,7]**2)
-        gamma_decay_new = Gamma* n_theta**2
+        Gamma = gamma_decay_other / (np.abs(n_theta[4,7])**2)
     else:
-        Gamma = gamma_decay_other / (n_phi[4,9]**2)
-        gamma_decay_new = Gamma* n_phi**2
+        Gamma = gamma_decay_other / (np.abs(n_phi[4,9])**2)
+    gamma_decay_new = Gamma* np.abs(drive_truc.full())**2
     # print("gamma_decay_new[2] = ", gamma_decay_new[2], ", gamma_dephase_new[2] = ", gamma_dephase_new[2])
-    gamma_decay_new = gamma_decay_new *50 /t1_other
     gamma_dephase_new = gamma_dephase_new *50 /t1_other
     jump_t1   = []
     jump_tphi = []
-    for i in range(0,hspace_len):
-        for j in range(0,i):
+    for i in range(0, hspace_len):
+        for j in range(0, i):
             jump_t1.append( np.sqrt(gamma_decay_new[i,j]) * qt.basis(hspace_len,j) * qt.basis(hspace_len,i).dag() )
-            jump_tphi.append( np.sqrt(2*gamma_dephase_new[i]) * qt.basis(hspace_len,i).proj() )
+        jump_tphi.append( np.sqrt(2*gamma_dephase_new[i]) * qt.basis(hspace_len,i).proj() )
     ############################################################
 
-    print("gamma_decay_logi = ", gamma_decay_logi, ", gamma_dephase_logi = ", gamma_dephase_logi)
+    # print("gamma_decay_logi = ", gamma_decay_logi, ", gamma_dephase_logi = ", gamma_dephase_logi)
+    # print(f"T1_logi = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
+    # print(f"Tphi_logi = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None    
     print("gamma_decay_other = ", gamma_decay_other, ", gamma_dephase_other = ", gamma_dephase_other)
-    print(f"T1_logi = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
-    print(f"Tphi_logi = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None
     print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
     print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
-    print('np.shape(jump_t1)=',  np.shape(jump_t1), 'np.shape(jump_tphi)=',  np.shape(jump_tphi))
+    print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
 
     ############################################################
     c_op_list = jump_t1 + jump_tphi
     args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx]
     f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args)
                                                 for args_indep in params)
+    ############################################################
+    print('\nf_ideal = np.array([')
+    for i in range(0, len(f_ideal), 4):
+        print(', '.join(map(str, f_ideal[i:i+4])), ',')
+    print('])')    
+
     print('\nf_noise = np.array([')
     for i in range(0, len(f_noise), 4):
         print(', '.join(map(str, f_noise[i:i+4])), ',')
     print('])')
-    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
-    print('\nf_ideal = np.array([')
-    for i in range(0, len(f_ideal), 4):
-        print(', '.join(map(str, f_ideal[i:i+4])), ',')
-    print('])')
-    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     print('drive_phi=', drive_phi, '; drive_theta = ', drive_theta, '; truc = ', truc)
     print('hspace_len=', hspace_len)
+    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
 def import_select_phi():
     folder = 'data_xgate_phi_3ncut.txt'
