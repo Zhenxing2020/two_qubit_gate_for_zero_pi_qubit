@@ -1,3 +1,6 @@
+
+
+
 Xgate_fidelity_optimize_tg.py
 Current Mountain Time: 2025-01-31 23:18:16.269959-07:00
 drive_phi= False , drive_theta =  True , drive_0 =  False
@@ -10,8 +13,10 @@ tg_vec =
 30 ,
 truc1 = 300 , truc2 (in optimization) = 157
 truc1_full = 500 , truc2_full = 500
-0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
- /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 3871it [02:15, 135.17s/it]differential_evolution step 1: f(x)= -0.253365
+
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387
+1it [02:15, 135.17s/it]differential_evolution step 1: f(x)= -0.253365
 Best Solution: [10.00866684, 0.22824379, 0.04178436, 0.05465556, 0.01942248]
 Convergence: 0.1289
 ----------------------------
@@ -136,7 +141,8 @@ log of gate error (truc_full=500) =
 
 ***Current Mountain Time: 2025-01-31 23:20:33.660992-07:00 
 
-2it [07:05, 226.19s/it]differential_evolution step 1: f(x)= -0.251821
+
+2it [07:05, 226.19s/it]differential_evolution step 1: f(x)= -0.251821
 Best Solution: [15.00447206, 0.23109783, 0.09326276, 0.04895166, 0.01245071]
 Convergence: 0.1269
 ----------------------------
@@ -302,7 +308,8 @@ log of gate error (truc_full=500) =
 
 ***Current Mountain Time: 2025-01-31 23:25:23.565953-07:00 
 
-3it [12:47, 279.16s/it]differential_evolution step 1: f(x)= -0.35694
+
+3it [12:47, 279.16s/it]differential_evolution step 1: f(x)= -0.35694
 Best Solution: [20.00363606, 0.28872279, 0.07876741, 0.01507834, 0.03021208]
 Convergence: 0.0689
 ----------------------------
@@ -656,7 +663,8 @@ Convergence: 1.0894
 tg =  [10, 15, 20, 25]
 
 log of gate error (truc1=157) = 
-4it [21:16, 370.17s/it]-0.35559542, -0.63563076, -1.0250773, -1.26290635 ,
+
+4it [21:16, 370.17s/it]-0.35559542, -0.63563076, -1.0250773, -1.26290635 ,
 
 drive_param (truc1=157) = 
 [10.000935, 0.364733, 0.065986, -0.08538, -0.03146] ,
@@ -856,7 +864,9 @@ Convergence: 0.1146
 differential_evolution step 47: f(x)= -1.09888
 Best Solution: [30.00428785, 0.25709015, 0.04333162, -0.02833948, -0.00551617]
 Convergence: 0.1573
-5it [35:35, 546.12s/it]5it [35:35, 427.01s/it]
+
+5it [35:35, 546.12s/it]
+5it [35:35, 427.01s/it]
 ----------------------------
 differential_evolution step 48: f(x)= -1.09888
 Best Solution: [30.00428785, 0.25709015, 0.04333162, -0.02833948, -0.00551617]
