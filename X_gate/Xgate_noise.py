@@ -16,12 +16,170 @@ import scipy.sparse as ssp
 # Update scqubits settings
 settings.OVERLAP_THRESHOLD = 0.3
 
+def xgate_fidelity_decay_all():
+    """
+    Simulates the fidelity of an X-gate under ideal and noisy conditions
+    using a 0-pi qubit model. The simulation loads parameters and matrix elements,
+    builds the truncated Hamiltonian, and computes fidelities with and without
+    noise using parallel jobs.
+    
+    Parameters are loaded from CSV files for a phi-drive or theta-drive setup.
+    Noise models include both T1 (energy relaxation) and Tphi (dephasing).
+
+    Output includes ideal and noisy fidelities printed in NumPy array format.
+    """
+
+    # Configuration flags
+    # drive_phi, drive_theta, truc = True, False, 100  # Choose drive type and truncation
+    drive_phi, drive_theta, truc = False, True, 100  # Alternate config
+    drive_0 = True  # Choose which qubit to use (0 or 1)
+
+    # Set decoherence rates for other qubit (in GHz)
+    t1_other = 170  # in microseconds
+    gamma_decay_other =  1 / 1e3 / t1_other
+    gamma_dephase_other = 1 / 1e3 / t1_other
+
+    # Load gate drive parameters
+    folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
+    f_xgate = pd.read_csv('data/' + folder)
+    params = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()[1::4, :]
+
+    # Define job parameters
+    num_cpus, n_job = 4, 1 * len(params)
+    logi_state = [0, 2]  # logical 0 and 1 states
+
+    # Load energy levels and matrix elements
+    folder = '../../data/3ncut_one_zeropi/'
+    if drive_0:
+        evals = 2 * np.pi * scq.read(folder + f'zeropi_0_specdata_truc=1000_3ncut.h5').energy_table
+        n_theta = 2 * np.pi * scq.read(folder + f'zeropi_0_n_theta_truc=1000_3ncut.h5').matrixelem_table
+        n_phi = 2 * np.pi * scq.read(folder + f'zeropi_0_n_phi_truc=1000_3ncut.h5').matrixelem_table
+    else:
+        evals = 2 * np.pi * scq.read(folder + f'zeropi_1_specdata_truc=1000_3ncut.h5').energy_table
+        n_theta = 2 * np.pi * scq.read(folder + f'zeropi_1_n_theta_truc=1000_3ncut.h5').matrixelem_table
+        n_phi = 2 * np.pi * scq.read(folder + f'zeropi_1_n_phi_truc=1000_3ncut.h5').matrixelem_table
+
+    evals = evals - evals[0]  # Shift ground state energy to zero
+    H0 = qt.Qobj(np.diag(evals))
+
+    # Determine transition frequency and drive operator
+    if drive_phi:
+        w_trans_1 = evals[9] - evals[0]
+        w_trans_2 = evals[9] - evals[2]
+        drive_term = n_phi
+    if drive_theta:
+        w_trans_1 = evals[7] - evals[0]
+        w_trans_2 = evals[7] - evals[2]
+        drive_term = n_theta
+
+    # Build charge subspace (truncated basis)
+    hspace_charge = [0, 2]
+    for s in hspace_charge:
+        for i in range(truc):
+            if np.abs(drive_term[s, i] / (2 * np.pi)) > 0.01 and i not in hspace_charge:
+                hspace_charge.append(i)
+    hspace_charge.sort()
+    hspace_len = len(hspace_charge)
+    logi_idx = [hspace_charge.index(s) for s in logi_state]
+
+    # Truncate Hamiltonian and drive operators
+    H0_truc = ut.truncate_2(H0, hspace_charge)
+    drive_truc = ut.truncate_2(drive_term, hspace_charge)
+
+    # Define driven Hamiltonian
+    H_qbt_drive = [
+        H0_truc,
+        [drive_truc, ut.drive_gauss_A],
+        [drive_truc, ut.drive_gauss_B],
+    ]
+
+    # Print simulation parameters
+    print("num_cpus =", num_cpus, ";   n_job =", n_job)
+    print('drive_phi =', drive_phi, '; drive_theta =', drive_theta, '; truc =', truc)
+    print('hspace_len =', hspace_len)
+    print('hspace_charge =', hspace_charge)
+    print('params =', params.tolist())
+    print("gamma_decay_other =", gamma_decay_other, ", gamma_dephase_other =", gamma_dephase_other)
+    if gamma_decay_other != 0:
+        print(f"T1_other = {1 / gamma_decay_other} ns")
+    if gamma_dephase_other != 0:
+        print(f"Tphi_other = {1 / gamma_dephase_other} ns")
+
+    # Compute ideal fidelity (no noise)
+    c_op_list = []
+    args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx]
+    f_ideal = Parallel(n_jobs=n_job)(
+        delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params
+    )
+    print(f'\nf_ideal_{hspace_len} = np.array([')
+    for i in range(0, len(f_ideal), 4):
+        print(', '.join(map(str, f_ideal[i:i+4])), ',')
+    print('])')
+    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
+
+    # Load dephasing rates
+    folder_1 = 'data/data_gamma_'
+    folder_2 = 'theta_500.txt' if drive_theta else 'phi_500.txt'
+    gamma_new = pd.read_csv(folder_1 + folder_2)
+    gamma_dephase_new = gamma_new['tphi_50us_02'].to_numpy() * 50 / t1_other
+
+    # Compute decay rates in new truncated basis
+    if drive_theta:
+        Gamma = gamma_decay_other / (np.abs(n_theta[4, 7]) ** 2)
+    else:
+        Gamma = gamma_decay_other / (np.abs(n_phi[4, 9]) ** 2)
+    gamma_decay_new = Gamma * np.abs(drive_truc.full()) ** 2
+
+    # Build collapse operators
+    jump_t1 = []
+    jump_tphi = []
+    for i in range(hspace_len):
+        for j in range(i):
+            jump_t1.append(np.sqrt(gamma_decay_new[i, j]) * qt.basis(hspace_len, j) * qt.basis(hspace_len, i).dag())
+        jump_tphi.append(np.sqrt(2 * gamma_dephase_new[i]) * qt.basis(hspace_len, i).proj())
+    print('np.shape(jump_t1)=', np.shape(jump_t1), '; np.shape(jump_tphi)=', np.shape(jump_tphi))
+
+    # Compute fidelity with noise
+    c_op_list = jump_t1 + jump_tphi
+    args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx]
+    f_noise = Parallel(n_jobs=n_job)(
+        delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params
+    )
+
+    # Print results
+    print(f'\nf_ideal_{hspace_len} = np.array([')
+    for i in range(0, len(f_ideal), 4):
+        print(', '.join(map(str, f_ideal[i:i+4])), ',')
+    print('])')
+
+    print(f'\nf_{t1_other}us_{hspace_len} = np.array([')
+    for i in range(0, len(f_noise), 4):
+        print(', '.join(map(str, f_noise[i:i+4])), ',')
+    print('])')
+
+    print('drive_phi =', drive_phi, '; drive_theta =', drive_theta, '; truc =', truc)
+    print('hspace_len =', hspace_len)
+    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
+
+
+if __name__ == '__main__':
+    print(os.path.basename(__file__))  # Print the name of the current Python file
+    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
+
+    xgate_fidelity_decay_all()
+    # import_para()
+    # import_para_noise()
+    # import_select_phi()
+    # import_select_phi_x0()
+
+
+
 def import_para_noise():
     """
     Imports parameters and computes gate fidelities for noisy systems.
     """
-    # drive_phi, drive_theta, truc = True, False, 200
-    drive_phi, drive_theta, truc = False, True, 150
+    drive_phi, drive_theta, truc = True, False, 100
+    # drive_phi, drive_theta, truc = False, True, 400
     drive_0 = True
     ############################################################
     t1_other = 170 # μs
@@ -88,18 +246,21 @@ def import_para_noise():
     print('params =')
     for para in params:
         print(para.tolist(), ',')
+
+    print("gamma_decay_other = ", gamma_decay_other, ", gamma_dephase_other = ", gamma_dephase_other)
+    print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
+    print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None        
     ############################################################
     ### c_op_list = [qt.Qobj(np.zeros((truc, truc)))]
     c_op_list = []
     args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx]
     f_ideal = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args)
                                                 for args_indep in params)
-    print('\nf_ideal = [')
+    print(f'\nf_ideal_{hspace_len} = np.array([')
     for i in range(0, len(f_ideal), 4):
         print(', '.join(map(str, f_ideal[i:i+4])), ',')
-    print(']')
+    print('])')    
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
 
     ############################################################
     ### old gamma decay and dephase
@@ -115,7 +276,7 @@ def import_para_noise():
     ### old gamma decay 
 
     folder_1 = 'data/data_gamma_'
-    folder_2 = 'theta.txt' if drive_theta else 'phi_truc160.txt'
+    folder_2 = 'theta_500.txt' if drive_theta else 'phi_500.txt'
     gamma_new = pd.read_csv(folder_1 + folder_2)
     gamma_dephase_new = gamma_new['tphi_50us_02'].to_numpy()
     ############################################################
@@ -161,9 +322,7 @@ def import_para_noise():
     # print("gamma_decay_logi = ", gamma_decay_logi, ", gamma_dephase_logi = ", gamma_dephase_logi)
     # print(f"T1_logi = {1/gamma_decay_logi} ns") if gamma_decay_logi != 0 else None
     # print(f"Tphi_logi = {1/gamma_dephase_logi} ns") if gamma_dephase_logi != 0 else None    
-    print("gamma_decay_other = ", gamma_decay_other, ", gamma_dephase_other = ", gamma_dephase_other)
-    print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
-    print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
+
     print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
 
     ############################################################
@@ -172,12 +331,12 @@ def import_para_noise():
     f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args)
                                                 for args_indep in params)
     ############################################################
-    print('\nf_ideal = np.array([')
+    print(f'\nf_ideal_{hspace_len} = np.array([')
     for i in range(0, len(f_ideal), 4):
         print(', '.join(map(str, f_ideal[i:i+4])), ',')
     print('])')    
 
-    print('\nf_noise = np.array([')
+    print(f'\nf_{t1_other}us_{hspace_len} = np.array([')
     for i in range(0, len(f_noise), 4):
         print(', '.join(map(str, f_noise[i:i+4])), ',')
     print('])')
@@ -346,7 +505,6 @@ def import_select_phi():
     # print(']')
     # print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-
 def import_select_phi_x0():
     x0_vec = np.array([
 [828.759495, 0.013563, 0.034964, -0.003029, -0.003182 ]
@@ -447,16 +605,6 @@ def import_select_phi_x0():
         f_noise.append(ut.xgate_fidelity_log_noise(x0_vec[0], *args))
     f_noise = np.array(f_noise)
     print(f' f_noise (T={t1_tphi_other_vec}) = {1-10**f_noise}')
-
-
-if __name__ == '__main__':
-    print(os.path.basename(__file__))  # Print the name of the current Python file
-    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
-    # import_para()
-    import_para_noise()
-    # import_select_phi()
-    # import_select_phi_x0()
 
 
 
