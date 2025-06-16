@@ -100,7 +100,7 @@ def build_hamiltonian(H0, drive_term, hspace_charge, logi_state):
     H_qbt_drive = [H0_truc, [drive_truc, ut.drive_gauss_A], [drive_truc, ut.drive_gauss_B]]
     return H_qbt_drive, drive_truc, logi_idx
 
-def construct_c_ops(n_truc, drive_truc, Gamma_t1, gamma_dephase_new, t1):
+def construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, t1):
     """
     Constructs collapse operators for dissipation.
 
@@ -110,10 +110,10 @@ def construct_c_ops(n_truc, drive_truc, Gamma_t1, gamma_dephase_new, t1):
     gamma_decay_new = Gamma_t1 * np.abs(drive_truc.full()) ** 2
     gamma_dephase_new *= 50 / t1
     jump_t1, jump_tphi = [], []
-    for i in range(1, n_truc):
+    for i in range(1, n_charge):
         for j in range(i):
-            jump_t1.append(np.sqrt(gamma_decay_new[i, j]) * qt.basis(n_truc, j) * qt.basis(n_truc, i).dag())
-        jump_tphi.append(np.sqrt(2 * gamma_dephase_new[i]) * qt.basis(n_truc, i).proj())
+            jump_t1.append(np.sqrt(gamma_decay_new[i, j]) * qt.basis(n_charge, j) * qt.basis(n_charge, i).dag())
+        jump_tphi.append(np.sqrt(2 * gamma_dephase_new[i]) * qt.basis(n_charge, i).proj())
     # print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
     return jump_t1 + jump_tphi
 
@@ -187,11 +187,11 @@ if __name__ == '__main__':
     print(os.path.basename(__file__))  # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    # drive_phi, drive_theta, truc = True, False, 100
-    drive_phi, drive_theta, truc = False, True, 75
+    # drive_phi, drive_theta, n_full = True, False, 100
+    drive_phi, drive_theta, n_full = False, True, 250
     t1 = 170
 
-    xgate_fidelity_decay_all(drive_phi, drive_theta, truc, t1)
+    xgate_fidelity_decay_all(drive_phi, drive_theta, n_full, t1)
 
 
 

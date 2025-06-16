@@ -100,37 +100,37 @@ def import_select():
 
     #################################################################
     ### Noisey fidelity
-    # t1_tphi_other = 170 # μs
+    t1_tphi_other = 170 # μs
 
-    # print("t1_tphi_other = ", t1_tphi_other)
-    # folder = f'../../data/3ncut_two_zeropi/truc1=500/'
-    # gamma_q0 = pd.read_csv(folder+ 'data_gamma_qubit0.txt')
-    # gamma_q1 = pd.read_csv(folder+ 'data_gamma_qubit1.txt')
-    # gamma_decay_48_q0 = gamma_q0['t1_50us_48'].to_numpy() *50 /t1_tphi_other
-    # gamma_decay_48_q1 = gamma_q1['t1_50us_48'].to_numpy() *50 /t1_tphi_other
-    # gamma_dephase_02_q0 = gamma_q0['tphi_02'].to_numpy() *50 /t1_tphi_other
-    # gamma_dephase_02_q1 = gamma_q1['tphi_02'].to_numpy() *50 /t1_tphi_other
+    print("t1_tphi_other = ", t1_tphi_other)
+    folder = f'../../data/3ncut_two_zeropi/truc1=500/'
+    gamma_q0 = pd.read_csv(folder+ 'data_gamma_qubit0.txt')
+    gamma_q1 = pd.read_csv(folder+ 'data_gamma_qubit1.txt')
+    gamma_decay_48_q0 = gamma_q0['t1_50us_48'].to_numpy() *50 /t1_tphi_other
+    gamma_decay_48_q1 = gamma_q1['t1_50us_48'].to_numpy() *50 /t1_tphi_other
+    gamma_dephase_02_q0 = gamma_q0['tphi_02'].to_numpy() *50 /t1_tphi_other
+    gamma_dephase_02_q1 = gamma_q1['tphi_02'].to_numpy() *50 /t1_tphi_other
 
-    # qubit_a = True
-    # arg_a = [dim_0, dim_1, gamma_decay_48_q0, gamma_dephase_02_q0, eket_tot, qubit_a] # old gamma
-    # jump_op_a = Parallel(n_jobs=100)(delayed(ut.get_jump_op_charge_pick)(state, *arg_a) for state in range(1,dim_0))
+    qubit_a = True
+    arg_a = [dim_0, dim_1, gamma_decay_48_q0, gamma_dephase_02_q0, eket_tot, qubit_a] # old gamma
+    jump_op_a = Parallel(n_jobs=100)(delayed(ut.get_jump_op_charge_pick)(state, *arg_a) for state in range(1,dim_0))
 
-    # qubit_a = False
-    # arg_b = [dim_0, dim_1, gamma_decay_48_q1, gamma_dephase_02_q1, eket_tot, qubit_a] # old gamma
-    # jump_op_b = Parallel(n_jobs=100)(delayed(ut.get_jump_op_charge_pick)(state, *arg_b) for state in range(1,dim_1))
-    # jump_t1_list = np.array(jump_op_a)[:,0].tolist() + np.array(jump_op_b)[:,0].tolist()
-    # jump_tphi_list = np.array(jump_op_a)[:,1].tolist() + np.array(jump_op_b)[:,1].tolist()
-    # jump_t1_list = [qt.Qobj(matrix) for matrix in jump_t1_list]
-    # jump_tphi_list = [qt.Qobj(matrix) for matrix in jump_tphi_list]
+    qubit_a = False
+    arg_b = [dim_0, dim_1, gamma_decay_48_q1, gamma_dephase_02_q1, eket_tot, qubit_a] # old gamma
+    jump_op_b = Parallel(n_jobs=100)(delayed(ut.get_jump_op_charge_pick)(state, *arg_b) for state in range(1,dim_1))
+    jump_t1_list = np.array(jump_op_a)[:,0].tolist() + np.array(jump_op_b)[:,0].tolist()
+    jump_tphi_list = np.array(jump_op_a)[:,1].tolist() + np.array(jump_op_b)[:,1].tolist()
+    jump_t1_list = [qt.Qobj(matrix) for matrix in jump_t1_list]
+    jump_tphi_list = [qt.Qobj(matrix) for matrix in jump_tphi_list]
 
-    # c_op_list = jump_t1_list + jump_tphi_list
-    # arg_select = [H_drive_select, W_20_50, num_cpus, c_op_list, logi_idx_select]
-    # f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_optimize)(args_indep, *arg_select)
-    #                                             for args_indep in x0_vec)
-    # print(f'\nf_noise (dim={len(hspace_select)})  = [')
-    # for i in range(0, len(f_noise), 4):
-    #     print(', '.join(map(str, np.round(f_noise[i:i+4], 8).tolist())), ',')
-    # print(']')
+    c_op_list = jump_t1_list + jump_tphi_list
+    arg_select = [H_drive_select, W_20_50, num_cpus, c_op_list, logi_idx_select]
+    f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_optimize)(args_indep, *arg_select)
+                                                for args_indep in x0_vec)
+    print(f'\nf_noise (dim={len(hspace_select)})  = [')
+    for i in range(0, len(f_noise), 4):
+        print(', '.join(map(str, np.round(f_noise[i:i+4], 8).tolist())), ',')
+    print(']')
 
 if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
