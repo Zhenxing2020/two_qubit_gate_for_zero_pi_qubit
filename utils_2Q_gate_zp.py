@@ -901,7 +901,7 @@ def xgate_fidelity_log(argz):
 
 def xgate_fidelity_log_noise(args_indep, *args):
     """
-    Computes the X-gate fidelity for a noisy system.
+    Computes the X-gate infidelity (log10(1-F)) for a noisy system.
 
     Args:
         args_indep (list): Independent parameters for the pulse:
@@ -932,7 +932,6 @@ def xgate_fidelity_log_noise(args_indep, *args):
         'drive_freq_B': w_trans_2 + 2 * np.pi * detune_B,
         'gate_time': tg,
     }
-
     tlist = np.linspace(0, tg, num=3 * int(tg))
     U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
     # print(f'len(c_op_list)={len(c_op_list)}', U_noise)
@@ -1006,7 +1005,7 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
     H0 = H[0][0] if isinstance(H[0], list) else H[0] if isinstance(H, list) else H
     if len(c_op_list) == 0:
         N = H0.shape[0]
-        options =qt.Options(max_step=0, nsteps=1e4, num_cpus=num_cpus)
+        options =qt.Options(max_step=0, nsteps=1e4, num_cpus=1) # num_cpus=1 because we only want to sweep basis states
 
         if num_cpus > 1:
             u = np.zeros([N, dimz, len(tlist)], dtype=complex)
@@ -1026,8 +1025,8 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
                 prop[:, logi_idx.index(i)] = res.states[-1].full().flatten()
             Uc = truncate_2(qt.Qobj(prop), logi_idx)
             return Uc
-    else:
-        options =qt.Options(max_step=1e-3, nsteps=1e4, num_cpus=num_cpus)
+    else: # noise
+        options =qt.Options(max_step=1e-3, nsteps=1e4, num_cpus=1)
         # Computes the propagator for noisy systems.
         proj_idx = [(i, j) for j in logi_idx for i in logi_idx]
         N = H0.shape[0]

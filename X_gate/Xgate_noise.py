@@ -1,31 +1,72 @@
+"""
+X-Gate Fidelity Simulation for the 0-π Qubit
+
+This script simulates X-gate fidelities (ideal and noisy) for the 0-π qubit under theta or phi drive.
+It uses matrix elements and spectrum data from precomputed `scqubits` files, constructs Hamiltonians,
+computes logical gate fidelities, and accounts for dissipation including T1 decay and pure dephasing (Tφ).
+
+Main Features:
+---------------
+- Load energy spectrum and matrix elements for either qubit 0 or 1.
+- Support both θ and φ drive, with customizable drive weights.
+- Construct truncated Hamiltonians based on dominant transition amplitudes.
+- Simulate both ideal and noisy X-gate fidelities using QuTiP solvers and multiprocessing.
+- Print simulation results in a structured `np.array` format for easy copy-paste.
+
+Inputs:
+-------
+- `drive_phi` (bool): Whether φ-drive is active.
+- `drive_theta` (bool): Whether θ-drive is active.
+- `n_full` (int): Dimension of the full Hilbert space before truncation.
+- `t1` (float): T₁ lifetime in μs, also used as Tφ unless otherwise specified.
+- `qubit_0` (bool): Whether to load data for qubit 0 (`True`) or qubit 1 (`False`).
+- `tg_list` (List[int]): Indices of gate durations to simulate (corresponding to rows in drive parameter CSV).
+
+Returns:
+--------
+- Prints formatted numpy arrays of:
+  - `hspace_charge`: Truncated Hilbert space basis indices.
+  - `params`: Drive parameters for each gate time.
+  - `f_ideal`: Ideal gate fidelities (no dissipation).
+  - `f_170us`: Noisy fidelities with T1 and Tφ noise.
+- No values are returned programmatically, but results are displayed and can be logged/redirected if desired.
+
+File Dependencies:
+-------------------
+- `data/zeropi_*.h5`: Spectrum and matrix elements generated from `scqubits` simulations.
+- `data/data_xgate_theta_3ncut.txt` / `data_xgate_phi_3ncut.txt`: CSVs with drive parameters.
+- `data/data_gamma_theta_500.txt` / `data_gamma_phi_500.txt`: CSVs with dephasing rates (computed separately).
+- `utils_2Q_gate_zp.py`: Contains utility functions, such as fidelity calculations and matrix truncation.
+
+"""
+
 import sys
 sys.path.append('../')
 from datetime import datetime
 import pytz, os
 import numpy as np
-import scipy as sp
-from tqdm import tqdm
 import scqubits as scq
 import scqubits.settings as settings
 import qutip as qt
-from multiprocessing import Pool
 from joblib import Parallel, delayed
 import pandas as pd
 import utils_2Q_gate_zp as ut
-import scipy.sparse as ssp
 settings.OVERLAP_THRESHOLD = 0.3  # Update scqubits settings
 
 
-def load_simulation_data(qubit_0):
+def load_simulation_data(qubit_0, folder = '../../data/3ncut_one_zeropi/'):
     """
     Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
+    The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
 
+    Parameters:
+        qubit_0 (bool): If True, load data for qubit 0; otherwise, load for qubit 1.
+        folder (str): Path to the directory containing the data files.
     Returns:
         evals (np.ndarray): Energy levels.
         n_theta (np.ndarray): Matrix elements for theta drive.
         n_phi (np.ndarray): Matrix elements for phi drive.
-    """
-    folder = '../../data/3ncut_one_zeropi/'
+    """    
     suffix = '0' if qubit_0 else '1'
     evals = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_specdata_truc=1000_3ncut.h5').energy_table
     n_theta = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_n_theta_truc=1000_3ncut.h5').matrixelem_table
@@ -38,18 +79,28 @@ def load_drive_params(drive_theta):
     Load X-gate drive parameters from a CSV file.
 
     Parameters:
-        drive_theta (bool): Flag indicating which drive type to load.
+        drive_theta (bool): If True, load theta-drive data; else load phi-drive data.
 
     Returns:
-        np.ndarray: Parameters array.
+        np.ndarray: Parameters array. different rows mean different gate time. 
+        columns mean 'tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
     """
     folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
     f_xgate = pd.read_csv('data/' + folder)
-    return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()[1::4, :]
+    return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
 
 def compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1):
     """
     Computes the transition frequencies and selects the appropriate drive term.
+    need lowest 10 evals for this func to work.
+
+    Parameters:
+        evals (np.ndarray): Energy levels.
+        n_theta (np.ndarray): Matrix elements for theta-drive.
+        n_phi (np.ndarray): Matrix elements for phi-drive.
+        drive_phi (bool): Whether phi-drive is used.
+        drive_theta (bool): Whether theta-drive is used.
+        gamma_t1 (float): Amplitude damping rate.
 
     Returns:
         w1 (float): Transition frequency 1.
@@ -57,30 +108,38 @@ def compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)
         drive_term (np.ndarray): Matrix elements for selected drive.
         Gamma_t1 (float): the decay rate coefficient fixed by certain transition matrix element
     """
-    if drive_phi:
+    if drive_phi and not drive_theta:
         w1 = evals[9] - evals[0]
         w2 = evals[9] - evals[2]
         drive_term = n_phi
         Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2)
-    elif drive_theta:
+    elif drive_theta and not drive_phi:
         w1 = evals[7] - evals[0]
         w2 = evals[7] - evals[2]
         drive_term = n_theta
         Gamma_t1 = gamma_t1 / (np.abs(n_theta[4,7])**2)
     else:
-        raise ValueError("Either drive_phi or drive_theta must be True")
+        w1 = evals[9] - evals[0]
+        w2 = evals[9] - evals[2]
+        drive_term = 0.2 *n_phi + 0.8*n_theta
+        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2) # close to phi drive
     return w1, w2, drive_term, Gamma_t1
 
-def get_truncated_subspace(drive_term, n_full, hspace_charge=[0,2]):
+def get_truncated_subspace(drive_term, n_full, hspace_charge=[0,2], thresh=0.01):
     """
-    Determines a reduced Hilbert space based on significant coupling elements.
-
+    Determines a reduced Hilbert space based on magnitude of charge matrix elements.
+    
+    Parameters:
+        drive_term (np.ndarray): Drive matrix.
+        n_full (int): Dimension of the full space.
+        hspace_charge (list): Initial state list to include.
+        thresh (float): Magnitude threshold for inclusion.
     Returns:
         hspace_charge (list): List of basis indices to include.
     """
     for s in hspace_charge:
         for i in range(n_full):
-            if np.abs(drive_term[s, i] / (2 * np.pi)) > 0.01 and i not in hspace_charge:
+            if np.abs(drive_term[s, i] / (2 * np.pi)) > thresh and i not in hspace_charge:
                 hspace_charge.append(i)
     hspace_charge.sort()
     return hspace_charge
@@ -89,6 +148,12 @@ def build_hamiltonian(H0, drive_term, hspace_charge, logi_state):
     """
     Constructs the truncated Hamiltonian and drive terms.
 
+    Parameters:
+        H0 (Qobj): Diagonalized bare Hamiltonian.
+        drive_term (np.ndarray): Drive matrix.
+        hspace_charge (list): Truncated Hilbert space indices.
+        logi_state (list): Logical states, e.g., [0, 2].
+
     Returns:
         H_qbt_drive (list): Full driven Hamiltonian.
         drive_truc (Qobj): Truncated drive matrix.
@@ -96,30 +161,43 @@ def build_hamiltonian(H0, drive_term, hspace_charge, logi_state):
     """
     H0_truc = ut.truncate_2(H0, hspace_charge)
     drive_truc = ut.truncate_2(drive_term, hspace_charge)
-    logi_idx = [hspace_charge.index(s) for s in logi_state]
+    logi_idx = [hspace_charge.index(s) for s in logi_state] # 1 state may or may not be in the truncated model, 
     H_qbt_drive = [H0_truc, [drive_truc, ut.drive_gauss_A], [drive_truc, ut.drive_gauss_B]]
     return H_qbt_drive, drive_truc, logi_idx
 
-def construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, t1):
+def construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi):
     """
     Constructs collapse operators for dissipation.
+
+    Parameters:
+        n_charge (int): Truncated Hilbert space dimension.
+        drive_truc (Qobj): Drive operator.
+        Gamma_t1 (float): Amplitude decay prefactor.
+        gamma_dephase_new (np.ndarray): Dephasing rates (for 50μs).
+        tphi (float): Desired Tphi in μs.
 
     Returns:
         list: All collapse operators (amplitude + dephasing).
     """
-    gamma_decay_new = Gamma_t1 * np.abs(drive_truc.full()) ** 2
-    gamma_dephase_new *= 50 / t1
+    gamma_decay_new = Gamma_t1 * np.abs(drive_truc.full()) ** 2 # 
+    # the dephasing rate is calculated in some file for 50μs for 2 state, the line below change dephasing coeffs to the input tphi (170, 30, 3μs)
+    gamma_dephase_new = gamma_dephase_new * 50 / tphi
     jump_t1, jump_tphi = [], []
     for i in range(1, n_charge):
-        for j in range(i):
-            jump_t1.append(np.sqrt(gamma_decay_new[i, j]) * qt.basis(n_charge, j) * qt.basis(n_charge, i).dag())
+        for j in range(i): # only consider downwards deacy
+            jump_t1.append(np.sqrt(gamma_decay_new[j, i]) * qt.basis(n_charge, j) * qt.basis(n_charge, i).dag())
         jump_tphi.append(np.sqrt(2 * gamma_dephase_new[i]) * qt.basis(n_charge, i).proj())
     # print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
     return jump_t1 + jump_tphi
 
 def print_data_r2r(label, fidelities, num_each_row=4):
     """
-    Prints fidelities in a structured format.
+    Pretty-print fidelity array in readable blocks.
+
+    Parameters:
+        label (str): Label for the data array.
+        fidelities (list): Fidelity values.
+        num_each_row (int): Entries per row in output.
     """
     print(f"\n{label} = np.array([")
     for i in range(0, len(fidelities), num_each_row):
@@ -128,29 +206,40 @@ def print_data_r2r(label, fidelities, num_each_row=4):
 
 def load_dephasing_data(drive_theta):
     """
-    Loads the dephasing rates from a CSV file.
+    Load dephasing rates calculated for 50μs.
+
+    Parameters:
+        drive_theta (bool): If True, load theta dephasing; otherwise, phi.
 
     Returns:
-        np.ndarray: Dephasing rates.
+        np.ndarray: Dephasing rates for each state.
     """
     gamma_file = 'data/data_gamma_theta_500.txt' if drive_theta else 'data/data_gamma_phi_500.txt'
     gamma_new = pd.read_csv(gamma_file)
     return gamma_new['tphi_50us_02'].to_numpy()
 
-def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=170, qubit_0=True):
+def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=170, tg_list=[], qubit_0=True):
     """
-    Runs the X-gate fidelity simulation with and without noise.
-    Prints the results for further analysis.
+    Run X-gate fidelity simulations (ideal + noisy) and print results.
+
+    Parameters:
+        drive_phi (bool): Whether using phi-drive.
+        drive_theta (bool): Whether using theta-drive.
+        n_full (int): Full Hilbert space dimension.
+        t1 (float): T1 relaxation time in μs.
+        qubit_0 (bool): Whether using qubit 0 or 1.
+        tg_list (list): List of indices of tg values to simulate.
     """
-    gamma = 1 / 1e3 / t1 # calculate decay rate given T1, unit in micro-second
+    gamma_t1 = 1 / 1e3 / t1 # calculate decay rate given T1, unit in micro-second
+    tphi = t1 # calculate decay rate given T1, unit in micro-second
 
     # Load data
     evals, n_theta, n_phi = load_simulation_data(qubit_0) # Load spectrum and matrix elements
-    params = load_drive_params(drive_theta) # Load pulse parameters from CSV
+    params = load_drive_params(drive_theta)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
     num_cpus, n_job = 4, len(params)    
     
     # Build Hamiltonian
-    w_trans_1, w_trans_2, drive_term, Gamma_t1 = compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma)  
+    w_trans_1, w_trans_2, drive_term, Gamma_t1 = compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
     hspace_charge = get_truncated_subspace(drive_term, n_full) # truncate relevant subspace
     n_charge = len(hspace_charge)
     H0 = qt.Qobj(np.diag(evals))
@@ -163,7 +252,7 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
     print_data_r2r(f'hspace_charge ({n_full}\{n_charge})', hspace_charge, num_each_row=10)
     print_data_r2r(f'params', params.tolist(), num_each_row=1)
     # print("gamma = ", gamma)
-    print(f"T1 = Tphi = {1/gamma} ns") if gamma != 0 else None
+    print(f"T1 = Tphi = {1/gamma_t1} ns") if gamma_t1 != 0 else None
 
     # Ideal fidelity simulation
     args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, [], logi_idx]
@@ -173,7 +262,7 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
 
     # Load data and prepare operators for noisy fidelity simulation
     gamma_dephase_new = load_dephasing_data(drive_theta) # Load dephasing data
-    c_op_list = construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, t1) # Construct collapse operators
+    c_op_list = construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi) # Construct collapse operators
 
     # Noisy fidelity simulation
     args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx]
@@ -188,10 +277,10 @@ if __name__ == '__main__':
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     # drive_phi, drive_theta, n_full = True, False, 100
-    drive_phi, drive_theta, n_full = False, True, 250
+    drive_phi, drive_theta, n_full = False, True, 350
     t1 = 170
-
-    xgate_fidelity_decay_all(drive_phi, drive_theta, n_full, t1)
+    tg_list = [1, 5, 9, 13, 17 ]
+    xgate_fidelity_decay_all(drive_phi, drive_theta, n_full, t1, tg_list)
 
 
 
