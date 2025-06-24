@@ -89,61 +89,6 @@ def load_drive_params(drive_theta):
     f_xgate = pd.read_csv('data/' + folder)
     return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
 
-def compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1):
-    """
-    Computes the transition frequencies and selects the appropriate drive term.
-    need lowest 10 evals for this func to work.
-
-    Parameters:
-        evals (np.ndarray): Energy levels.
-        n_theta (np.ndarray): Matrix elements for theta-drive.
-        n_phi (np.ndarray): Matrix elements for phi-drive.
-        drive_phi (bool): Whether phi-drive is used.
-        drive_theta (bool): Whether theta-drive is used.
-        gamma_t1 (float): Amplitude damping rate.
-
-    Returns:
-        w1 (float): Transition frequency 1.
-        w2 (float): Transition frequency 2.
-        drive_term (np.ndarray): Matrix elements for selected drive.
-        Gamma_t1 (float): the decay rate coefficient fixed by certain transition matrix element
-    """
-    if drive_phi and not drive_theta:
-        w1 = evals[9] - evals[0]
-        w2 = evals[9] - evals[2]
-        drive_term = n_phi
-        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2)
-    elif drive_theta and not drive_phi:
-        w1 = evals[7] - evals[0]
-        w2 = evals[7] - evals[2]
-        drive_term = n_theta
-        Gamma_t1 = gamma_t1 / (np.abs(n_theta[4,7])**2)
-    else:
-        w1 = evals[9] - evals[0]
-        w2 = evals[9] - evals[2]
-        drive_term = 0.2 *n_phi + 0.8*n_theta
-        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2) # close to phi drive
-    return w1, w2, drive_term, Gamma_t1
-
-def get_truncated_subspace(drive_term, n_full, hspace_charge=[0,2], thresh=0.01):
-    """
-    Determines a reduced Hilbert space based on magnitude of charge matrix elements.
-    
-    Parameters:
-        drive_term (np.ndarray): Drive matrix.
-        n_full (int): Dimension of the full space.
-        hspace_charge (list): Initial state list to include.
-        thresh (float): Magnitude threshold for inclusion.
-    Returns:
-        hspace_charge (list): List of basis indices to include.
-    """
-    for s in hspace_charge:
-        for i in range(n_full):
-            if np.abs(drive_term[s, i] / (2 * np.pi)) > thresh and i not in hspace_charge:
-                hspace_charge.append(i)
-    hspace_charge.sort()
-    return hspace_charge
-
 def build_hamiltonian(H0, drive_term, hspace_charge, logi_state):
     """
     Constructs the truncated Hamiltonian and drive terms.
@@ -165,7 +110,7 @@ def build_hamiltonian(H0, drive_term, hspace_charge, logi_state):
     H_qbt_drive = [H0_truc, [drive_truc, ut.drive_gauss_A], [drive_truc, ut.drive_gauss_B]]
     return H_qbt_drive, drive_truc, logi_idx
 
-def construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi):
+def construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hspace_charge, state_idx):
     """
     Constructs collapse operators for dissipation.
 
@@ -186,7 +131,10 @@ def construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi):
     for i in range(1, n_charge):
         for j in range(i): # only consider downwards deacy
             jump_t1.append(np.sqrt(gamma_decay_new[j, i]) * qt.basis(n_charge, j) * qt.basis(n_charge, i).dag())
-        jump_tphi.append(np.sqrt(2 * gamma_dephase_new[i]) * qt.basis(n_charge, i).proj())
+    for i, state in enumerate(hspace_charge):
+        idx = list(state_idx).index(state) 
+        jump_tphi.append(np.sqrt(2 * gamma_dephase_new[idx]) * qt.basis(n_charge, i).proj())
+    
     # print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
     return jump_t1 + jump_tphi
 
@@ -216,7 +164,9 @@ def load_dephasing_data(drive_theta):
     """
     gamma_file = 'data/data_gamma_theta_500.txt' if drive_theta else 'data/data_gamma_phi_500.txt'
     gamma_new = pd.read_csv(gamma_file)
-    return gamma_new['tphi_50us_02'].to_numpy()
+    gamma_dephase = gamma_new['tphi_50us_02'].to_numpy()
+    state_idx = gamma_new['hspace'].to_numpy()
+    return state_idx, gamma_dephase
 
 def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=170, tg_list=[], qubit_0=True):
     """
@@ -239,8 +189,13 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
     num_cpus, n_job = 4, len(params)    
     
     # Build Hamiltonian
-    w_trans_1, w_trans_2, drive_term, Gamma_t1 = compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
-    hspace_charge = get_truncated_subspace(drive_term, n_full) # truncate relevant subspace
+    w_trans_1, w_trans_2, drive_term, Gamma_t1 = ut.compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
+    hspace_charge = ut.get_truncated_subspace(drive_term, n_full) # truncate relevant subspace
+    # hspace_charge = np.arange(n_full).tolist() # do not truncate
+
+    values_to_remove = {} # remove elements that give nan
+    hspace_charge = [item for item in hspace_charge if item not in values_to_remove]
+
     n_charge = len(hspace_charge)
     H0 = qt.Qobj(np.diag(evals))
     H_qbt_drive, drive_truc, logi_idx = build_hamiltonian(H0, drive_term, hspace_charge, [0, 2])
@@ -261,8 +216,8 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     # Load data and prepare operators for noisy fidelity simulation
-    gamma_dephase_new = load_dephasing_data(drive_theta) # Load dephasing data
-    c_op_list = construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi) # Construct collapse operators
+    state_idx, gamma_dephase_new = load_dephasing_data(drive_theta) # Load dephasing data
+    c_op_list = construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hspace_charge, state_idx) # Construct collapse operators
 
     # Noisy fidelity simulation
     args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx]
@@ -276,10 +231,10 @@ if __name__ == '__main__':
     print(os.path.basename(__file__))  # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    # drive_phi, drive_theta, n_full = True, False, 100
-    drive_phi, drive_theta, n_full = False, True, 350
+    # drive_phi, drive_theta, n_full = True, False, 263
+    drive_phi, drive_theta, n_full = False, True, 400
     t1 = 170
-    tg_list = [1, 5, 9, 13, 17 ]
+    tg_list = [9] # [1, 5, 9, 13, 17 ] # [9]
     xgate_fidelity_decay_all(drive_phi, drive_theta, n_full, t1, tg_list)
 
 

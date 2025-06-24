@@ -10,6 +10,7 @@ from joblib import Parallel, delayed
 from multiprocessing import Pool
 from IPython.display import display, Math
 import pandas as pd
+from datetime import datetime
 
 
 # max_step, nsteps = 1e-3, 1e4
@@ -932,10 +933,44 @@ def xgate_fidelity_log_noise(args_indep, *args):
         'drive_freq_B': w_trans_2 + 2 * np.pi * detune_B,
         'gate_time': tg,
     }
-    tlist = np.linspace(0, tg, num=3 * int(tg))
+    tlist = np.linspace(0, tg, num=6 * int(tg))
     U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
-    # print(f'len(c_op_list)={len(c_op_list)}', U_noise)
-    return np.log10(1 - get_fidelity_super_operator(U_noise, logi_idx, qt.sigmax(), c_op_list))
+    fidelity = get_fidelity_super_operator(U_noise, logi_idx, qt.sigmax(), c_op_list)
+
+    print(f'\n len(c_op_list)={len(c_op_list)}')
+    print(f'U_noise.istp={U_noise.istp}')
+    print(f'U_noise.iscp={U_noise.iscp}')
+    print(f'U_noise={U_noise}')
+    print('fidelity=', fidelity)
+    if len(c_op_list) != 0:
+        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+        qt.qsave(U_noise, f'U_noise_tg={tg:.0f}_truc={H_qbt_drive[0].shape[0]}_{current_time}')
+    # U_loaded = qt.qload('U_noise')
+    
+    return np.log10(1 - fidelity)
+
+def get_fidelity_super_operator(super_op, logi_idx, gate_target, c_op_list):
+    """
+    Computes the average gate fidelity for a given superoperator.
+
+    Args:
+        s_op (qt.Qobj): The superoperator representing the quantum operation.
+        logi_state (list): List of logical states (indices) to consider in the truncated subspace.
+        gate_target (qt.Qobj): Target quantum gate to compare against.
+
+    Returns:
+        float: The average gate fidelity of the operation.
+    """
+    if len(c_op_list) != 0:
+        kraus = qt.to_kraus(super_op)
+        kraus = [truncate_2(i, logi_idx) for i in kraus]        
+        super_op_post = qt.kraus_to_super(kraus)
+
+    else:
+        super_op_post = qt.to_super(super_op)
+    # super_op_post = 2* super_op_post / np.linalg.norm(super_op_post, 'fro')
+
+    return qt.metrics.average_gate_fidelity(super_op_post, target=gate_target)
 
 def xgate_fidelity_optimize(arg, *args):
     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg, drag] = args
@@ -1055,26 +1090,7 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
         return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
 
 
-def get_fidelity_super_operator(super_op, logi_idx, gate_target, c_op_list):
-    """
-    Computes the average gate fidelity for a given superoperator.
 
-    Args:
-        s_op (qt.Qobj): The superoperator representing the quantum operation.
-        logi_state (list): List of logical states (indices) to consider in the truncated subspace.
-        gate_target (qt.Qobj): Target quantum gate to compare against.
-
-    Returns:
-        float: The average gate fidelity of the operation.
-    """
-    kraus = qt.to_kraus(qt.to_super(super_op))
-    # print('logi_state=', logi_state)
-    # print('p0_kraus=', p0_kraus)
-    # print('p0_kraus[0].shape=', np.shape(p0_kraus[0]))
-    if len(c_op_list) != 0:
-        kraus = [truncate_2(i, logi_idx) for i in kraus]
-    super_op_post = qt.kraus_to_super(kraus)
-    return qt.metrics.average_gate_fidelity(super_op_post, target=gate_target)
 
 
 def print_trans_freq(state_i, state_j, evals, hspace, n_Theta=None, n_Phi=None):
@@ -1302,3 +1318,58 @@ def get_collapse_op(t1tphi_other, eket_tot_select, hspace_0_dim, hspace_1_dim):
 
     return c_op_list
 
+
+def compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1):
+    """
+    Computes the transition frequencies and selects the appropriate drive term.
+    need lowest 10 evals for this func to work.
+
+    Parameters:
+        evals (np.ndarray): Energy levels.
+        n_theta (np.ndarray): Matrix elements for theta-drive.
+        n_phi (np.ndarray): Matrix elements for phi-drive.
+        drive_phi (bool): Whether phi-drive is used.
+        drive_theta (bool): Whether theta-drive is used.
+        gamma_t1 (float): Amplitude damping rate.
+
+    Returns:
+        w1 (float): Transition frequency 1.
+        w2 (float): Transition frequency 2.
+        drive_term (np.ndarray): Matrix elements for selected drive.
+        Gamma_t1 (float): the decay rate coefficient fixed by certain transition matrix element
+    """
+    if drive_phi and not drive_theta:
+        w1 = evals[9] - evals[0]
+        w2 = evals[9] - evals[2]
+        drive_term = n_phi
+        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2)
+    elif drive_theta and not drive_phi:
+        w1 = evals[7] - evals[0]
+        w2 = evals[7] - evals[2]
+        drive_term = n_theta
+        Gamma_t1 = gamma_t1 / (np.abs(n_theta[4,7])**2)
+    else:
+        w1 = evals[9] - evals[0]
+        w2 = evals[9] - evals[2]
+        drive_term = 0.976 * n_phi + 0.024 * n_theta
+        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2) # close to phi drive
+    return w1, w2, drive_term, Gamma_t1
+
+def get_truncated_subspace(drive_term, n_full, hspace_charge=[0,2], thresh=0.01):
+    """
+    Determines a reduced Hilbert space based on magnitude of charge matrix elements.
+    
+    Parameters:
+        drive_term (np.ndarray): Drive matrix.
+        n_full (int): Dimension of the full space.
+        hspace_charge (list): Initial state list to include.
+        thresh (float): Magnitude threshold for inclusion.
+    Returns:
+        hspace_charge (list): List of basis indices to include.
+    """
+    for s in hspace_charge:
+        for i in range(n_full):
+            if np.abs(drive_term[s, i] / (2 * np.pi)) > thresh and i not in hspace_charge:
+                hspace_charge.append(i)
+    hspace_charge.sort()
+    return hspace_charge

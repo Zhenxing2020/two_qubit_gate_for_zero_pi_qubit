@@ -1,10 +1,10 @@
 Xgate_noise.py
-Current Mountain Time: 2025-06-16 22:54:56.814291-06:00
-drive_phi= False ; drive_theta = True ; n_full = 350
-n_charge = 181
+Current Mountain Time: 2025-06-18 17:31:20.890514-06:00
+drive_phi= False ; drive_theta = True ; n_full = 385
+n_charge = 200
 num_cpus =  4 ;   n_job =  5
 
-hspace_charge (350\181) = np.array([
+hspace_charge (385\200) = np.array([
 0, 1, 2, 4, 5, 7, 8, 11, 12, 16 ,
 17, 18, 21, 23, 25, 27, 30, 31, 32, 33 ,
 37, 38, 40, 41, 42, 45, 46, 47, 48, 51 ,
@@ -23,7 +23,10 @@ hspace_charge (350\181) = np.array([
 289, 290, 294, 296, 297, 298, 299, 300, 301, 302 ,
 307, 308, 312, 313, 314, 315, 324, 325, 326, 327 ,
 328, 333, 334, 337, 338, 339, 340, 345, 346, 347 ,
-348 ,
+348, 350, 351, 354, 355, 358, 359, 364, 365, 366 ,
+367, 372, 373, 374, 375, 
+
+376, 377, 378, 381, 384 ,
 ])
 
 params = np.array([
@@ -34,17 +37,20 @@ params = np.array([
 [119.917464, 0.033248, 0.00908, 0.000489, 0.000672] ,
 ])
 T1 = Tphi = 170000.0 ns
-
-f_ideal_181 = np.array([
--0.8894435183030804, -3.7740314663864702, -4.972461997150224, -5.79304130916251 ,
--6.234505290340139 ,
+RuntimeWarning: invalid value encountered in log10
+ /home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/X_gate/../utils_2Q_gate_zp.py: 938RuntimeWarning: invalid value encountered in log10
+ /home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/X_gate/../utils_2Q_gate_zp.py: 938RuntimeWarning: invalid value encountered in log10
+ /home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/X_gate/../utils_2Q_gate_zp.py: 938
+f_ideal_200 = np.array([
+-0.8896063619764227, -3.779904289244207, -4.966322334416653, -5.779329299604259 ,
+-6.199748504205202 ,
 ])
-Current Mountain Time: 2025-06-16 22:55:24.262938-06:00
+Current Mountain Time: 2025-06-18 17:32:20.061183-06:00
 
-f_170us_181 = np.array([
--0.8892363422147926, -3.6630655038726117, -3.911777621846385, -3.8230675389802995 ,
--3.7317271419634994 ,
+f_170us_200 = np.array([
+-0.8894854910530798, -3.712678196158654, nan, nan ,
+nan ,
 ])
-Current Mountain Time: 2025-06-17 03:17:36.454817-06:00
-1842043.84user 251961.06system 4:22:42elapsed 13284%CPU (0avgtext+0avgdata 3024280maxresident)k
-0inputs+16outputs (578major+38854948minor)pagefaults 0swaps
+Current Mountain Time: 2025-06-19 01:06:49.418838-06:00
+1409839.07user 226055.08system 7:35:32elapsed 5985%CPU (0avgtext+0avgdata 3613236maxresident)k
+0inputs+32outputs (4major+100942274minor)pagefaults 0swaps

@@ -1,4 +1,5 @@
 import sys
+sys.path.append('../')
 import os
 import pytz
 from datetime import datetime
@@ -15,6 +16,16 @@ import utils_2Q_gate_zp as ut
 # Set threshold for matrix element overlap
 settings.OVERLAP_THRESHOLD = 0.3
 
+
+
+# def extract_subspace(drive_term, truc, thresh=0.01, seed_indices=[0, 2]):
+#     """Finds relevant Hilbert subspace based on matrix elements."""
+#     hspace = seed_indices[:]
+#     for s in seed_indices:
+#         for i in range(truc):
+#             if np.abs(drive_term[s, i]/(2*np.pi)) > thresh and i not in hspace:
+#                 hspace.append(i)
+#     return sorted(hspace)
 def construct_drive_matrix(evals, n_theta, n_phi, truc, drive_theta, drive_phi):
     """Constructs diagonalized Hamiltonians and drive operators."""
     H0 = qt.Qobj(np.diag(evals[:truc]))
@@ -27,15 +38,6 @@ def construct_drive_matrix(evals, n_theta, n_phi, truc, drive_theta, drive_phi):
         w2 = evals[2] - evals[1]
         drive = n_theta[:truc, :truc]
     return H0, drive, w1, w2
-
-def extract_subspace(drive_term, truc, thresh=0.01, seed_indices=[0, 2]):
-    """Finds relevant Hilbert subspace based on matrix elements."""
-    hspace = seed_indices[:]
-    for s in seed_indices:
-        for i in range(truc):
-            if np.abs(drive_term[s, i]/(2*np.pi)) > thresh and i not in hspace:
-                hspace.append(i)
-    return sorted(hspace)
 
 def fidelity_de():
     """
@@ -97,7 +99,7 @@ if __name__ == '__main__':
     if drive_theta:
         amp1_bounds, amp2_bounds = (0.01, 0.05), (0.025, 0.2)
         detune1_bounds, detune2_bounds = (-0.17, -0.2), (0.1, 0.3)
-        tg_vec = np.arange(40, 50, step=1).tolist()
+        tg_vec = 2 # np.arange(40, 50, step=1).tolist()
     else:
         amp1_bounds, amp2_bounds = (0.15, 0.3), (0, 0.3)
         detune1_bounds, detune2_bounds = (0.3, 0.5), (0.3, 0.5)
@@ -132,7 +134,7 @@ if __name__ == '__main__':
     H0_full, drive_full, *_ = construct_drive_matrix(evals, n_Theta, n_Phi, truc_full, drive_theta, drive_phi)
 
     # Define relevant Hilbert spaces
-    hspace_charge = extract_subspace(drive_term, truc1)
+    hspace_charge = ut.get_truncated_subspace(drive_term, truc1)
     hspace_full = list(range(truc_full))
 
     # Print configuration
@@ -145,3 +147,15 @@ if __name__ == '__main__':
 
     # Run optimization
     fidelity_de()
+def construct_drive_matrix(evals, n_theta, n_phi, truc, drive_theta, drive_phi):
+    """Constructs diagonalized Hamiltonians and drive operators."""
+    H0 = qt.Qobj(np.diag(evals[:truc]))
+    if drive_phi:
+        w1 = evals[9] - evals[0]
+        w2 = evals[9] - evals[2]
+        drive = n_phi[:truc, :truc]
+    elif drive_theta:
+        w1 = evals[1] - evals[0]
+        w2 = evals[2] - evals[1]
+        drive = n_theta[:truc, :truc]
+    return H0, drive, w1, w2

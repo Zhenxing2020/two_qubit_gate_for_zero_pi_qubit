@@ -81,7 +81,7 @@ if __name__ == '__main__':
     if drive_theta:
         amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.01, 0.05), (0.025, 0.2), (-0.17, -0.2), (0.1, 0.3)] # theta big
         # amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.01, 0.08), (0.003, 0.03), (0, 0.01), (0, 0.01)] # theta small
-        tg_vec = np.arange(40, 50, step=1).tolist() # theta
+        tg_vec = [2] # np.arange(40, 50, step=1).tolist() # theta
     else:
         amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.15, 0.3), (0, 0.3), (0.3, 0.5), (0.3, 0.5)] # phi
         tg_vec = np.arange(10, 50, step=10).tolist() # phi
