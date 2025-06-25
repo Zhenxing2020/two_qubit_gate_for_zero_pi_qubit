@@ -2,14 +2,14 @@
 X-Gate Fidelity Simulation for the 0-π Qubit
 
 This script simulates X-gate fidelities (ideal and noisy) for the 0-π qubit under theta or phi drive.
-It uses matrix elements and spectrum data from precomputed `scqubits` files, constructs Hamiltonians,
-computes logical gate fidelities, and accounts for dissipation including T1 decay and pure dephasing (Tφ).
+It uses matrix elements and spectrum data from precomputed files, constructs Hamiltonians,
+computes gate fidelities, and accounts for dissipation including decay (T1) and pure dephasing (Tφ).
 
 Main Features:
 ---------------
-- Load energy spectrum and matrix elements for either qubit 0 or 1.
-- Support both θ and φ drive, with customizable drive weights.
-- Construct truncated Hamiltonians based on dominant transition amplitudes.
+- Load energy spectrum and matrix elements for either the first or second zero pi qubit (0 or 1).
+- Support both θ and φ drive.
+- Construct truncated Hamiltonians based on magnitudes of charge matrix elements.
 - Simulate both ideal and noisy X-gate fidelities using QuTiP solvers and multiprocessing.
 - Print simulation results in a structured `np.array` format for easy copy-paste.
 
@@ -28,12 +28,12 @@ Returns:
   - `hspace_charge`: Truncated Hilbert space basis indices.
   - `params`: Drive parameters for each gate time.
   - `f_ideal`: Ideal gate fidelities (no dissipation).
-  - `f_170us`: Noisy fidelities with T1 and Tφ noise.
+  - `f_170us`: Noisy fidelities with T1 = Tφ = 170us.
 - No values are returned programmatically, but results are displayed and can be logged/redirected if desired.
 
 File Dependencies:
 -------------------
-- `data/zeropi_*.h5`: Spectrum and matrix elements generated from `scqubits` simulations.
+- `data/zeropi_0_specdata_truc=1000_3ncut.h5.h5`: Spectrum and matrix elements generated from `scqubits` simulations.
 - `data/data_xgate_theta_3ncut.txt` / `data_xgate_phi_3ncut.txt`: CSVs with drive parameters.
 - `data/data_gamma_theta_500.txt` / `data_gamma_phi_500.txt`: CSVs with dephasing rates (computed separately).
 - `utils_2Q_gate_zp.py`: Contains utility functions, such as fidelity calculations and matrix truncation.
@@ -179,6 +179,9 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
         t1 (float): T1 relaxation time in μs.
         qubit_0 (bool): Whether using qubit 0 or 1.
         tg_list (list): List of indices of tg values to simulate.
+
+    Returns:
+        important inputs and final gate fidelities are printed in a structured format.       
     """
     gamma_t1 = 1 / 1e3 / t1 # calculate decay rate given T1, unit in micro-second
     tphi = t1 # calculate decay rate given T1, unit in micro-second
