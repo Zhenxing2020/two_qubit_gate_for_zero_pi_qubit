@@ -1,0 +1,28 @@
+Xgate_noise.py
+Current Mountain Time: 2025-06-30 14:16:11.234478-06:00
+drive_phi= False ; drive_theta = True ; n_full = 10 ; charge_truc = True
+T1 = Tphi = 170 μs
+Ideal: max_step = 0.0003, nsteps = 3333.3333333333335
+Noisy: max_step = 3e-05, nsteps = 33333.333333333336
+n_hspace = 7
+num_cpus =  4 ;   n_job =  1
+
+hspace (10\7) = np.array([
+0, 1, 2, 4, 5, 7, 8 ,
+])
+
+params = np.array([
+[10.108462, 0.41212, 0.073451, -0.084451, -0.044706] ,
+])
+
+f_ideal_7 = np.array([
+-0.18735288163734018 ,
+])
+Current Mountain Time: 2025-06-30 14:16:14.875482-06:00
+
+f_170us_7 = np.array([
+-0.18735260060584327 ,
+])
+Current Mountain Time: 2025-06-30 14:16:20.611257-06:00
+24.87user 1.73system 0:12.20elapsed 218%CPU (0avgtext+0avgdata 848880maxresident)k
+0inputs+32outputs (5major+316583minor)pagefaults 0swaps

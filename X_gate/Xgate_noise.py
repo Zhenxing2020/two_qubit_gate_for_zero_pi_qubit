@@ -89,7 +89,7 @@ def load_drive_params(drive_theta):
     f_xgate = pd.read_csv('data/' + folder)
     return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
 
-def build_hamiltonian(H0, drive_term, hspace_charge, logi_state):
+def build_hamiltonian(H0, drive_term, hspace, logi_state):
     """
     Constructs the truncated Hamiltonian and drive terms.
 
@@ -104,22 +104,24 @@ def build_hamiltonian(H0, drive_term, hspace_charge, logi_state):
         drive_truc (Qobj): Truncated drive matrix.
         logi_idx (list): Logical state indices in truncated space.
     """
-    H0_truc = ut.truncate_2(H0, hspace_charge)
-    drive_truc = ut.truncate_2(drive_term, hspace_charge)
-    logi_idx = [hspace_charge.index(s) for s in logi_state] # 1 state may or may not be in the truncated model, 
+    H0_truc = ut.truncate_2(H0, hspace)
+    drive_truc = ut.truncate_2(drive_term, hspace)
+    logi_idx = [hspace.index(s) for s in logi_state] # 1 state may or may not be in the truncated model, 
     H_qbt_drive = [H0_truc, [drive_truc, ut.drive_gauss_A], [drive_truc, ut.drive_gauss_B]]
     return H_qbt_drive, drive_truc, logi_idx
 
-def construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hspace_charge, state_idx):
+def construct_c_ops(n_hspace, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hspace, state_idx_tphi):
     """
     Constructs collapse operators for dissipation.
 
     Parameters:
-        n_charge (int): Truncated Hilbert space dimension.
+        n_hspace (int): Hilbert space dimension.
         drive_truc (Qobj): Drive operator.
         Gamma_t1 (float): Amplitude decay prefactor.
         gamma_dephase_new (np.ndarray): Dephasing rates (for 50μs).
         tphi (float): Desired Tphi in μs.
+        hspace (list): Hilbert space indices.
+        state_idx_tphi (list): Indices of states for imported dephasing rates.
 
     Returns:
         list: All collapse operators (amplitude + dephasing).
@@ -128,12 +130,15 @@ def construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hsp
     # the dephasing rate is calculated in some file for 50μs for 2 state, the line below change dephasing coeffs to the input tphi (170, 30, 3μs)
     gamma_dephase_new = gamma_dephase_new * 50 / tphi
     jump_t1, jump_tphi = [], []
-    for i in range(1, n_charge):
+    for i in range(1, n_hspace):
         for j in range(i): # only consider downwards deacy
-            jump_t1.append(np.sqrt(gamma_decay_new[j, i]) * qt.basis(n_charge, j) * qt.basis(n_charge, i).dag())
-    for i, state in enumerate(hspace_charge):
-        idx = list(state_idx).index(state) 
-        jump_tphi.append(np.sqrt(2 * gamma_dephase_new[idx]) * qt.basis(n_charge, i).proj())
+            jump_t1.append(np.sqrt(gamma_decay_new[j, i]) * qt.basis(n_hspace, j) * qt.basis(n_hspace, i).dag())
+    for i, state in enumerate(hspace):
+        if state in list(state_idx_tphi):
+            idx = list(state_idx_tphi).index(state) 
+            jump_tphi.append(np.sqrt(2 * gamma_dephase_new[idx]) * qt.basis(n_hspace, i).proj())
+        else:
+            jump_tphi.append(qt.Qobj(np.zeros((n_hspace, n_hspace))))
     
     # print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
     return jump_t1 + jump_tphi
@@ -168,7 +173,8 @@ def load_dephasing_data(drive_theta):
     state_idx = gamma_new['hspace'].to_numpy()
     return state_idx, gamma_dephase
 
-def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=170, tg_list=[], qubit_0=True):
+def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=170, tg_list=[], 
+                                option_ideal=None, option_noisy=None, charge_truc=False, calculate_noise=False, qubit_0=True):
     """
     Run X-gate fidelity simulations (ideal + noisy) and print results.
 
@@ -177,8 +183,11 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
         drive_theta (bool): Whether using theta-drive.
         n_full (int): Full Hilbert space dimension.
         t1 (float): T1 relaxation time in μs.
-        qubit_0 (bool): Whether using qubit 0 or 1.
         tg_list (list): List of indices of tg values to simulate.
+        option_ideal, option_noisy (qt.Options): Solver options for QuTiP.
+        charge_truc (bool): Whether to truncate the charge space based on matrix element magnitudes.
+        calculate_noise (bool): Whether to calculate noisy fidelities.
+        qubit_0 (bool): Whether using qubit 0 or 1.
 
     Returns:
         important inputs and final gate fidelities are printed in a structured format.       
@@ -193,52 +202,73 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
     
     # Build Hamiltonian
     w_trans_1, w_trans_2, drive_term, Gamma_t1 = ut.compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
-    hspace_charge = ut.get_truncated_subspace(drive_term, n_full) # truncate relevant subspace
-    # hspace_charge = np.arange(n_full).tolist() # do not truncate
-
+    hspace = np.arange(n_full).tolist() # do not truncate
+    if charge_truc:
+        hspace = ut.get_truncated_subspace(drive_term, n_full)
     values_to_remove = {} # remove elements that give nan
-    hspace_charge = [item for item in hspace_charge if item not in values_to_remove]
+    hspace = [item for item in hspace if item not in values_to_remove]
 
-    n_charge = len(hspace_charge)
+    n_hspace = len(hspace)
     H0 = qt.Qobj(np.diag(evals))
-    H_qbt_drive, drive_truc, logi_idx = build_hamiltonian(H0, drive_term, hspace_charge, [0, 2])
+    H_qbt_drive, drive_truc, logi_idx = build_hamiltonian(H0, drive_term, hspace, [0, 2])
 
     # Print summary
-    print("drive_phi=", drive_phi, "; drive_theta =", drive_theta, "; n_full =", n_full)
-    print("n_charge =", n_charge)
+    print("n_hspace =", n_hspace)
     print("num_cpus = ", num_cpus, ";   n_job = ", n_job)  
-    print_data_r2r(f'hspace_charge ({n_full}\{n_charge})', hspace_charge, num_each_row=10)
+    print_data_r2r(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
     print_data_r2r(f'params', params.tolist(), num_each_row=1)
     # print("gamma = ", gamma)
-    print(f"T1 = Tphi = {1/gamma_t1} ns") if gamma_t1 != 0 else None
 
     # Ideal fidelity simulation
-    args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, [], logi_idx]
+    args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy]
     f_ideal = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
-    print_data_r2r(f'f_ideal_{n_charge}', f_ideal)
+    print_data_r2r(f'f_ideal_{n_hspace}', f_ideal)
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    # Load data and prepare operators for noisy fidelity simulation
-    state_idx, gamma_dephase_new = load_dephasing_data(drive_theta) # Load dephasing data
-    c_op_list = construct_c_ops(n_charge, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hspace_charge, state_idx) # Construct collapse operators
+    if calculate_noise:
+        # Load data and prepare operators for noisy fidelity simulation
+        state_idx_tphi, gamma_dephase_new = load_dephasing_data(drive_theta) # Load dephasing data
+        c_op_list = construct_c_ops(n_hspace, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hspace, state_idx_tphi) # Construct collapse operators
 
-    # Noisy fidelity simulation
-    args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx]
-    f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
-    print_data_r2r(f'f_{t1}us_{n_charge}', f_noise)
-    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
+        # Noisy fidelity simulation
+        args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy]
+        f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
+        print_data_r2r(f'f_{t1}us_{n_hspace}', f_noise)
+        print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
 
 if __name__ == '__main__':
+
+    import os
+    os.environ["NUMEXPR_MAX_THREADS"] = "128"  # Or whatever upper limit you want    
+    
     print(os.path.basename(__file__))  # Print the name of the current Python file
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-    # drive_phi, drive_theta, n_full = True, False, 263
-    drive_phi, drive_theta, n_full = False, True, 400
+    # drive_phi, drive_theta, n_full = True, False, 500
+    drive_phi, drive_theta, n_full = False, True, 150
     t1 = 170
-    tg_list = [9] # [1, 5, 9, 13, 17 ] # [9]
-    xgate_fidelity_decay_all(drive_phi, drive_theta, n_full, t1, tg_list)
+    tg_list = [17] # np.arange(18).tolist() #  [17] # [1, 5, 9, 13, 17 ]
+    charge_truc = True  # whether to truncate the charge space
+    calculate_noise = True  # whether to calculate noisy fidelity
+
+    max_step_ideal = 3e-4 # Set max_step to 0 for parallel execution
+    nsteps_ideal = 1/ max_step_ideal  # Set nsteps to a large number for parallel execution
+    max_step_noisy = 1e-4 # Set max_step to 0 for parallel execution
+    nsteps_noisy = 1/ max_step_noisy  # Set nsteps to a large number for parallel execution
+
+    option_ideal =qt.Options(max_step=max_step_ideal, nsteps=nsteps_ideal, num_cpus=1)  # num_cpus=1 because we only want to sweep basis states
+    option_noisy =qt.Options(max_step=max_step_noisy, nsteps=nsteps_noisy, num_cpus=1)  # num_cpus=1 because we only want to sweep basis states
+    print("drive_phi=", drive_phi, "; drive_theta =", drive_theta, "; n_full =", n_full, "; charge_truc =", charge_truc)
+    print(f"T1 = Tphi = {t1} μs")
+    print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
+    print(f'Noisy: max_step = {option_noisy.max_step}, nsteps = {option_noisy.nsteps}')
+
+    xgate_fidelity_decay_all(drive_phi, drive_theta, n_full, t1, tg_list, option_ideal, option_noisy, charge_truc, calculate_noise, qubit_0=True)
+
+    # for n_full in [50]:
+    #     print(f"\n\n\n\n\n\n\n\n\n\nRunning for n_full = {n_full}")
+    #     xgate_fidelity_decay_all(drive_phi, drive_theta, n_full, t1, tg_list)
 
 
 
