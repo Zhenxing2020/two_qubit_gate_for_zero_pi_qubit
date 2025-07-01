@@ -173,8 +173,8 @@ def load_dephasing_data(drive_theta):
     state_idx = gamma_new['hspace'].to_numpy()
     return state_idx, gamma_dephase
 
-def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=170, tg_list=[], 
-                                option_ideal=None, option_noisy=None, charge_truc=False, calculate_noise=False, qubit_0=True):
+def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=170, tg_list=[], option_ideal=None, 
+                             option_noisy=None, charge_truc=False, calculate_ideal=False, calculate_noise=False, num_cpus=None, qubit_0=True):
     """
     Run X-gate fidelity simulations (ideal + noisy) and print results.
 
@@ -198,7 +198,7 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
     # Load data
     evals, n_theta, n_phi = load_simulation_data(qubit_0) # Load spectrum and matrix elements
     params = load_drive_params(drive_theta)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
-    num_cpus, n_job = 4, len(params)    
+    n_job = len(params)    
     
     # Build Hamiltonian
     w_trans_1, w_trans_2, drive_term, Gamma_t1 = ut.compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
@@ -213,17 +213,16 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
     H_qbt_drive, drive_truc, logi_idx = build_hamiltonian(H0, drive_term, hspace, [0, 2])
 
     # Print summary
-    print("n_hspace =", n_hspace)
-    print("num_cpus = ", num_cpus, ";   n_job = ", n_job)  
+    print("n_hspace =", n_hspace, ";   n_job = ", n_job)
     print_data_r2r(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
     print_data_r2r(f'params', params.tolist(), num_each_row=1)
-    # print("gamma = ", gamma)
 
-    # Ideal fidelity simulation
-    args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy]
-    f_ideal = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
-    print_data_r2r(f'f_ideal_{n_hspace}', f_ideal)
-    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
+    if calculate_ideal:
+        # Ideal fidelity simulation
+        args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy]
+        f_ideal = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
+        print_data_r2r(f'f_ideal_{n_hspace}', f_ideal)
+        print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     if calculate_noise:
         # Load data and prepare operators for noisy fidelity simulation
@@ -236,7 +235,6 @@ def xgate_fidelity_decay_all(drive_phi=True, drive_theta=False, n_full=100, t1=1
         print_data_r2r(f'f_{t1}us_{n_hspace}', f_noise)
         print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
-
 if __name__ == '__main__':
 
     import os
@@ -246,13 +244,14 @@ if __name__ == '__main__':
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     # drive_phi, drive_theta, n_full = True, False, 500
-    drive_phi, drive_theta, n_full = False, True, 150
-    t1 = 170
-    tg_list = [17] # np.arange(18).tolist() #  [17] # [1, 5, 9, 13, 17 ]
+    drive_phi, drive_theta, n_full = False, True, 100 # 50 states →12 workers, (100 states/40 workers, 200/160). 
+    t1 = 170 # μs
+    tg_list = [8] # [1, 5, 9, 13, 17 ] # np.arange(18).tolist() #  [17] # 
     charge_truc = True  # whether to truncate the charge space
-    calculate_noise = True  # whether to calculate noisy fidelity
+    calculate_ideal, calculate_noise = False, True  # whether to calculate noisy fidelity
+    num_cpus = 4 # Lower num_cpus <4 can reduce num of workers while >4 won’t change the num.
 
-    max_step_ideal = 3e-4 # Set max_step to 0 for parallel execution
+    max_step_ideal = 1e-4 # Set max_step to 0 for parallel execution
     nsteps_ideal = 1/ max_step_ideal  # Set nsteps to a large number for parallel execution
     max_step_noisy = 1e-4 # Set max_step to 0 for parallel execution
     nsteps_noisy = 1/ max_step_noisy  # Set nsteps to a large number for parallel execution
@@ -260,11 +259,12 @@ if __name__ == '__main__':
     option_ideal =qt.Options(max_step=max_step_ideal, nsteps=nsteps_ideal, num_cpus=1)  # num_cpus=1 because we only want to sweep basis states
     option_noisy =qt.Options(max_step=max_step_noisy, nsteps=nsteps_noisy, num_cpus=1)  # num_cpus=1 because we only want to sweep basis states
     print("drive_phi=", drive_phi, "; drive_theta =", drive_theta, "; n_full =", n_full, "; charge_truc =", charge_truc)
-    print(f"T1 = Tphi = {t1} μs")
+    print(f"T1 = Tphi = {t1} μs, num_cpus = {num_cpus}")
     print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
     print(f'Noisy: max_step = {option_noisy.max_step}, nsteps = {option_noisy.nsteps}')
 
-    xgate_fidelity_decay_all(drive_phi, drive_theta, n_full, t1, tg_list, option_ideal, option_noisy, charge_truc, calculate_noise, qubit_0=True)
+    xgate_fidelity_decay_all(drive_phi, drive_theta, n_full, t1, tg_list, option_ideal, option_noisy, 
+                             charge_truc, calculate_ideal, calculate_noise, num_cpus, qubit_0=True)
 
     # for n_full in [50]:
     #     print(f"\n\n\n\n\n\n\n\n\n\nRunning for n_full = {n_full}")
