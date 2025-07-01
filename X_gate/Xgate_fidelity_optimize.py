@@ -38,6 +38,7 @@ def fidelity_de():
             recombination=recombination,
             tol=tol,
             # x0=x0_vec[jdx],
+            x0 = np.array([828.759495, 0.013563, 0.034964, -0.003029, -0.003182]),
             polish=False, # 'True' will make the for-loop break
             )
         fidelity.append(res.fun)
@@ -84,9 +85,9 @@ if __name__ == '__main__':
         tg_vec = np.arange(40, 50, step=1).tolist() # theta
     else:
         # amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.15, 0.3), (0, 0.3), (0.3, 0.5), (0.3, 0.5)] # phi
-        amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0, 0.3), (0, 0.3), (-0.5, 0.5), (-0.5, 0.5)] # phi small
+        amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0, 0.06), (0, 0.06), (-0.02, -0.003), (-0.02, -0.003)] # phi small, anything above 0.05 is whack
         # tg_vec = np.arange(10, 50, step=10).tolist() # phi
-        tg_vec = [400, 600, 800]
+        tg_vec = [800]
 
     tg_bound = (-30, 30)
     folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     # x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2',
     #                     'detune_1', 'detune_2']].to_numpy()[[10, 12, 13, 15],:] #[[10,8,6,4,2],:]
 
-    workers, popsize = 100, 20
+    workers, popsize = 150, 20
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     truc1, truc_full = 150, 500 # theta
     truc1, truc_full = 300, 600 # phi
@@ -113,43 +114,61 @@ if __name__ == '__main__':
             print(', '.join(map(str, tg_vec[i:i+4])), ',')
 
 #####################################################################
-    truncation=1000
-    folder = '../3ncut_one_zeropi/'
-    if drive_0:
-        evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc={truncation}_3ncut.h5').energy_table
-        n_Theta = 2*np.pi* scq.read(folder + f'zeropi_0_n_theta_truc={truncation}_3ncut.h5').matrixelem_table
-        n_Phi = 2*np.pi* scq.read(folder + f'zeropi_0_n_phi_truc={truncation}_3ncut.h5').matrixelem_table
-    else:
-        evals = 2*np.pi* scq.read(folder + f'zeropi_1_specdata_truc={truncation}_3ncut.h5').energy_table
-        n_Theta = 2*np.pi* scq.read(folder + f'zeropi_1_n_theta_truc={truncation}_3ncut.h5').matrixelem_table
-        n_Phi = 2*np.pi* scq.read(folder + f'zeropi_1_n_phi_truc={truncation}_3ncut.h5').matrixelem_table
-    evals = evals - evals[0]
+    # truncation=1000
+    # folder = '../3ncut_one_zeropi/'
+    # if drive_0:
+    #     evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc={truncation}_3ncut.h5').energy_table
+    #     n_Theta = 2*np.pi* scq.read(folder + f'zeropi_0_n_theta_truc={truncation}_3ncut.h5').matrixelem_table
+    #     n_Phi = 2*np.pi* scq.read(folder + f'zeropi_0_n_phi_truc={truncation}_3ncut.h5').matrixelem_table
+    # else:
+    #     evals = 2*np.pi* scq.read(folder + f'zeropi_1_specdata_truc={truncation}_3ncut.h5').energy_table
+    #     n_Theta = 2*np.pi* scq.read(folder + f'zeropi_1_n_theta_truc={truncation}_3ncut.h5').matrixelem_table
+    #     n_Phi = 2*np.pi* scq.read(folder + f'zeropi_1_n_phi_truc={truncation}_3ncut.h5').matrixelem_table
+    # evals = evals - evals[0]
 
-    H0 = qt.Qobj(np.diag(evals[:truc1]))
-    H0_full = qt.Qobj(np.diag(evals[:truc_full]))
-    if drive_phi:
-        w_trans_1 = evals[9] - evals[0]
-        w_trans_2 = evals[9] - evals[2]
-        drive_term = n_Phi[:truc1, :truc1]
-        drive_full = n_Phi[:truc_full, :truc_full]
-    if drive_theta:
-        w_trans_1 = evals[1] - evals[0]
-        w_trans_2 = evals[2] - evals[1]
-        # w_trans_1 = evals[7] - evals[0]
-        # w_trans_2 = evals[7] - evals[2]
-        drive_term = n_Theta[:truc1, :truc1]
-        drive_full = n_Theta[:truc_full, :truc_full]
+    # H0 = qt.Qobj(np.diag(evals[:truc1]))
+    # H0_full = qt.Qobj(np.diag(evals[:truc_full]))
+    # if drive_phi:
+    #     w_trans_1 = evals[9] - evals[0]
+    #     w_trans_2 = evals[9] - evals[2]
+    #     drive_term = n_Phi[:truc1, :truc1]
+    #     drive_full = n_Phi[:truc_full, :truc_full]
+    # if drive_theta:
+    #     w_trans_1 = evals[1] - evals[0]
+    #     w_trans_2 = evals[2] - evals[1]
+    #     # w_trans_1 = evals[7] - evals[0]
+    #     # w_trans_2 = evals[7] - evals[2]
+    #     drive_term = n_Theta[:truc1, :truc1]
+    #     drive_full = n_Theta[:truc_full, :truc_full]
 
-    ## find hilbert space
-    thresh = 0.01
-    hspace_charge = [0, 2]
-    for s in hspace_charge:
-        for i in range(truc1):
-            if np.abs(drive_term[s, i]/(2*np.pi)) > thresh and i not in hspace_charge:
-                hspace_charge.append(i)
-    hspace_charge.sort()
+    # ## find hilbert space
+    # thresh = 0.01
+    # hspace_charge = [0, 2]
+    # for s in hspace_charge:
+    #     for i in range(truc1):
+    #         if np.abs(drive_term[s, i]/(2*np.pi)) > thresh and i not in hspace_charge:
+    #             hspace_charge.append(i)
+    # hspace_charge.sort()
 #####################################################################
-    hspace_full = np.arange(truc_full).tolist()
+    savename = "H_exp.npz"
+    trunc1 = 1000
+    if os.path.exists(savename):
+        params = np.load(savename)
+        H0_full = qt.Qobj(params["H0"])
+        drive_full = qt.Qobj(params["drive"])
+        w_trans_1 = params["w_trans_1"]
+        w_trans_2 = params["w_trans_2"]
+        hspace_charge = params["hspace_reduced"]
+        trunc_model = sorted(params["trunc_model"])
+        # hspace_full = np.arange(trunc1)
+        hspace_full = np.arange(truc_full).tolist()
+        
+        # Truncated stuff
+        n = 100
+        hspace_charge = trunc_model[:100]
+        H0 = ut.truncate_2(H0_full, hspace_charge)
+        drive_term = ut.truncate_2(drive_full, hspace_charge)
+
     print('truc1 =', truc1, ', truc2 (in optimization) =', len(hspace_charge))
     print('truc1_full =', truc_full, ', truc2_full =', len(hspace_full))
 

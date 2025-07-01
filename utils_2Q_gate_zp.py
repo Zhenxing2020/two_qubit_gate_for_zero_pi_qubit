@@ -180,6 +180,48 @@ def drive_gauss_B(t: float, args: dict) -> float:
     wd = args.get('drive_freq_B', 0)
     tg = args.get('gate_time', 0)
     return A * (np.exp(-8 * t * (t - tg) / tg**2) - 1) * np.cos(wd * t) * (0<=t<=tg)
+# Functions for the pulse for qubits A and B
+def drive_gauss_A_normalized(t: float, args: dict) -> float:
+    """
+    Compute the pulse for qubit A.
+
+    Args:
+        t (float): Time at which to evaluate the pulse (0 <= t <= gate_time).
+        args (dict): Dictionary containing pulse parameters:
+            - drive_amp_A (float): Drive amplitude for qubit A.
+            - drive_freq_A (float): Drive frequency for qubit A.
+            - gate_time (float): Total duration of the gate.
+
+    Returns:
+        float: The value of the pulse for qubit A at time `t`.
+    """
+    A = args.get('drive_amp_A', 0)
+    wd = args.get('drive_freq_A', 0)
+    tg = args.get('gate_time', 0)
+    envelope = (np.exp(-8 * t * (t - tg) / tg**2) - 1)
+    envelope /= np.exp(2) - 1
+    return A * envelope * np.cos(wd * t) * (0<=t<=tg)
+
+def drive_gauss_B_normalized(t: float, args: dict) -> float:
+    """
+    Compute the pulse for qubit B.
+
+    Args:
+        t (float): Time at which to evaluate the pulse (0 <= t <= gate_time).
+        args (dict): Dictionary containing pulse parameters:
+            - drive_amp_B (float): Drive amplitude for qubit B.
+            - drive_freq_B (float): Drive frequency for qubit B.
+            - gate_time (float): Total duration of the gate.
+
+    Returns:
+        float: The value of the pulse for qubit B at time `t`.
+    """
+    A = args.get('drive_amp_B', 0)
+    wd = args.get('drive_freq_B', 0)
+    tg = args.get('gate_time', 0)
+    envelope = (np.exp(-8 * t * (t - tg) / tg**2) - 1)
+    envelope /= np.exp(2) - 1
+    return A * envelope * np.cos(wd * t) * (0<=t<=tg)
 
 # Functions for the DRAG pulse for qubits A and B
 def drag_A(t: float, args: dict) -> float:
@@ -848,7 +890,7 @@ def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=2
 
     return H0, drive_term, w_trans_1, w_trans_2, hspace_charge
 
-def xgate_fidelity_log(argz):
+def xgate_fidelity_log(argz, filter_other=False):
     """
     Compute the X-gate fidelity for a noiseless system.
 
@@ -888,8 +930,34 @@ def xgate_fidelity_log(argz):
     logi_state = [0, 2]
     logi_idx = [hilbert_space.index(s) for s in logi_state]
     c_op_list = []
-    Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, logi_idx)
-    fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
+    Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, logi_idx, return_all=True)
+    fidelity = qt.average_gate_fidelity(truncate_2(Uc[-1], logi_idx), target=qt.sigmax())
+
+    ######## Check max population outside of 0, 2, 7, 9
+    if filter_other:
+        pops = np.zeros((2, tlist.size, 4))
+        for j, state in enumerate([0, 2, 7, 9]):
+            if state not in hilbert_space:
+                continue
+            state_idx = hilbert_space.index(state)
+            for i, l_state in enumerate(logi_state):
+                pops[i, :, j] = np.array([np.abs(U[state_idx, i])**2 for U in Uc])
+        
+        max_other = 0.01
+        if np.any(np.sum(pops[0], axis=1) < 1-max_other) or np.any(np.sum(pops[1], axis=1) < 1-max_other):
+            fidelity = 0.0
+        
+        max_int = 0.1
+        int1 = np.sum(pops[0, :, 2:], axis=1).max()
+        int2 = np.sum(pops[1, :, 2:], axis=1).max()
+        # print(int1, int2)
+        if int1 > max_int or int2 > max_int:
+            # penalty = 1.01*max(int1, int2)/max_int
+            # print(penalty)
+            # print(fidelity, fidelity/penalty)
+            # fidelity /= 1.1*max(int1, int2)/max_int
+            fidelity = 0
+
     # error_leak = 1 - 0.5*(Uc.dag()*Uc).tr()
     # fidelity = gate_fidelity(Utarg=qt.sigmax(), Ucand=Uc)
     return np.log10(1 - fidelity)
@@ -954,7 +1022,7 @@ def xgate_fidelity_parallel(arg, *args):
 
     argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
             tg, drive_amp_A, drive_amp_B, detune_A, detune_B]
-    return xgate_fidelity_log(argz)
+    return xgate_fidelity_log(argz, filter_other=True)
 
 
 ###################################################################
@@ -1012,19 +1080,20 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx, return_a
                 for k, t in enumerate(tlist):
                     u[:, n, k] = output[n].states[k].full().T
             prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
-            if not return_all:
-                prop = prop[-1]
-                return truncate_2(prop, logi_idx)
-            else:
-                return [truncate_2(x, logi_idx) for x in prop]
         else:
             # Computes the propagator for noiseless systems.
-            prop = np.zeros((H0.shape[0], dimz), dtype=np.complex128)
+            prop = np.zeros((len(tlist), H0.shape[0], dimz), dtype=np.complex128)
             for i in logi_idx:
                 res = qt.sesolve(H, qt.basis(H[0].shape[0], i), tlist, options=options, args=pulse_args)
-                prop[:, logi_idx.index(i)] = res.states[-1].full().flatten()
-            Uc = truncate_2(qt.Qobj(prop), logi_idx)
-            return Uc
+                for it in range(len(tlist)):
+                    prop[it, :, logi_idx.index(i)] = res.states[it].full().flatten()
+            prop = [qt.Qobj(p) for p in prop]
+        if not return_all:
+            prop = prop[-1]
+            return truncate_2(prop, logi_idx)
+        else:
+            # return [truncate_2(x, logi_idx) for x in prop]
+            return prop
     else:
         options =qt.Options(max_step=1e-3, nsteps=1e4, num_cpus=num_cpus)
         # Computes the propagator for noisy systems.

@@ -9,6 +9,9 @@ import networkx as nx
 import utils_2Q_gate_zp as ut
 import scqubits as scq
 
+
+from joblib import Parallel, delayed
+
 def trunc_by_thresh(core_states_index, drive_term, thresh=1e-2, total_trunc=None):
     """
     Returns a list of state indices that are connected to the specified core states
@@ -229,22 +232,135 @@ def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, labels=Non
     df = pd.concat(df_list).sort_values("path_len", ascending=False).drop_duplicates("i", keep="first")
     return list(df["i"].values[:n])
 
+
+def rank_by_fid_contrib(initial_order, pulse_argz, savefile, n_jobs=50, start=3, end=None):
+    
+    def eval_fid(n):
+        argz = pulse_argz[:4] + [sorted(initial_order[:n])] + pulse_argz[5:]
+        return ut.xgate_fidelity_log(argz)
+    
+    if end is None:
+        end = len(initial_order)
+
+    n_states = np.arange(start, end)
+    log_infid = Parallel(n_jobs=min(n_jobs, len(n_states)), verbose=10)(delayed(eval_fid)(x) for x in n_states)
+    fid = 1-10**np.array(log_infid)
+
+    diff = list(range(1, start+2))[::-1] + list(np.abs(np.diff(fid)))
+    re_order = np.array(initial_order)[np.argsort(diff)[::-1]]
+
+    np.savez(savefile, log_infid=log_infid, fid=fid, initial_order=initial_order, diff=diff, re_order=re_order)
+
+    return fid, diff, re_order
+
+
+def compare_orders(orders, labels, n_states, pulse_argz, savefile, n_jobs=50, true_val=None, fids = {}):
+
+    # Get "True" Value
+    if true_val is None:
+        argz = pulse_argz[:4] + [sorted(orders[0])] + pulse_argz[5:]
+        true_val = 1-10**ut.xgate_fidelity_log(argz)
+        print(f"-----------------------({len(orders[0])} states)")
+        print("True Val", true_val)
+        print("-----------------------")
+    
+    # Define fidelity comparison functions
+    funcs = []
+    import matplotlib.pyplot as plt
+    f, ax = plt.subplots(ncols=2, figsize=(12,4))
+    for order, label in zip(orders, labels):
+        eval_fid = lambda n: 1-10**ut.xgate_fidelity_log(pulse_argz[:4] + [sorted(order[:n])] + pulse_argz[5:])
+        if label not in fids:
+            fids[label] = Parallel(n_jobs=min(n_jobs, len(n_states)), verbose=10)(delayed(eval_fid)(x) for x in n_states)
+        ax[0].plot(n_states, fids[label], label=label)
+        ax[1].plot(n_states, true_val - np.array(fids[label]), label=label)
+
+
+    plt.suptitle("Fidelity of Test Pulse vs. Num States in Model (Using Experimental Mixed Coupling, 800 ns pulse)")
+
+    ax[0].plot(n_states, [true_val]*len(n_states), "--", label="600 States")
+    ax[0].set_xlabel("States in Model")
+    ax[0].set_ylim(true_val*0.99, 1)
+    ax[0].legend()
+    ax[0].set_ylabel("Fidelity");
+
+    # ax[1].plot(n_states, [true_val]*len(n_states), "--", label="600 States")
+    ax[1].set_xlabel("States in Model")
+    # ax[1].set_ylim(true_val*0.999, true_val*1.001)
+    ax[1].legend()
+    ax[1].set_title("Error")
+    ax[1].set_yscale("log")
+    ax[1].set_ylabel("Fidelity");
+    plt.tight_layout()
+    plt.savefig(savefile)
+
+    return fids
+
+
+
+
 if __name__ == "__main__":
-    truc_full = 300
+
+    # Phi Rank by delta of fidelity
+    savename = "H_exp.npz"
+    trunc1 = 1000
+    import os
+    import qutip as qt
+    if os.path.exists(savename):
+        params = np.load(savename)
+        H0 = qt.Qobj(params["H0"])
+        drive_term = qt.Qobj(params["drive"])
+        w_trans_1 = params["w_trans_1"]
+        w_trans_2 = params["w_trans_2"]
+        hspace_charge = list(params["hspace_reduced"])
+        trunc_model = list(params["trunc_model"])
+        hspace_full=np.arange(trunc1)
+
+    tg, amp_A, amp_B, detune_A, detune_B = [828.759495, 0.013563, 0.034964, -0.003029, -0.003182] 
+    pulse_argz = [H0, drive_term, w_trans_1, w_trans_2, [0, 2, 9], 1, tg,
+                amp_A, amp_B, detune_A, detune_B]
+    fid, diff, reorder = rank_by_fid_contrib(trunc_model, pulse_argz, "reorder.npz", start=25, end=500)
+    reorder = list(np.load("reorder.npz")["re_order"])
+
+    # _, _, reorder2 = rank_by_fid_contrib(trunc_model, pulse_argz, "reorder2.npz", start=10, end=200, n_jobs=200)
+    # _, _, reorder3 = rank_by_fid_contrib(trunc_model, pulse_argz, "reorder3.npz", start=25, end=200, n_jobs=200)
+
+    # Find big reorder difference
+    df = []
+    import pandas as pd
+    for i in range(len(reorder)):
+        entry = {"state":reorder[i],
+                 "graph":trunc_model.index(reorder[i]),
+                 "reorder":i}
+        entry["diff"] = entry["graph"] - entry["reorder"]
+        df.append(entry)
+    df = pd.DataFrame(df)
+    df = df.sort_values(by="diff", ascending=False)
+    df = df.sort_values(by="reorder", ascending=True)
+
+
+    # truc_full = 300
+    true_val = 1-10**(-2.93808283)
+    for n in [0, 2, 9]:
+        hspace_charge.remove(n)
+    hspace_charge = [0, 2, 9] + hspace_charge
+    fids = compare_orders([hspace_charge, trunc_model, reorder], ["state", "graph", "graph + reorder"],
+                          np.arange(10, 180), pulse_argz,
+                   savefile="order_comparison.png", true_val=true_val, n_jobs=200)
 
     ## X-gate nphi
-    folder = '../data/3ncut_one_zeropi/'
-    evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc=1000_3ncut.h5').energy_table
-    n_phi = 2*np.pi* scq.read(folder + f'zeropi_0_n_phi_truc=1000_3ncut.h5').matrixelem_table
-    evals = evals - evals[0]
-    logi_state = [0, 2]
-    drive_term = n_phi
-    w_trans_1 = evals[9] - evals[0]
-    w_trans_2 = evals[9] - evals[2]
-    wd = [w_trans_1, w_trans_2]
-    core_states = logi_state + [9]
-    A = [0.02, 0.02]
-    hspace_full = np.arange(truc_full).tolist()
+    # folder = '../data/3ncut_one_zeropi/'
+    # evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc=1000_3ncut.h5').energy_table
+    # n_phi = 2*np.pi* scq.read(folder + f'zeropi_0_n_phi_truc=1000_3ncut.h5').matrixelem_table
+    # evals = evals - evals[0]
+    # logi_state = [0, 2]
+    # drive_term = n_phi
+    # w_trans_1 = evals[9] - evals[0]
+    # w_trans_2 = evals[9] - evals[2]
+    # wd = [w_trans_1, w_trans_2]
+    # core_states = logi_state + [9]
+    # A = [0.02, 0.02]
+    # hspace_full = np.arange(truc_full).tolist()
 
     ### CZ & CNOT
     # folder = f'../data/3ncut_two_zeropi/truc1=300_truc2=1000_pick=True/'
@@ -280,52 +396,52 @@ if __name__ == "__main__":
     # df = make_leakage_df(core_states, drive_term, evals, wd, A, labels = hspace_full, n_cpu=100)
 
 
-    num_states_tot = 160
-    ### states_all
-    states_all = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
-                                         path_func=all_path_to_core)
-    print(f'state_all ({num_states_tot}/{truc_full}) :')
-    data = states_all
-    for i in range(0, len(data), 10):  # Step size of 10
-        if i%50==0:
-            print('')
-        print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
+    # num_states_tot = 160
+    # ### states_all
+    # states_all = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
+    #                                      path_func=all_path_to_core)
+    # print(f'state_all ({num_states_tot}/{truc_full}) :')
+    # data = states_all
+    # for i in range(0, len(data), 10):  # Step size of 10
+    #     if i%50==0:
+    #         print('')
+    #     print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
 
-    states_all_index = [hspace_full.index(i) for i in states_all]
-    data = states_all_index
-    print(f'\nstate_all_index ({num_states_tot}/{truc_full}) :')
-    for i in range(0, len(data), 10):  # Step size of 10
-        if i%50==0:
-            print('')
-        print(", ".join(f"{x}" for x in data[i:i + 10]), ',')
+    # states_all_index = [hspace_full.index(i) for i in states_all]
+    # data = states_all_index
+    # print(f'\nstate_all_index ({num_states_tot}/{truc_full}) :')
+    # for i in range(0, len(data), 10):  # Step size of 10
+    #     if i%50==0:
+    #         print('')
+    #     print(", ".join(f"{x}" for x in data[i:i + 10]), ',')
 
-    ### states_short
-    states_short = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
-                                         path_func=shortest_path_to_core)
-    print(f'\nstate_short ({num_states_tot}/{truc_full}) :')
-    data = states_short
-    for i in range(0, len(data), 10):  # Step size of 10
-        if i%50==0:
-            print('')
-        print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
+    # ### states_short
+    # states_short = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
+    #                                      path_func=shortest_path_to_core)
+    # print(f'\nstate_short ({num_states_tot}/{truc_full}) :')
+    # data = states_short
+    # for i in range(0, len(data), 10):  # Step size of 10
+    #     if i%50==0:
+    #         print('')
+    #     print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
 
-    states_short_index = [hspace_full.index(i) for i in states_short]
-    data = states_short_index
-    print(f'\nstate_short_index ({num_states_tot}/{truc_full}) :')
-    for i in range(0, len(data), 10):  # Step size of 10
-        if i%50==0:
-            print('')
-        print(", ".join(f"{x}" for x in data[i:i + 10]), ',')
+    # states_short_index = [hspace_full.index(i) for i in states_short]
+    # data = states_short_index
+    # print(f'\nstate_short_index ({num_states_tot}/{truc_full}) :')
+    # for i in range(0, len(data), 10):  # Step size of 10
+    #     if i%50==0:
+    #         print('')
+    #     print(", ".join(f"{x}" for x in data[i:i + 10]), ',')
 
 
-    list1 = states_all
-    list2 = states_short
-    common_elements = [item for item in list1 if item in list2]
-    only_in_list1 = [item for item in list1 if item not in list2]
-    only_in_list2 = [item for item in list2 if item not in list1]
-    unique_elements = only_in_list1 + only_in_list2
+    # list1 = states_all
+    # list2 = states_short
+    # common_elements = [item for item in list1 if item in list2]
+    # only_in_list1 = [item for item in list1 if item not in list2]
+    # only_in_list2 = [item for item in list2 if item not in list1]
+    # unique_elements = only_in_list1 + only_in_list2
 
-    print(f"\nOnly in states_all:", len(only_in_list1), only_in_list1)
-    print('index only in states_all:', [list1.index(i) for i in only_in_list1])
-    print("Only in states_short:", len(only_in_list2), only_in_list2)
-    print('index only in states_short:', [list2.index(i) for i in only_in_list2])
+    # print(f"\nOnly in states_all:", len(only_in_list1), only_in_list1)
+    # print('index only in states_all:', [list1.index(i) for i in only_in_list1])
+    # print("Only in states_short:", len(only_in_list2), only_in_list2)
+    # print('index only in states_short:', [list2.index(i) for i in only_in_list2])
