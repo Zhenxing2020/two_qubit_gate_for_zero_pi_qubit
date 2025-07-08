@@ -42,7 +42,7 @@ def fidelity_sweep():
         print("\noptimize Time:", datetime.now(pytz.timezone('America/Denver')))
         # print('args_truc==args_truc2', args_truc==args_truc2)
         res = sp.optimize.differential_evolution(
-            func=ut.cz_fidelity_log_optimize,
+            func=ut.cz_fidelity_log_noise,
             bounds=bounds,
             args=args_truc,
             disp=True,

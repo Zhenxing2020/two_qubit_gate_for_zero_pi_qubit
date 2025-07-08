@@ -1,0 +1,58 @@
+cz_noise.py
+
+Current Mountain Time: 2025-07-05 08:06:36.353220-06:00
+
+hspace_select (len=100) = np.array([
+0-0, 5-0, 0-2, 2-0, 2-2, 5-2, 5-1, 0-1, 2-1, 1-0 ,
+0-5, 2-5, 1-2, 9-0, 4-0, 2-4, 5-5, 1-1, 5-4, 1-5 ,
+9-2, 0-4, 4-2, 2-8, 0-8, 9-1, 2-12, 2-9, 0-9, 0-12 ,
+12-0, 2-16, 0-16, 5-8, 1-8, 4-5, 2-13, 2-21, 0-18, 2-20 ,
+9-4, 4-9, 8-0, 2-18, 0-21, 2-24, 1-4, 18-0, 5-26, 0-13 ,
+13-0, 0-26, 15-0, 2-26, 1-12, 5-16, 8-1, 0-24, 15-1, 2-35 ,
+15-4, 2-33, 2-45, 0-33, 2-39, 0-45, 5-12, 0-39, 5-9, 8-12 ,
+5-33, 12-2, 4-4, 1-9, 4-1, 5-34, 2-30, 2-46, 1-16, 0-34 ,
+2-34, 8-2, 5-21, 2-52, 0-52, 0-42, 2-42, 2-59, 0-59, 5-18 ,
+0-65, 5-24, 2-55, 0-55, 0-20, 9-8, 8-9, 22-0, 1-25, 8-5 ,
+])
+get_hamiltonian_given_state_list = True
+t1_tphi_other =  170
+truc_full= 1000
+num_cpus= 16 , n_job= 5
+calculate_ideal = True, calculate_noise = True
+Ideal: max_step = 0.0001, nsteps = 10000.0
+Noisy: max_step = 0.0001, nsteps = 10000.0
+
+params = np.array([
+[32.034226, 0.037135, 0.016167] ,
+[74.049203, 0.016254, 0.014905] ,
+[116.077689, 0.013154, 0.020213] ,
+[158.038459, 0.009186, 0.015116] ,
+[199.99317, 0.007039, 0.011975] ,
+])
+
+index_select (len=100) = np.array([
+0, 10, 3, 4, 13, 27, 21, 1, 9, 2 ,
+8, 24, 11, 19, 6, 18, 48, 7, 38, 20 ,
+46, 5, 22, 34, 12, 36, 56, 41, 17, 23 ,
+26, 67, 29, 62, 25, 39, 65, 104, 40, 101 ,
+66, 63, 14, 89, 44, 112, 15, 45, 208, 28 ,
+32, 61, 33, 128, 42, 116, 30, 49, 60, 183 ,
+98, 175, 269, 84, 210, 138, 97, 110, 75, 127 ,
+276, 64, 31, 35, 16, 284, 165, 274, 54, 86 ,
+182, 37, 173, 303, 166, 120, 236, 379, 209, 150 ,
+243, 179, 348, 193, 43, 108, 105, 55, 107, 68 ,
+])
+
+f_ideal_100 = np.array([
+-0.42990739486664165, -1.3277134086419864, -2.959479334161531, -3.6198621123898262 ,
+-3.9493747206563383 ,
+])
+
+Current Mountain Time: 2025-07-05 08:07:11.230116-06:00
+Command terminated by signal 15
+1904.54user 663.43system 26:21:22elapsed 2%CPU (0avgtext+0avgdata 4171864maxresident)k
+1013544inputs+16outputs (2689major+65191190minor)pagefaults 0swaps
+/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:314: UserWarning: resource_tracker: There appear to be 41 leaked semlock objects to clean up at shutdown
+  warnings.warn(
+/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:314: UserWarning: resource_tracker: There appear to be 7 leaked folder objects to clean up at shutdown
+  warnings.warn(

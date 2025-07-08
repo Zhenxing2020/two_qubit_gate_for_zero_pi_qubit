@@ -90,7 +90,7 @@ def import_select():
     # c_op_list = [qt.Qobj(np.zeros((len_select, len_select)))]
     c_op_list = []
     arg_select = [H_drive_select, W_20_50, num_cpus, c_op_list, logi_idx_select]
-    f_ideal = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_optimize)(args_indep, *arg_select)
+    f_ideal = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)(args_indep, *arg_select)
                                                 for args_indep in x0_vec)
     print(f'\nf_ideal (dim={len(hspace_select)})  = [')
     for i in range(0, len(f_ideal), 4):
@@ -99,6 +99,7 @@ def import_select():
 
 
     #################################################################
+    ### Noisey fidelity
     ### Noisey fidelity
     t1_tphi_other = 170 # μs
 
@@ -125,7 +126,7 @@ def import_select():
 
     c_op_list = jump_t1_list + jump_tphi_list
     arg_select = [H_drive_select, W_20_50, num_cpus, c_op_list, logi_idx_select]
-    f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_optimize)(args_indep, *arg_select)
+    f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)(args_indep, *arg_select)
                                                 for args_indep in x0_vec)
     print(f'\nf_noise (dim={len(hspace_select)})  = [')
     for i in range(0, len(f_noise), 4):

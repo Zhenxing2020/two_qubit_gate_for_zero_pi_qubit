@@ -1,0 +1,50 @@
+cz_noise.py
+
+Current Mountain Time: 2025-07-03 19:50:37.762923-06:00
+
+hspace_select (len=55) = np.array([
+0-0, 5-0, 0-2, 2-0, 2-2, 5-2, 5-1, 0-1, 2-1, 1-0 ,
+0-5, 2-5, 1-2, 9-0, 4-0, 2-4, 5-5, 1-1, 5-4, 1-5 ,
+9-2, 0-4, 4-2, 2-8, 0-8, 9-1, 2-12, 2-9, 0-9, 0-12 ,
+12-0, 2-16, 0-16, 5-8, 1-8, 4-5, 2-13, 2-21, 0-18, 2-20 ,
+9-4, 4-9, 8-0, 2-18, 0-21, 2-24, 1-4, 18-0, 5-26, 0-13 ,
+13-0, 0-26, 15-0, 2-26, 1-12 ,
+])
+get_hamiltonian_given_state_list = True
+t1_tphi_other =  170
+truc_full= 1000
+num_cpus= 16 , n_job= 5
+calculate_ideal = True, calculate_noise = True
+Ideal: max_step = 0.0001, nsteps = 10000.0
+Noisy: max_step = 0.0001, nsteps = 10000.0
+
+params = np.array([
+[32.034226, 0.037135, 0.016167] ,
+[74.049203, 0.016254, 0.014905] ,
+[116.077689, 0.013154, 0.020213] ,
+[158.038459, 0.009186, 0.015116] ,
+[199.99317, 0.007039, 0.011975] ,
+])
+
+index_select (len=55) = np.array([
+0, 10, 3, 4, 13, 27, 21, 1, 9, 2 ,
+8, 24, 11, 19, 6, 18, 48, 7, 38, 20 ,
+46, 5, 22, 34, 12, 36, 56, 41, 17, 23 ,
+26, 67, 29, 62, 25, 39, 65, 104, 40, 101 ,
+66, 63, 14, 89, 44, 112, 15, 45, 208, 28 ,
+32, 61, 33, 128, 42 ,
+])
+
+f_ideal_55 = np.array([
+-0.4318735728509982, -1.8212556529595825, -2.0369030448780947, -2.6586659804851434 ,
+-3.004915350805105 ,
+])
+
+Current Mountain Time: 2025-07-03 19:51:02.906596-06:00
+Command terminated by signal 15
+1510.50user 702.29system 58:05.39elapsed 63%CPU (0avgtext+0avgdata 1698900maxresident)k
+79184inputs+16outputs (3961major+70539230minor)pagefaults 0swaps
+/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:314: UserWarning: resource_tracker: There appear to be 41 leaked semlock objects to clean up at shutdown
+  warnings.warn(
+/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:314: UserWarning: resource_tracker: There appear to be 7 leaked folder objects to clean up at shutdown
+  warnings.warn(

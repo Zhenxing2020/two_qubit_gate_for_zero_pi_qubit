@@ -134,7 +134,7 @@ if __name__ == '__main__':
     H0_full, drive_full, *_ = construct_drive_matrix(evals, n_Theta, n_Phi, truc_full, drive_theta, drive_phi)
 
     # Define relevant Hilbert spaces
-    hspace_charge = ut.get_truncated_subspace(drive_term, truc1)
+    hspace_charge = ut.get_truncated_subspace_xgate(drive_term, truc1)
     hspace_full = list(range(truc_full))
 
     # Print configuration

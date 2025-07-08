@@ -31,7 +31,7 @@ def fidelity_sweep():
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
         bounds = (tg_bounds, A1_bound, A2_bound, detune1_bound, detune2_bound)
         res = sp.optimize.differential_evolution(
-            func=ut.cnot_fidelity_log_optimize,
+            func=ut.cnot_fidelity_log_noise,
             bounds=bounds,
             args=arg_truc,
             disp=True,

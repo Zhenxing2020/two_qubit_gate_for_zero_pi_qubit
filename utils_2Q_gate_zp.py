@@ -11,6 +11,7 @@ from multiprocessing import Pool
 from IPython.display import display, Math
 import pandas as pd
 from datetime import datetime
+import pytz, os
 
 
 # max_step, nsteps = 1e-3, 1e4
@@ -397,49 +398,64 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
 
 def cnot_fidelity_log(arg_all):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
-     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, mid_state] = arg_all
+     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, 
+     mid_state, option_ideal, option_noisy] = arg_all
     pulse_args = {'drive_amp_A': drive_amp_A ,
                 'drive_freq_A': w_0_2 + 2*np.pi*detune_A,
                 'drive_amp_B': drive_amp_B ,
                 'drive_freq_B': w_1_2 + 2*np.pi*detune_B,
                 'gate_time': tg }
-    tlist = np.linspace(0, tg, num=int(tg))  # total time
+    tlist = np.linspace(0, tg, num=3*int(tg))  # total time
 
-    prop = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
-    if prop.isoper:
-        U_final = cnot_phase_correct(prop, mid_state)
-    else:
-        U_kraus = qt.to_kraus(qt.to_super(prop))
-        U_kraus_zz = [cnot_phase_correct(truncate_2(u, logi_idx), mid_state) for u in U_kraus ]
-        U_final = qt.kraus_to_super(U_kraus_zz)
-    fidelity = qt.average_gate_fidelity(U_final, target=cnot())
+    propagator = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, 
+                          logi_idx, option_ideal, option_noisy)
+    # print(f'np.shape(propagator)={np.shape(propagator)}')    
+    # print(f'propagator={propagator}')    
+    
+    fidelity = get_fidelity_super_operator(propagator, logi_idx, cnot(), c_op_list, mid_state)
+    
+    # if prop.isoper:
+    #     U_final = cnot_phase_correct(prop, mid_state)
+    # else:
+    #     U_kraus = qt.to_kraus(qt.to_super(prop))
+    #     U_kraus_zz = [cnot_phase_correct(truncate_2(u, logi_idx), mid_state) for u in U_kraus ]
+    #     U_final = qt.kraus_to_super(U_kraus_zz)
+    # fidelity = qt.average_gate_fidelity(U_final, target=cnot())
     return np.log10(1-fidelity)
 
-def cnot_fidelity_log_optimize(arg_optimize, *args):
+def cnot_fidelity_log_noise(arg_optimize, *args):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg_optimize
-    [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, mid_state] = args
+    [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, 
+     mid_state, option_ideal, option_noisy] = args
 
     arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
-     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, mid_state]
+     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, 
+     mid_state, option_ideal, option_noisy]
 
     return cnot_fidelity_log(arg_all)
 
-def cnot_phase_correct(prop, mid_state):
-    prop = qt.Qobj(prop, dims=[[2, 2], [2, 2]])
-    XI = qt.tensor(qt.sigmax(), qt.qeye(2))
-    if mid_state in [ '4-1', '1-4', '8-0' ]:
-        prop = XI* prop * XI  
-    Uc_prime = swap()* prop* swap() # for |45> state
-    phase = np.angle(Uc_prime)
-    x1 = 0.5* (- phase[1,1] + phase[2,3] - phase[3,2] + phase[0,0])
-    x2 = 0.5* (  phase[1,1] - phase[2,3] - phase[3,2] + phase[0,0])
-    x3 = 0.5* (- phase[1,1] - phase[2,3] + phase[3,2] + phase[0,0])
-    U_bef = qt.Qobj(np.diag([1, np.exp(1j* x1), np.exp(1j* x2), np.exp(1j* (x1+x2))])
-            , dims=[[2, 2], [2, 2]])
-    U_aft = qt.Qobj(np.diag([1, np.exp(1j* x3), 1, np.exp(1j* x3)])
-            , dims=[[2, 2], [2, 2]])
-    U_zz = np.exp(-1j* phase[0,0])* U_bef* Uc_prime* U_aft
-    return U_zz
+def cnot_phase_correct(U_kraus, mid_state):
+    U_final = []
+    # print(f'np.shape(U_kraus)={np.shape(U_kraus)}')    
+    # print(f'U_kraus={U_kraus}')    
+    for prop in U_kraus:    
+        prop = qt.Qobj(prop, dims=[[2, 2], [2, 2]])
+        XI = qt.tensor(qt.sigmax(), qt.qeye(2))
+        if mid_state in [ '4-1', '1-4', '8-0' ]:
+            prop = XI* prop * XI  
+        # print(f'np.shape(prop)={np.shape(prop)}')    
+        # print(f'prop={prop}')    
+        Uc_prime = swap()* prop* swap() # for |45> state
+        phase = np.angle(Uc_prime)
+        x1 = 0.5* (- phase[1,1] + phase[2,3] - phase[3,2] + phase[0,0])
+        x2 = 0.5* (  phase[1,1] - phase[2,3] - phase[3,2] + phase[0,0])
+        x3 = 0.5* (- phase[1,1] - phase[2,3] + phase[3,2] + phase[0,0])
+        U_bef = qt.Qobj(np.diag([1, np.exp(1j* x1), np.exp(1j* x2), np.exp(1j* (x1+x2))])
+                , dims=[[2, 2], [2, 2]])
+        U_aft = qt.Qobj(np.diag([1, np.exp(1j* x3), 1, np.exp(1j* x3)])
+                , dims=[[2, 2], [2, 2]])
+        U_final.append(np.exp(-1j* phase[0,0])* U_bef* Uc_prime* U_aft)
+    return U_final
 
 # def cnot_phase_correct(U_kraus):
 #     U_final = []
@@ -611,31 +627,31 @@ def cz_phase_correct(U_kraus):
     return U_final
 
 def cz_fidelity_log(arg_all):
-    [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx] = arg_all
+    [tg, drive_amp, detune, 
+     H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx, 
+     option_ideal, option_noisy] = arg_all
 
     pulse_args = {'drive_amp_A': drive_amp,
                 'drive_freq_A': W_target + 2*np.pi*detune,
                 'gate_time': tg}
-    tlist = np.linspace(0, tg, num=5*int(tg))  # total time
+    tlist = np.linspace(0, tg, num=3*int(tg))  # total time
 
-    U_noise = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, logi_idx)
+    propagator = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, 
+                                logi_idx, option_ideal, option_noisy)
+    fidelity = get_fidelity_super_operator(propagator, logi_idx, cz_gate(), c_op_list)
+    # p0_kraus = qt.to_kraus(qt.to_super(propagator))
+    # if len(c_op_list) != 0:
+    #     p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
+    # p0_kraus_zz = cz_phase_correct(p0_kraus)
+    # p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
+    # fidelity = qt.metrics.average_gate_fidelity(p0_super_2, target=cz_gate())
+    return np.log10(1-fidelity)
 
-
-    p0_kraus = qt.to_kraus(qt.to_super(U_noise))
-    if len(c_op_list) != 0:
-        p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
-    p0_kraus_zz = cz_phase_correct(p0_kraus)
-    p0_super_2 = qt.kraus_to_super(p0_kraus_zz)
-
-
-    f_noise = qt.metrics.average_gate_fidelity(p0_super_2, target=cz_gate())
-    return np.log10(1-f_noise)
-
-def cz_fidelity_log_optimize(arg_optimize, *args):
+def cz_fidelity_log_noise(arg_optimize, *args):
     [tg, drive_amp, detune] = arg_optimize # Independent arguments that can be optimized over
-    [H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx] = args # System arguments
+    [H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy] = args # System arguments
 
-    arg_all = [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx]
+    arg_all = [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy]
 
     return cz_fidelity_log(arg_all)
 
@@ -677,7 +693,29 @@ def cz_fidelity_log_old(arg_all):
     fidelity = qt.average_gate_fidelity(Ucprime, target=cz_gate())
     return np.log10(1-fidelity)
 
+def load_qubit_data_2q(truc_full, import_2000=False, truc1=150):
+    """
+    Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
+    The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
+    """    
+    if import_2000:
+        folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick=False/'
+    else:
+        folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
+    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
+    eket_tot = ssp.csr_matrix(np.load(folder+ 'eket_tot.npy'))[:truc_full]
+    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
+    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
+    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
+    n_theta0_dress = truncate_2(n_theta0_dress, np.arange(truc_full))
+    n_theta1_dress = truncate_2(n_theta1_dress, np.arange(truc_full))
 
+    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
+    hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
+    hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
+    dim_0 = len(hspace_0)
+    dim_1 = len(hspace_1)    
+    return hspace_full, eket_tot, eval_tot, n_theta0_dress, n_theta1_dress, dim_0, dim_1
 
 
 # def cz_fidelity_optimize(arg, *args):
@@ -775,6 +813,153 @@ def cz_fidelity_log_old(arg_all):
 ###################################################################
 # X-gate
 
+def compute_drive_terms_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1):
+    """
+    Computes the transition frequencies and selects the appropriate drive term.
+    need lowest 10 evals for this func to work.
+
+    Parameters:
+        evals (np.ndarray): Energy levels.
+        n_theta (np.ndarray): Matrix elements for theta-drive.
+        n_phi (np.ndarray): Matrix elements for phi-drive.
+        drive_phi (bool): Whether phi-drive is used.
+        drive_theta (bool): Whether theta-drive is used.
+        gamma_t1 (float): Amplitude damping rate.
+
+    Returns:
+        w1 (float): Transition frequency 1.
+        w2 (float): Transition frequency 2.
+        drive_term (np.ndarray): Matrix elements for selected drive.
+        Gamma_t1 (float): the decay rate coefficient fixed by certain transition matrix element
+    """
+    if drive_phi and not drive_theta:
+        w1 = evals[9] - evals[0]
+        w2 = evals[9] - evals[2]
+        drive_term = n_phi
+        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2)
+    elif drive_theta and not drive_phi:
+        w1 = evals[7] - evals[0]
+        w2 = evals[7] - evals[2]
+        drive_term = n_theta
+        Gamma_t1 = gamma_t1 / (np.abs(n_theta[4,7])**2)
+    else:
+        w1 = evals[9] - evals[0]
+        w2 = evals[9] - evals[2]
+        drive_term = 0.976 * n_phi + 0.024 * n_theta
+        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2) # close to phi drive
+    return w1, w2, drive_term, Gamma_t1
+
+def get_truncated_subspace_xgate(drive_term, n_full, hspace_charge=[0,2], thresh=0.01):
+    """
+    Determines a reduced Hilbert space based on magnitude of charge matrix elements.
+    
+    Parameters:
+        drive_term (np.ndarray): Drive matrix.
+        n_full (int): Dimension of the full space.
+        hspace_charge (list): Initial state list to include.
+        thresh (float): Magnitude threshold for inclusion.
+    Returns:
+        hspace_charge (list): List of basis indices to include.
+    """
+    for s in hspace_charge:
+        for i in range(n_full):
+            if np.abs(drive_term[s, i] / (2 * np.pi)) > thresh and i not in hspace_charge:
+                hspace_charge.append(i)
+    hspace_charge.sort()
+    return hspace_charge
+
+def build_hamiltonian_xgate(evals, drive_term, hspace, logi_state):
+    """
+    Constructs the truncated Hamiltonian and drive terms.
+
+    Parameters:
+        H0 (Qobj): Diagonalized bare Hamiltonian.
+        drive_term (np.ndarray): Drive matrix.
+        hspace_charge (list): Truncated Hilbert space indices.
+        logi_state (list): Logical states, e.g., [0, 2].
+
+    Returns:
+        H_qbt_drive (list): Full driven Hamiltonian.
+        drive_truc (Qobj): Truncated drive matrix.
+        logi_idx (list): Logical state indices in truncated space.
+    """
+    H0 = qt.Qobj(np.diag(evals))
+    H0_truc = truncate_2(H0, hspace)
+    drive_truc = truncate_2(drive_term, hspace)
+    logi_idx = [hspace.index(s) for s in logi_state] # 1 state may or may not be in the truncated model, 
+    H_qbt_drive = [H0_truc, [drive_truc, drive_gauss_A], [drive_truc, drive_gauss_B]]
+    return H_qbt_drive, drive_truc, logi_idx
+
+def load_qubit_data_xgate(qubit_0 = True, folder = '../../data/3ncut_one_zeropi/'):
+    """
+    Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
+    The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
+
+    Parameters:
+        qubit_0 (bool): If True, load data for qubit 0; otherwise, load for qubit 1.
+        folder (str): Path to the directory containing the data files.
+    Returns:
+        evals (np.ndarray): Energy levels.
+        n_theta (np.ndarray): Matrix elements for theta drive.
+        n_phi (np.ndarray): Matrix elements for phi drive.
+    """    
+    suffix = '0' if qubit_0 else '1'
+    evals = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_specdata_truc=1000_3ncut.h5').energy_table
+    n_theta = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_n_theta_truc=1000_3ncut.h5').matrixelem_table
+    n_phi = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_n_phi_truc=1000_3ncut.h5').matrixelem_table
+    evals -= evals[0]
+    return evals, n_theta, n_phi
+
+def construct_c_ops_xgate(n_hspace, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hspace, state_idx_tphi):
+    """
+    Constructs collapse operators for dissipation.
+
+    Parameters:
+        n_hspace (int): Hilbert space dimension.
+        drive_truc (Qobj): Drive operator.
+        Gamma_t1 (float): Amplitude decay prefactor.
+        gamma_dephase_new (np.ndarray): Dephasing rates (for 50μs).
+        tphi (float): Desired Tphi in μs.
+        hspace (list): Hilbert space indices.
+        state_idx_tphi (list): Indices of states for imported dephasing rates.
+
+    Returns:
+        list: All collapse operators (amplitude + dephasing).
+    """
+    gamma_decay_new = Gamma_t1 * np.abs(drive_truc.full()) ** 2 # 
+    # the dephasing rate is calculated in some file for 50μs for 2 state, the line below change dephasing coeffs to the input tphi (170, 30, 3μs)
+    gamma_dephase_new = gamma_dephase_new * 50 / tphi
+    jump_t1, jump_tphi = [], []
+    for i in range(1, n_hspace):
+        for j in range(i): # only consider downwards deacy
+            jump_t1.append(np.sqrt(gamma_decay_new[j, i]) * qt.basis(n_hspace, j) * qt.basis(n_hspace, i).dag())
+    for i, state in enumerate(hspace):
+        if state in list(state_idx_tphi):
+            idx = list(state_idx_tphi).index(state) 
+            jump_tphi.append(np.sqrt(2 * gamma_dephase_new[idx]) * qt.basis(n_hspace, i).proj())
+        else:
+            jump_tphi.append(qt.Qobj(np.zeros((n_hspace, n_hspace))))
+    
+    # print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
+    return jump_t1 + jump_tphi
+
+def load_dephasing_data_xgate(drive_theta):
+    """
+    Load dephasing rates calculated for 50μs.
+
+    Parameters:
+        drive_theta (bool): If True, load theta dephasing; otherwise, phi.
+
+    Returns:
+        np.ndarray: Dephasing rates for each state.
+    """
+    gamma_file = 'data/data_gamma_theta_500.txt' if drive_theta else 'data/data_gamma_phi_500.txt'
+    gamma_new = pd.read_csv(gamma_file)
+    gamma_dephase = gamma_new['tphi_50us_02'].to_numpy()
+    state_idx = gamma_new['hspace'].to_numpy()
+    return state_idx, gamma_dephase
+
+
 def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=200):
     """
     Initialize the parameters and operators for the Zero-Pi qubit system.
@@ -857,51 +1042,51 @@ def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=2
 
     return H0, drive_term, w_trans_1, w_trans_2, hspace_charge
 
-def xgate_fidelity_log(argz):
-    """
-    Compute the X-gate fidelity for a noiseless system.
+# def xgate_fidelity_log(argz):
+#     """
+#     Compute the X-gate fidelity for a noiseless system.
 
-    Args:
-        argz (list): A list containing the following parameters:
-            - H0 (qt.Qobj): The static Hamiltonian.
-            - drive_term (qt.Qobj): The drive Hamiltonian term.
-            - w_trans_1 (float): Transition frequency for qubit A.
-            - w_trans_2 (float): Transition frequency for qubit B.
-            - hilbert_space (list): List of states defining the Hilbert space.
-            - n_cpu (int): Number of CPUs for parallelization.
-            - tg (float): Gate time.
-            - drive_amp_A (float): Drive amplitude for qubit A.
-            - drive_amp_B (float): Drive amplitude for qubit B.
-            - detune_A (float): Detuning for qubit A.
-            - detune_B (float): Detuning for qubit B.
+#     Args:
+#         argz (list): A list containing the following parameters:
+#             - H0 (qt.Qobj): The static Hamiltonian.
+#             - drive_term (qt.Qobj): The drive Hamiltonian term.
+#             - w_trans_1 (float): Transition frequency for qubit A.
+#             - w_trans_2 (float): Transition frequency for qubit B.
+#             - hilbert_space (list): List of states defining the Hilbert space.
+#             - n_cpu (int): Number of CPUs for parallelization.
+#             - tg (float): Gate time.
+#             - drive_amp_A (float): Drive amplitude for qubit A.
+#             - drive_amp_B (float): Drive amplitude for qubit B.
+#             - detune_A (float): Detuning for qubit A.
+#             - detune_B (float): Detuning for qubit B.
 
-    Returns:
-        float: Logarithm of the infidelity for the X-gate.
-    """
-    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
-     tg,drive_amp_A, drive_amp_B, detune_A, detune_B] = argz
+#     Returns:
+#         float: Logarithm of the infidelity for the X-gate.
+#     """
+#     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
+#      tg,drive_amp_A, drive_amp_B, detune_A, detune_B] = argz
 
-    H0_truc = truncate_2(H0, hilbert_space)
-    drive_truc = truncate_2(drive_term, hilbert_space)
-    H_qbt_drive = [H0_truc, [drive_truc, drive_gauss_A], [drive_truc, drive_gauss_B]]
+#     H0_truc = truncate_2(H0, hilbert_space)
+#     drive_truc = truncate_2(drive_term, hilbert_space)
+#     H_qbt_drive = [H0_truc, [drive_truc, drive_gauss_A], [drive_truc, drive_gauss_B]]
 
-    pulse_args = {
-        'drive_amp_A': drive_amp_A,
-        'drive_freq_A': w_trans_1 + 2 * np.pi * detune_A,
-        'drive_amp_B': drive_amp_B,
-        'drive_freq_B': w_trans_2 + 2 * np.pi * detune_B,
-        'gate_time': tg,
-    }
-    tlist = np.linspace(0, tg, num=int(tg))
+#     pulse_args = {
+#         'drive_amp_A': drive_amp_A,
+#         'drive_freq_A': w_trans_1 + 2 * np.pi * detune_A,
+#         'drive_amp_B': drive_amp_B,
+#         'drive_freq_B': w_trans_2 + 2 * np.pi * detune_B,
+#         'gate_time': tg,
+#     }
+#     tlist = np.linspace(0, tg, num=int(tg))
 
-    logi_state = [0, 2]
-    logi_idx = [hilbert_space.index(s) for s in logi_state]
-    c_op_list = []
-    Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, logi_idx)
-    fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
-    # error_leak = 1 - 0.5*(Uc.dag()*Uc).tr()
-    # fidelity = gate_fidelity(Utarg=qt.sigmax(), Ucand=Uc)
-    return np.log10(1 - fidelity)
+#     logi_state = [0, 2]
+#     logi_idx = [hilbert_space.index(s) for s in logi_state]
+#     c_op_list = []
+#     Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, logi_idx)
+#     fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
+#     # error_leak = 1 - 0.5*(Uc.dag()*Uc).tr()
+#     # fidelity = gate_fidelity(Utarg=qt.sigmax(), Ucand=Uc)
+#     return np.log10(1 - fidelity)
 
 def xgate_fidelity_log_noise(args_indep, *args):
     """
@@ -1048,9 +1233,14 @@ def get_fidelity_super_operator(propagator, logi_idx, gate_target, c_op_list, mi
     if len(c_op_list) == 0: 
         # Ideal system
         if gate_target == cz_gate():
-            propagator = cz_phase_correct(propagator)    
+            kraus = qt.to_kraus(qt.to_super(propagator))
+            # print(f'qt.to_super(propagator)={qt.to_super(propagator)}')
+            propagator = qt.kraus_to_super(cz_phase_correct(kraus))
         if gate_target == cnot():
-            propagator = cnot_phase_correct(propagator, mid_state=mid_state)         
+            kraus = qt.to_kraus(qt.to_super(propagator))
+            # print(f'qt.to_super(propagator)={qt.to_super(propagator)}')
+            # print(f'kraus={kraus}')
+            propagator = qt.kraus_to_super(cnot_phase_correct(kraus, mid_state=mid_state))         
         super_op_post = qt.to_super(propagator)
     else:
         # Noisy system, convert to Kraus operators and then to superoperator
@@ -1064,28 +1254,28 @@ def get_fidelity_super_operator(propagator, logi_idx, gate_target, c_op_list, mi
 
     return qt.metrics.average_gate_fidelity(super_op_post, target=gate_target)
 
-def xgate_fidelity_optimize(arg, *args):
-    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg, drag] = args
-    alpha_B = 0
-    if drag == 0:
-        alpha_A = 0
-        [drive_amp_A, drive_amp_B, detune_A, detune_B] = arg
-    else:
-        [drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = arg
+# def xgate_fidelity_optimize(arg, *args):
+#     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg, drag] = args
+#     alpha_B = 0
+#     if drag == 0:
+#         alpha_A = 0
+#         [drive_amp_A, drive_amp_B, detune_A, detune_B] = arg
+#     else:
+#         [drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A] = arg
 
-    n_cpu = 1
-    argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, tg,
-            drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
-    return xgate_fidelity_log(argz)
+#     n_cpu = 1
+#     argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, tg,
+#             drive_amp_A, drive_amp_B, detune_A, detune_B, alpha_A, alpha_B]
+#     return xgate_fidelity_log(argz)
 
-def xgate_fidelity_parallel(arg, *args):
-    """Compute the X-gate fidelity using parallel processing."""
-    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu] = args
-    [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg
+# def xgate_fidelity_parallel(arg, *args):
+#     """Compute the X-gate fidelity using parallel processing."""
+#     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu] = args
+#     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg
 
-    argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
-            tg, drive_amp_A, drive_amp_B, detune_A, detune_B]
-    return xgate_fidelity_log(argz)
+#     argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
+#             tg, drive_amp_A, drive_amp_B, detune_A, detune_B]
+#     return xgate_fidelity_log(argz)
 
 
 ###################################################################
@@ -1102,12 +1292,6 @@ def parallel_mesolve(n, N, H, tlist, c_op_list, args, options, proj_idx, dims=No
         H, rho0, tlist, c_ops=c_op_list, args=args, options=options, _safe_mode=False
     )
     return output
-
-
-
-
-
-
 
 def print_trans_freq(state_i, state_j, evals, hspace, n_Theta=None, n_Phi=None):
     """
@@ -1219,29 +1403,51 @@ def get_jump_op(state_i, *args):
     jump_tphi_b = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_I_ii  ).data @ eket_tot.conj().T)
     return [jump_t1_a, jump_t1_b, jump_tphi_a, jump_tphi_b]
 
-def get_jump_op_charge_pick(state, *args):
-
-    dim_0, dim_1, gamma_decay, gamma_dephase, eket_tot, qubit_a = args
+def get_jump_op_charge_pick(state_vec, *args):
+    state_i, state_j = state_vec
+    dim_0, dim_1, n_theta, gamma_dephase, eket_tot, qubit_a = args
     if qubit_a:
         # t_1
-        ladder_0i = qt.basis(dim_0,0) * qt.basis(dim_0, state).dag()
-        a_0i_I = qt.tensor(ladder_0i, qt.qeye(dim_1))
-        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_0i_I ).data @ eket_tot.conj().T )
+        ladder_ij = qt.basis(dim_0, state_i) * qt.basis(dim_0, state_j).dag()
+        a_ij_I = qt.tensor(ladder_ij, qt.qeye(dim_1))
+        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(abs(n_theta[state_i, state_j]))* a_ij_I ).data @ eket_tot.conj().T )
         # t_phi
-        proj_ii = qt.basis(dim_0, state).proj()
-        a_ii_I = qt.tensor(proj_ii, qt.qeye(dim_1))
-        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_ii_I  ).data @ eket_tot.conj().T)
+        proj_jj = qt.basis(dim_0, state_j).proj()
+        a_jj_I = qt.tensor(proj_jj, qt.qeye(dim_1))
+        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_j] )* a_jj_I  ).data @ eket_tot.conj().T)
     else: # qubit_b
         # t_1
-        ladder_0j = qt.basis(dim_1,0) * qt.basis(dim_1, state).dag()
-        a_I_0i = qt.tensor(qt.qeye(dim_0), ladder_0j)
-        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(gamma_decay[state])* a_I_0i ).data @ eket_tot.conj().T )
+        ladder_ij = qt.basis(dim_1, state_i) * qt.basis(dim_1, state_j).dag()
+        a_I_ij = qt.tensor(qt.qeye(dim_0), ladder_ij)
+        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(abs(n_theta[state_i, state_j]))* a_I_ij ).data @ eket_tot.conj().T )
         # t_phi
-        proj_ii = qt.basis(dim_1, state).proj()
-        a_I_ii = qt.tensor(qt.qeye(dim_0), proj_ii)
-        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state] )* a_I_ii  ).data @ eket_tot.conj().T)
+        proj_jj = qt.basis(dim_1, state_j).proj()
+        a_I_jj = qt.tensor(qt.qeye(dim_0), proj_jj)
+        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_j] )* a_I_jj  ).data @ eket_tot.conj().T)
     return [jump_t1, jump_tphi]
 
+def get_jump_op_decay(state_vec, *args):
+    state_i, state_j = state_vec
+    dim_0, dim_1, n_theta, eket_tot, qubit_a = args
+    if qubit_a:
+        ladder_ij = qt.basis(dim_0, state_i) * qt.basis(dim_0, state_j).dag()
+        jump_t1 = np.sqrt(abs(n_theta[state_i, state_j])) * qt.tensor(ladder_ij, qt.qeye(dim_1))
+    else: # qubit_b
+        ladder_ij = qt.basis(dim_1, state_i) * qt.basis(dim_1, state_j).dag()
+        jump_t1 = np.sqrt(abs(n_theta[state_i, state_j])) * qt.tensor(qt.qeye(dim_0), ladder_ij)
+    jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(abs(n_theta[state_i, state_j])) * jump_t1 ).data @ eket_tot.conj().T )
+    return jump_t1
+
+def get_jump_op_dephase(state_j, *args):
+    dim_0, dim_1, gamma_dephase, eket_tot, qubit_a = args
+    if qubit_a:
+        proj_jj = qt.basis(dim_0, state_j).proj()
+        jump_tphi = np.sqrt( 2*gamma_dephase[state_j] ) * qt.tensor(proj_jj, qt.qeye(dim_1))
+    else: # qubit_b
+        proj_jj = qt.basis(dim_1, state_j).proj()
+        jump_tphi = np.sqrt( 2*gamma_dephase[state_j] ) * qt.tensor(qt.qeye(dim_0), proj_jj)
+    jump_tphi = qt.Qobj( eket_tot @ jump_tphi.data @ eket_tot.conj().T)
+    return jump_tphi
 
 def zeropi_eval(flux=0, truncation=10):
     ncut, phi_cut = 90, 300
@@ -1334,58 +1540,37 @@ def get_collapse_op(t1tphi_other, eket_tot_select, hspace_0_dim, hspace_1_dim):
 
     return c_op_list
 
-
-def compute_drive_terms(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1):
+def print_data_r2r(label, fidelities, num_each_row=4):
     """
-    Computes the transition frequencies and selects the appropriate drive term.
-    need lowest 10 evals for this func to work.
+    Pretty-print fidelity array in readable blocks.
 
     Parameters:
-        evals (np.ndarray): Energy levels.
-        n_theta (np.ndarray): Matrix elements for theta-drive.
-        n_phi (np.ndarray): Matrix elements for phi-drive.
-        drive_phi (bool): Whether phi-drive is used.
-        drive_theta (bool): Whether theta-drive is used.
-        gamma_t1 (float): Amplitude damping rate.
-
-    Returns:
-        w1 (float): Transition frequency 1.
-        w2 (float): Transition frequency 2.
-        drive_term (np.ndarray): Matrix elements for selected drive.
-        Gamma_t1 (float): the decay rate coefficient fixed by certain transition matrix element
+        label (str): Label for the data array.
+        fidelities (list): Fidelity values.
+        num_each_row (int): Entries per row in output.
     """
-    if drive_phi and not drive_theta:
-        w1 = evals[9] - evals[0]
-        w2 = evals[9] - evals[2]
-        drive_term = n_phi
-        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2)
-    elif drive_theta and not drive_phi:
-        w1 = evals[7] - evals[0]
-        w2 = evals[7] - evals[2]
-        drive_term = n_theta
-        Gamma_t1 = gamma_t1 / (np.abs(n_theta[4,7])**2)
+    print(f"\n{label} = np.array([")
+    for i in range(0, len(fidelities), num_each_row):
+        print(', '.join(map(str, fidelities[i:i + num_each_row])), ',')
+    print('])')
+
+def print_time():
+    """Print the current time in Mountain Time (America/Denver)."""
+    mountain_time = datetime.now(pytz.timezone('America/Denver'))
+    print("\nCurrent Mountain Time:", mountain_time)    
+
+
+def build_hamiltonian_2q(cz_run, index_select, eval_tot, eket_tot, drive_term):
+    """
+    Constructs the truncated Hamiltonian and drive terms.
+    """
+    H0_full = qt.Qobj(np.diag(eval_tot))
+    H0_select = truncate_2( H0_full, index_select)
+    eket_tot = eket_tot[index_select]
+    drive_select = truncate_2(drive_term, index_select)
+    if cz_run:
+        H_drive_select = [ H0_select,   [drive_select, drive_gauss_A] ]
     else:
-        w1 = evals[9] - evals[0]
-        w2 = evals[9] - evals[2]
-        drive_term = 0.976 * n_phi + 0.024 * n_theta
-        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2) # close to phi drive
-    return w1, w2, drive_term, Gamma_t1
-
-def get_truncated_subspace(drive_term, n_full, hspace_charge=[0,2], thresh=0.01):
-    """
-    Determines a reduced Hilbert space based on magnitude of charge matrix elements.
-    
-    Parameters:
-        drive_term (np.ndarray): Drive matrix.
-        n_full (int): Dimension of the full space.
-        hspace_charge (list): Initial state list to include.
-        thresh (float): Magnitude threshold for inclusion.
-    Returns:
-        hspace_charge (list): List of basis indices to include.
-    """
-    for s in hspace_charge:
-        for i in range(n_full):
-            if np.abs(drive_term[s, i] / (2 * np.pi)) > thresh and i not in hspace_charge:
-                hspace_charge.append(i)
-    hspace_charge.sort()
-    return hspace_charge
+        H_drive_select = [ H0_select,   [drive_select, drive_gauss_A],
+                                        [drive_select, drive_gauss_B]  ]          
+    return H_drive_select, eket_tot
