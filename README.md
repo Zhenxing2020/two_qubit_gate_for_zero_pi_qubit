@@ -7,7 +7,7 @@ Explain how to run everything. What order do you need to do things. What ipython
 single qubit
 ------------
 - pulse optimization for n_theta, how to save and where to save the pulse params
-- noise less simulations for n_theta
+- noiseless simulations for n_theta
 - noisy simulations for n_theta
 
 Two qubit
@@ -15,10 +15,10 @@ Two qubit
 
 CZ:
 - pulse optimization for CZ, how to save and where to save the pulse params
-- noise less simulations for CZ
+- noiseless simulations for CZ
 - noisy simulations for CZ
 
 CNOT:
 - pulse optimization for CNOT, how to save and where to save the pulse params
-- noise less simulations for CNOT
+- noiseless simulations for CNOT
 - noisy simulations for CNOT 
