@@ -230,113 +230,87 @@ def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, labels=Non
     return list(df["i"].values[:n])
 
 if __name__ == "__main__":
-    truc_full = 300
+    gate = 'cz' # 'x_gate_theta', 'x_gate_phi', 'cz', ''cnot
+    n_full = 1000 # number of states in the full system
+    n_truc = 400 # number of states in the graph model
 
-    ## X-gate nphi
-    # folder = '../data/3ncut_one_zeropi/'
-    # evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc=1000_3ncut.h5').energy_table
-    # n_phi = 2*np.pi* scq.read(folder + f'zeropi_0_n_phi_truc=1000_3ncut.h5').matrixelem_table
-    # evals = evals - evals[0]
-    # logi_state = [0, 2]
-    # drive_term = n_phi
-    # detune = [0.351830, 0.375322] # [0, 0]
-    # w_trans_1 = evals[9] - evals[0] + 2 * np.pi * detune[0]
-    # w_trans_2 = evals[9] - evals[2] + 2 * np.pi * detune[1]
-    # wd = [w_trans_1, w_trans_2]
-    # core_states = logi_state + [9]
-    # A = [0.214044, 0.120290] # [0.02, 0.02]
-    # hspace_full = np.arange(truc_full).tolist()
-    # print(f'Amplitude: A0={A[0]:.6f}, A1={A[1]:.6f}')
-    # print(f'detune_0={detune[0]:.6f}, detune_1={detune[1]:.6f}')
+    if gate == 'x_gate_phi': ## X-gate nphi
+        evals, n_theta, n_phi, logi_state = ut.load_qubit_data_xgate() # Load spectrum and matrix elements
+        drive_term = n_phi
+        detune = [0.351830, 0.375322] # [0, 0]
+        w_trans_1 = evals[9] - evals[0] + 2 * np.pi * detune[0]
+        w_trans_2 = evals[9] - evals[2] + 2 * np.pi * detune[1]
+        wd = [w_trans_1, w_trans_2]
+        core_states = logi_state + [9]
+        A = [0.214044, 0.120290] # [0.02, 0.02]
+        hspace_full = np.arange(n_full).tolist()
+        print(f'Amplitude: A0={A[0]:.6f}, A1={A[1]:.6f}')
+        print(f'detune_0={detune[0]:.6f}, detune_1={detune[1]:.6f}')
 
-    ## X-gate ntheta
-    folder = '../data/3ncut_one_zeropi/'
-    evals = 2*np.pi* scq.read(folder + f'zeropi_0_specdata_truc=1000_3ncut.h5').energy_table
-    n_theta = 2*np.pi* scq.read(folder + f'zeropi_0_n_theta_truc=1000_3ncut.h5').matrixelem_table
-    evals = evals - evals[0]
-    logi_state = [0, 2]
-    drive_term = n_theta
-    detune = [-0.00697 , -0.00204] # [0, 0]
-    w_trans_1 = evals[7] - evals[0] + 2 * np.pi * detune[0]
-    w_trans_2 = evals[7] - evals[2] + 2 * np.pi * detune[1]
-    wd = [w_trans_1, w_trans_2]
-    core_states = logi_state + [7]
-    A = [0.12, 0.0287] # [0.02, 0.02]
-    hspace_full = np.arange(truc_full).tolist()    
-    print(f'Amplitude: A0={A[0]:.6f}, A1={A[1]:.6f}')
-    print(f'detune_0={detune[0]:.6f}, detune_1={detune[1]:.6f}')
+    elif gate == 'x_gate_theta': ## X-gate ntheta
+        evals, n_theta, n_phi, logi_state = ut.load_qubit_data_xgate() # Load spectrum and matrix elements
 
-    ### CZ & CNOT
-    # folder = f'../data/3ncut_two_zeropi/truc1=300_truc2=1000_pick=True/'
-    # evals = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
-    # hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
-    # n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
-    # n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
-    # n_theta0_dress = ut.truncate_2(n_theta0_dress, np.arange(truc_full))
-    # n_theta1_dress = ut.truncate_2(n_theta1_dress, np.arange(truc_full))
-    # logi_state = ['0-0', '0-2', '2-0', '2-2']
+        drive_term = n_theta
+        detune = [-0.00697 , -0.00204] # [0, 0]
+        w_trans_1 = evals[7] - evals[0] + 2 * np.pi * detune[0]
+        w_trans_2 = evals[7] - evals[2] + 2 * np.pi * detune[1]
+        wd = [w_trans_1, w_trans_2]
+        core_states = logi_state + [7]
+        A = [0.12, 0.0287] # [0.02, 0.02]
+        hspace_full = np.arange(n_full).tolist()    
+        print(f'Amplitude: A0={A[0]:.6f}, A1={A[1]:.6f}')
+        print(f'detune_0={detune[0]:.6f}, detune_1={detune[1]:.6f}')
 
-    # ## CNOT gate
-    # drive_term = n_theta0_dress
-    # state_mid = '8-2'
-    # idx_0 = hspace_full.index('0-2')
-    # idx_1 = hspace_full.index('2-2')
-    # idx_2 = hspace_full.index(state_mid)
-    # core_states = logi_state + [state_mid]
-    # W_0_2 = evals[idx_2] - evals[idx_0]
-    # W_1_2 = evals[idx_2] - evals[idx_1]
-    # wd = [W_0_2, W_1_2]
-    # A = [0.02, 0.02]
+    elif gate in ['cz', 'cnot']: # CZ & CNOT
+        [hspace_full, _, evals, n_theta0_dress, n_theta1_dress, 
+         _, _, logi_state] = ut.load_qubit_data_2q(n_full)
 
-    # ## CZ
-    # drive_term = n_theta1_dress
-    # state_mid = '5-0'
-    # core_states = logi_state + [state_mid]
-    # wd = [evals[hspace_full.index(state_mid)] - evals[hspace_full.index('2-0')]]
-    # A = [0.02]
+        if gate == 'cnot':
+            drive_term = n_theta0_dress
+            state_mid = '8-2'
+            idx_0 = hspace_full.index('0-2')
+            idx_1 = hspace_full.index('2-2')
+            idx_2 = hspace_full.index(state_mid)
+            core_states = logi_state + [state_mid]
+            W_0_2 = evals[idx_2] - evals[idx_0]
+            W_1_2 = evals[idx_2] - evals[idx_1]
+            wd = [W_0_2, W_1_2]
+            A = [0.02, 0.02]
+        elif gate == 'cz':
+            A = [0.015]
+            detune = 0.023
+            drive_term = n_theta1_dress
+            state_mid = '5-0'
+            core_states = logi_state + [state_mid]
+            wd = [evals[hspace_full.index(state_mid)] - evals[hspace_full.index('2-0')]] + 2 * np.pi * detune
 
     # hspace_index_2 = trunc_by_thresh(hspace_index, drive_term, thresh=1e-2)
     # G = make_rate_graph(drive_term, evals, wd, A, labels = hspace_full)
     # df = make_leakage_df(core_states, drive_term, evals, wd, A, labels = hspace_full, n_cpu=100)
 
 
-    num_states_tot = 160
     ### states_all
-    states_all = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
+    states_all = trunc_by_graph_estimate(n_truc, core_states, drive_term, evals, wd, A, labels=hspace_full,
                                          path_func=all_path_to_core)
-    # print(f'state_all ({num_states_tot}/{truc_full}) :')
-    # data = states_all
-    # for i in range(0, len(data), 10):  # Step size of 10
-    #     if i%50==0:
-    #         print('')
-    #     print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
+    if gate in ['cz', 'cnot']:
+        ut.print_data(f'state_all_{n_full}_{n_truc}', states_all, 
+                      num_each_row=10, n_make_blank_line=50)
 
     states_all_index = [hspace_full.index(i) for i in states_all]
     data = states_all_index
-    print(f'\nstate_all_index ({num_states_tot}/{truc_full}) :')
-    for i in range(0, len(data), 10):  # Step size of 10
-        if i%50==0:
-            print('')
-        print(", ".join(f"{x}" for x in data[i:i + 10]), ',')
-
+    ut.print_data(f'state_all_index_{n_full}_{n_truc}', states_all_index,
+                      num_each_row=10, n_make_blank_line=50)
+    
     ### states_short
-    states_short = trunc_by_graph_estimate(num_states_tot, core_states, drive_term, evals, wd, A, labels=hspace_full,
+    states_short = trunc_by_graph_estimate(n_truc, core_states, drive_term, evals, wd, A, labels=hspace_full,
                                          path_func=shortest_path_to_core)
-    # print(f'\nstate_short ({num_states_tot}/{truc_full}) :')
-    # data = states_short
-    # for i in range(0, len(data), 10):  # Step size of 10
-    #     if i%50==0:
-    #         print('')
-    #     print(", ".join(f"'{x}'" for x in data[i:i + 10]), ',')
+    if gate in ['cz', 'cnot']:
+        ut.print_data(f'state_short_{n_full}_{n_truc}', states_short, 
+                      num_each_row=10, n_make_blank_line=50)        
 
     states_short_index = [hspace_full.index(i) for i in states_short]
-    data = states_short_index
-    print(f'\nstate_short_index ({num_states_tot}/{truc_full}) :')
-    for i in range(0, len(data), 10):  # Step size of 10
-        if i%50==0:
-            print('')
-        print(", ".join(f"{x}" for x in data[i:i + 10]), ',')
-
+    ut.print_data(f'state_short_index_{n_full}_{n_truc}', states_short_index,
+                      num_each_row=10, n_make_blank_line=50)    
 
     list1 = states_all
     list2 = states_short
@@ -345,7 +319,21 @@ if __name__ == "__main__":
     only_in_list2 = [item for item in list2 if item not in list1]
     unique_elements = only_in_list1 + only_in_list2
 
-    print(f"\nOnly in states_all:", len(only_in_list1), only_in_list1)
-    print('index only in states_all:', [list1.index(i) for i in only_in_list1])
-    print("Only in states_short:", len(only_in_list2), only_in_list2)
-    print('index only in states_short:', [list2.index(i) for i in only_in_list2])
+    # print(f"\nOnly in states_all:", only_in_list1)
+    ut.print_data(f'Only in states_all (len={len(only_in_list1)})', only_in_list1, 
+                  num_each_row=10, n_make_blank_line=50)
+    list1_index = [list1.index(i) for i in only_in_list1]
+    ut.print_data(f'index Only in states_all (len={len(only_in_list1)})', list1_index, 
+                  num_each_row=10, n_make_blank_line=50)
+    
+    ut.print_data(f'Only in states_short (len={len(only_in_list2)})', only_in_list2, 
+                  num_each_row=10, n_make_blank_line=50)    
+    list2_index = [list2.index(i) for i in only_in_list2]
+    ut.print_data(f'index Only in states_short (len={len(only_in_list2)})', list2_index, 
+                  num_each_row=10, n_make_blank_line=50)    
+    
+
+
+
+
+    

@@ -77,12 +77,12 @@ def xgate_fidelity_decay_all():
     Run X-gate fidelity simulations (ideal + noisy) and print results.
     """
 
-    drive_phi, drive_theta, n_full = False, True, 150
-    # drive_phi, drive_theta, n_full = True, False, 300 # 50 states →12 workers, (100 states/40 workers, 200/160). 
+    # drive_phi, drive_theta, n_full = False, True, 400
+    drive_phi, drive_theta, n_full = True, False, 500 # 50 states →12 workers, (100 states/40 workers, 200/160). 
     t1 = 170 # μs
     tg_list = [1, 5, 9, 13, 17 ] # np.arange(18).tolist() #  ## 18 for theta, 19 for phi     
     charge_truc = True  # whether to truncate the charge space
-    calculate_ideal, calculate_noise = True, False # False, True #   whether to calculate noisy fidelity
+    calculate_ideal, calculate_noise = False, True # True, False # False, True #   whether to calculate noisy fidelity
     num_cpus = 4 # Lower num_cpus <4 can reduce num of workers while >4 won’t change the num.
 
     max_step_ideal = 1e-3 # Set max_step to 0 for parallel execution
@@ -102,7 +102,7 @@ def xgate_fidelity_decay_all():
     tphi = t1 # calculate decay rate given T1, unit in micro-second
 
     # Load data
-    evals, n_theta, n_phi = ut.load_qubit_data_xgate() # Load spectrum and matrix elements
+    evals, n_theta, n_phi, logi_state = ut.load_qubit_data_xgate() # Load spectrum and matrix elements
     params = load_drive_params(drive_theta)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
     n_job = len(params)    
     
@@ -119,14 +119,14 @@ def xgate_fidelity_decay_all():
 
     # Print summary
     print("n_hspace =", n_hspace, ";   n_job = ", n_job)
-    ut.print_data_r2r(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
-    ut.print_data_r2r(f'params', params.tolist(), num_each_row=1)
+    ut.print_data(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
+    ut.print_data(f'params', params.tolist(), num_each_row=1)
 
     if calculate_ideal:
         # Ideal fidelity simulation
         args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy]
         f_ideal = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
-        ut.print_data_r2r(f'f_ideal_{n_hspace}', f_ideal)
+        ut.print_data(f'f_ideal_{n_hspace}', f_ideal)
         ut.print_time()
 
     if calculate_noise:
@@ -138,7 +138,7 @@ def xgate_fidelity_decay_all():
         # Noisy fidelity simulation
         args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy]
         f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
-        ut.print_data_r2r(f'f_{t1}us_{n_hspace}', f_noise)
+        ut.print_data(f'f_{t1}us_{n_hspace}', f_noise)
 
 def xgate_population():
     # [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = [39.991616, 0.105045, 0.028058, 0.002171, 0.003988] # theta state 7
@@ -152,9 +152,9 @@ def xgate_population():
     # drive_phi, drive_theta = True, False
 
     charge_truc = True # truncate charge subspace
-    calculate_ideal = False
-    t1 = 3 # μs
-    n_full = 50
+    calculate_ideal = True
+    t1 = 999 # μs
+    n_full = 300
 
     max_step_ideal = 1e-4 # Set max_step to 0 for parallel execution
     nsteps_ideal = 1/ max_step_ideal  # Set nsteps to a large number for parallel execution
@@ -176,7 +176,7 @@ def xgate_population():
     if charge_truc:
         hspace = ut.get_truncated_subspace_xgate(drive_term, n_full)
     n_hspace = len(hspace)
-    ut.print_data_r2r(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
+    ut.print_data(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
 
     logi_state = [0, 2]
     H_qbt_drive, drive_truc, logi_idx = ut.build_hamiltonian_xgate(evals, drive_term, hspace, logi_state)
@@ -222,7 +222,7 @@ def xgate_population():
     top_values = np.round(top_values[sorted_order] / np.sum(top_values), 4)
 
     state_phi = [0, 2, 9, 10, 19, 33, 37, 47] # phi
-    state_phi_theta = [0, 2, 9, 33] # phi
+    state_phi_theta = [0, 2, 9] # phi
     state_theta = [0, 2, 7, 25] # theta
     col_phi = ['tg'] + [f'{i}' for i in state_phi] + ['other']
     col_theta = ['tg'] + [f'{i}' for i in state_theta] + ['other']
@@ -247,10 +247,11 @@ def xgate_population():
     pop_other = np.delete(pop, state_interest_idx, axis=0).sum(axis=0)
     pop_save = np.vstack((tlist,pop_interest, pop_other)).T
 
-    print(f'data saved in data/population_phi={drive_phi}_theta={drive_theta}_tg={tg:.0f}_{t1}us.txt')
+    print(f'data saved in data/population/population_phi={drive_phi}_theta={drive_theta}_tg={tg:.0f}_{t1}us_n={n_hspace}.txt')
 
     df = pd.DataFrame(pop_save, columns=columns)
-    df.to_csv(f'data/population_phi={drive_phi}_theta={drive_theta}_tg={tg:.0f}_{t1}us.txt', sep=',', index=False, header=True)
+    df.to_csv(f'data/population/population_phi={drive_phi}_theta={drive_theta}_tg={tg:.0f}_{t1}us_n={n_hspace}.txt', 
+              sep=',', index=False, header=True)
 
 if __name__ == '__main__':    
     print(os.path.basename(__file__))  # Print the name of the current Python file
@@ -258,8 +259,8 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    xgate_fidelity_decay_all()
-    # xgate_population()
+    # xgate_fidelity_decay_all()
+    xgate_population()
 
     ut.print_time()
 

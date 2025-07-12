@@ -1,11 +1,13 @@
-Xgate_noise.py
+get_fidelity_xgate.py
+NUMEXPR_NUM_THREADS = 2
+MKL_NUM_THREADS = 2
 
-Current Mountain Time: 2025-07-06 23:39:32.121184-06:00
+Current Mountain Time: 2025-07-08 10:02:35.599079-06:00
 drive_phi= True ; drive_theta = False ; n_full = 300 ; charge_truc = True
 T1 = Tphi = 170 μs, num_cpus = 4
-calculate_ideal = False, calculate_noise = True
-Ideal: max_step = 0.0001, nsteps = 10000.0
-Noisy: max_step = 3e-05, nsteps = 33333.333333333336
+calculate_ideal = True, calculate_noise = False
+Ideal: max_step = 0, nsteps = 10000.0
+Noisy: max_step = 0.0003, nsteps = 3333.3333333333335
 n_hspace = 160 ;   n_job =  5
 
 hspace (300\160) = np.array([
@@ -35,11 +37,13 @@ params = np.array([
 [190.009275, 0.209698, 0.083495, 0.335382, 0.359146] ,
 ])
 
-f_170us_160 = np.array([
--0.7493324785717822, -1.5965404945665096, -1.8001365165248424, -2.1125501615420945 ,
--2.1161234528625985 ,
+f_ideal_160 = np.array([
+-0.7521624851391504, -1.63813837764658, -1.9048422420549604, -2.456256060198235 ,
+-2.62047830820094 ,
 ])
 
-Current Mountain Time: 2025-07-08 05:53:49.461790-06:00
-1242490.89user 421.21system 30:14:22elapsed 1141%CPU (0avgtext+0avgdata 3638080maxresident)k
-0inputs+16outputs (2major+117152654minor)pagefaults 0swaps
+Current Mountain Time: 2025-07-08 10:02:59.247394-06:00
+
+Current Mountain Time: 2025-07-08 10:02:59.250271-06:00
+129.87user 9.97system 0:26.16elapsed 534%CPU (0avgtext+0avgdata 849172maxresident)k
+0inputs+16outputs (222major+1548595minor)pagefaults 0swaps
