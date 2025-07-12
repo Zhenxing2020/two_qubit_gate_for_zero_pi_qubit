@@ -19,6 +19,6 @@ CZ:
 - noisy simulations for CZ
 
 CNOT:
-- pulse optimization for CZ, how to save and where to save the pulse params
-- noise less simulations for CZ
-- noisy simulations for CZ 
+- pulse optimization for CNOT, how to save and where to save the pulse params
+- noise less simulations for CNOT
+- noisy simulations for CNOT 
