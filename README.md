@@ -3,7 +3,8 @@
 
 Explain how to run:
 
-single qubit stuff:
+single qubit
+------------
 - pulse optimization for n_theta, how to save and where to save the pulse params
 - noise less simulations for n_theta
 - noisy simulations for n_theta
