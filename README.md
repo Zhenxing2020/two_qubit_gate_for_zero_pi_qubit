@@ -1,5 +1,6 @@
 # two_qubit_gate_for_zero_pi_qubit
 
+This library depends heavily on the following packages ...QuTip version YY ... SCqubits version X.
 
 Explain how to run everything. What order do you need to do things. What ipython files etc.
 
