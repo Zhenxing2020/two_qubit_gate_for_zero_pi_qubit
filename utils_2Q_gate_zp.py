@@ -874,8 +874,13 @@ def xgate_fidelity_log(argz):
     Returns:
         float: Logarithm of the infidelity for the X-gate.
     """
-    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
-     tg,drive_amp_A, drive_amp_B, detune_A, detune_B] = argz
+    if len(argz) == 11:
+        [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
+        tg,drive_amp_A, drive_amp_B, detune_A, detune_B] = argz
+        max_int = 1
+    else:
+        [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
+        tg,drive_amp_A, drive_amp_B, detune_A, detune_B, max_int] = argz
 
     H0_truc = truncate_2(H0, hilbert_space)
     drive_truc = truncate_2(drive_term, hilbert_space)
@@ -893,10 +898,23 @@ def xgate_fidelity_log(argz):
     logi_state = [0, 2]
     logi_idx = [hilbert_space.index(s) for s in logi_state]
     c_op_list = []
-    Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, logi_idx)
+    Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, logi_idx, return_all=True)
     fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
     # error_leak = 1 - 0.5*(Uc.dag()*Uc).tr()
     # fidelity = gate_fidelity(Utarg=qt.sigmax(), Ucand=Uc)
+
+    ######## Check max population outside of logical states
+    # Only supported for noiseless right now
+    if len(c_op_list) == 0:
+        # Population in logical state
+        pops = np.zeros((2, tlist.size, len(logi_state)))
+        for j, state in enumerate(logi_state):
+            state_idx = hilbert_space.index(state)
+            for i, l_state in enumerate(logi_state):
+                pops[i, :, j] = np.array([np.abs(U[state_idx, i])**2 for U in Uc])
+        if np.any(np.sum(pops[0], axis=1) < 1-max_int) or np.any(np.sum(pops[1], axis=1) < 1-max_int):
+            fidelity = 0.0
+
     return np.log10(1 - fidelity)
 
 def xgate_fidelity_log_noise(args_indep, *args):
@@ -954,11 +972,15 @@ def xgate_fidelity_optimize(arg, *args):
 
 def xgate_fidelity_parallel(arg, *args):
     """Compute the X-gate fidelity using parallel processing."""
-    [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu] = args
+    if len(args) == 6:
+        [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu] = args
+        max_int = 1
+    elif len(args) == 7:
+        [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu, max_int] = args
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg
 
     argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
-            tg, drive_amp_A, drive_amp_B, detune_A, detune_B]
+            tg, drive_amp_A, drive_amp_B, detune_A, detune_B, max_int]
     return xgate_fidelity_log(argz)
 
 
@@ -983,7 +1005,7 @@ def parallel_sesolve(n, N, H, tlist, args, options):
     output = qt.sesolve(H, psi0, tlist, [], args, options, _safe_mode=False)
     return output
 
-def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
+def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx, return_all=False, keep_idx=None):
     """
     Compute the propagator for a quantum system, supporting both noiseless and noisy systems.
 
@@ -996,12 +1018,17 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
         pulse_args (dict): Arguments for time-dependent pulse functions in the Hamiltonian.
         options (qt.Options): Solver options for QuTiP.
         logi_idx (list): List of logical states (indices of basis states) to include in the propagator.
+        return_all (bool): return propagators for all timesteps
 
     Returns:
         qt.Qobj or list of qt.Qobj:
             - For noiseless systems: A `Qobj` representing the truncated propagator for logical states.
             - For noisy systems: A `Qobj` representing the superoperator propagator for the final time step.
     """
+    # Indices to keep in solution
+    if keep_idx is None:
+        keep_idx = logi_idx
+
     dimz = len(logi_idx)
     H0 = H[0][0] if isinstance(H[0], list) else H[0] if isinstance(H, list) else H
     if len(c_op_list) == 0:
@@ -1016,16 +1043,20 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
             for n in range(dimz):
                 for k, t in enumerate(tlist):
                     u[:, n, k] = output[n].states[k].full().T
-            prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
-            return truncate_2(prop, logi_idx)
+            prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
         else:
             # Computes the propagator for noiseless systems.
-            prop = np.zeros((H0.shape[0], dimz), dtype=np.complex128)
+            prop = np.zeros((len(tlist), H0.shape[0], dimz), dtype=np.complex128)
             for i in logi_idx:
                 res = qt.sesolve(H, qt.basis(H[0].shape[0], i), tlist, options=options, args=pulse_args)
-                prop[:, logi_idx.index(i)] = res.states[-1].full().flatten()
-            Uc = truncate_2(qt.Qobj(prop), logi_idx)
-            return Uc
+                for it in range(len(tlist)):
+                    prop[it, :, logi_idx.index(i)] = res.states[it].full().flatten()
+                prop = [qt.Qobj(p) for p in prop]
+        if not return_all:
+            prop = prop[-1]
+            return truncate_2(prop, keep_idx)
+        else:
+            return [truncate_2(p, keep_idx) for p in prop]
     else:
         options =qt.Options(max_step=1e-3, nsteps=1e4, num_cpus=num_cpus)
         # Computes the propagator for noisy systems.
@@ -1053,7 +1084,11 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx):
                 for k, t in enumerate(tlist):
                     u[:, n, k] = qt.superoperator.mat2vec(output.states[k].full()).T
 
-        return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
+        prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
+        if not return_all:
+            return prop[-1]
+        else:
+            return prop
 
 
 def get_fidelity_super_operator(super_op, logi_idx, gate_target, c_op_list):

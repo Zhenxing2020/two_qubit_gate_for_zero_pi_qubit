@@ -15,12 +15,12 @@ import pandas as pd
 ###################################################################
 ## Optimize fidelity with differential evolution
 ###################################################################
-def fidelity_de():
+def fidelity_de(max_int=0.1):
     fidelity = []
     drive_param = []
     fidelity_full = []
     n_cpu = 1
-    args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu]
+    args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, max_int]
     for jdx, tg in tqdm(enumerate(tg_vec)):
     # for jdx, tg in tqdm(enumerate(x0_vec[:,0])): # if there is x0
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2',
     #                     'detune_1', 'detune_2']].to_numpy()[[10, 12, 13, 15],:] #[[10,8,6,4,2],:]
 
-    workers, popsize = 100, 10
+    workers, popsize = 4, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     truc1, truc_full = 150, 500 # theta
     print('drive_phi=', drive_phi, ', drive_theta = ', drive_theta, ', drive_0 = ', drive_0)
@@ -147,11 +147,13 @@ if __name__ == '__main__':
     hspace_charge.sort()
 #####################################################################
     hspace_full = np.arange(truc_full).tolist()
+    max_int = 0.1
     print('truc1 =', truc1, ', truc2 (in optimization) =', len(hspace_charge))
     print('truc1_full =', truc_full, ', truc2_full =', len(hspace_full))
+    print('Max intermediate state population =', 0.1)
 
     ### optimize
-    fidelity_de()
+    fidelity_de(max_int=max_int)
 
 
 
