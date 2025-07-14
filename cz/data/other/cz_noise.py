@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     c_op_list = jump_t1_list + jump_tphi_list
     args = [H_qbt_drive, W_20_50, num_cpus, c_op_list, logi_idx ]
-    f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_optimize)(args_indep, *args)
+    f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)(args_indep, *args)
                                                 for args_indep in x0_vec)
     print('\nf_noise = [')
     for i in range(0, len(f_noise), 4):
