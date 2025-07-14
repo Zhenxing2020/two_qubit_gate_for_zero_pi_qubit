@@ -814,7 +814,7 @@ def load_qubit_data_2q(truc_full, import_2000=False, truc1=300):
 ###################################################################
 # X-gate
 
-def compute_drive_terms_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1):
+def compute_drive_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1=None):
     """
     Computes the transition frequencies and selects the appropriate drive term.
     need lowest 10 evals for this func to work.
@@ -837,18 +837,24 @@ def compute_drive_terms_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gam
         w1 = evals[9] - evals[0]
         w2 = evals[9] - evals[2]
         drive_term = n_phi
-        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2)
+        if gamma_t1 != None:
+            Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2)
     elif drive_theta and not drive_phi:
         w1 = evals[7] - evals[0]
         w2 = evals[7] - evals[2]
         drive_term = n_theta
-        Gamma_t1 = gamma_t1 / (np.abs(n_theta[4,7])**2)
+        if gamma_t1 != None:
+            Gamma_t1 = gamma_t1 / (np.abs(n_theta[4,7])**2)
     else:
         w1 = evals[9] - evals[0]
         w2 = evals[9] - evals[2]
         drive_term = 0.976 * n_phi + 0.024 * n_theta
-        Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2) # close to phi drive
-    return w1, w2, drive_term, Gamma_t1
+        if gamma_t1 != None:
+            Gamma_t1 = gamma_t1 / (np.abs(n_phi[4,9])**2) # close to phi drive
+    if gamma_t1 != None:
+        return w1, w2, drive_term, Gamma_t1
+    else: 
+        return w1, w2, drive_term
 
 def get_truncated_subspace_xgate(drive_term, n_full, hspace_charge=[0,2], thresh=0.01):
     """
@@ -1044,51 +1050,23 @@ def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=2
 
     return H0, drive_term, w_trans_1, w_trans_2, hspace_charge
 
-# def xgate_fidelity_log(argz):
-#     """
-#     Compute the X-gate fidelity for a noiseless system.
+def xgate_fidelity_log(argz):
+    [tg, drive_amp_A, drive_amp_B, detune_A, detune_B, 
+     H_qbt_drive, w_trans_1, w_trans_2, num_cpus, 
+     c_op_list, logi_idx, option_ideal, option_noisy] = argz
 
-#     Args:
-#         argz (list): A list containing the following parameters:
-#             - H0 (qt.Qobj): The static Hamiltonian.
-#             - drive_term (qt.Qobj): The drive Hamiltonian term.
-#             - w_trans_1 (float): Transition frequency for qubit A.
-#             - w_trans_2 (float): Transition frequency for qubit B.
-#             - hilbert_space (list): List of states defining the Hilbert space.
-#             - n_cpu (int): Number of CPUs for parallelization.
-#             - tg (float): Gate time.
-#             - drive_amp_A (float): Drive amplitude for qubit A.
-#             - drive_amp_B (float): Drive amplitude for qubit B.
-#             - detune_A (float): Detuning for qubit A.
-#             - detune_B (float): Detuning for qubit B.
-
-#     Returns:
-#         float: Logarithm of the infidelity for the X-gate.
-#     """
-#     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
-#      tg,drive_amp_A, drive_amp_B, detune_A, detune_B] = argz
-
-#     H0_truc = truncate_2(H0, hilbert_space)
-#     drive_truc = truncate_2(drive_term, hilbert_space)
-#     H_qbt_drive = [H0_truc, [drive_truc, drive_gauss_A], [drive_truc, drive_gauss_B]]
-
-#     pulse_args = {
-#         'drive_amp_A': drive_amp_A,
-#         'drive_freq_A': w_trans_1 + 2 * np.pi * detune_A,
-#         'drive_amp_B': drive_amp_B,
-#         'drive_freq_B': w_trans_2 + 2 * np.pi * detune_B,
-#         'gate_time': tg,
-#     }
-#     tlist = np.linspace(0, tg, num=int(tg))
-
-#     logi_state = [0, 2]
-#     logi_idx = [hilbert_space.index(s) for s in logi_state]
-#     c_op_list = []
-#     Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, logi_idx)
-#     fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
-#     # error_leak = 1 - 0.5*(Uc.dag()*Uc).tr()
-#     # fidelity = gate_fidelity(Utarg=qt.sigmax(), Ucand=Uc)
-#     return np.log10(1 - fidelity)
+    pulse_args = {
+        'drive_amp_A': drive_amp_A,
+        'drive_freq_A': w_trans_1 + 2 * np.pi * detune_A,
+        'drive_amp_B': drive_amp_B,
+        'drive_freq_B': w_trans_2 + 2 * np.pi * detune_B,
+        'gate_time': tg,
+    }
+    tlist = np.linspace(0, tg, num= 3*int(tg))
+    propagator = get_propagator(H_qbt_drive, tlist, num_cpus, 
+                                c_op_list, pulse_args, logi_idx, option_ideal, option_noisy)
+    fidelity = get_fidelity_super_operator(propagator, logi_idx, qt.sigmax(), c_op_list)
+    return np.log10(1 - fidelity)
 
 def xgate_fidelity_log_noise(args_indep, *args):
     """
