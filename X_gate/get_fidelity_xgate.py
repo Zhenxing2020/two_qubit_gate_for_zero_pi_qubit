@@ -107,7 +107,7 @@ def xgate_fidelity_decay_all():
     n_job = len(params)    
     
     # Build Hamiltonian
-    w_trans_1, w_trans_2, drive_term, Gamma_t1 = ut.compute_drive_terms_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
+    w_trans_1, w_trans_2, drive_term, Gamma_t1 = ut.compute_drive_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
     hspace = np.arange(n_full).tolist() # do not truncate
     if charge_truc:
         hspace = ut.get_truncated_subspace_xgate(drive_term, n_full)
@@ -115,7 +115,7 @@ def xgate_fidelity_decay_all():
     hspace = [item for item in hspace if item not in values_to_remove]
 
     n_hspace = len(hspace)
-    H_qbt_drive, drive_truc, logi_idx = ut.build_hamiltonian_xgate(evals, drive_term, hspace, [0, 2])
+    H_qbt_drive, drive_truc, logi_idx = ut.build_hamiltonian_xgate(evals, drive_term, hspace, logi_state)
 
     # Print summary
     print("n_hspace =", n_hspace, ";   n_job = ", n_job)
@@ -171,7 +171,7 @@ def xgate_population():
 
     evals, n_theta, n_phi = ut.load_qubit_data_xgate() # Load spectrum and matrix elements
     gamma_t1 = 1 / 1e3 / t1 # calculate decay rate given T1, unit in micro-second
-    w_trans_1, w_trans_2, drive_term, Gamma_t1 = ut.compute_drive_terms_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
+    w_trans_1, w_trans_2, drive_term, Gamma_t1 = ut.compute_drive_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
     hspace = np.arange(n_full).tolist() # do not truncate
     if charge_truc:
         hspace = ut.get_truncated_subspace_xgate(drive_term, n_full)
@@ -193,7 +193,7 @@ def xgate_population():
     if not calculate_ideal:
         gamma_t1 = 1 / 1e3 / t1 # calculate decay rate given T1, unit in micro-second
         tphi = t1 # calculate decay rate given T1, unit in micro-second    
-        w_trans_1, w_trans_2, drive_term, Gamma_t1 = ut.compute_drive_terms_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
+        w_trans_1, w_trans_2, drive_term, Gamma_t1 = ut.compute_drive_xgate(evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1)  
 
         # Load data and prepare operators for noisy fidelity simulation
         state_idx_tphi, gamma_dephase_new = ut.load_dephasing_data_xgate(drive_theta) # Load dephasing data
