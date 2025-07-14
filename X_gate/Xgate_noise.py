@@ -40,6 +40,9 @@ File Dependencies:
 
 """
 
+import os
+os.environ["MKL_NUM_THREADS"] = "1"
+
 import sys
 sys.path.append('../')
 from datetime import datetime
@@ -246,7 +249,8 @@ if __name__ == '__main__':
     # drive_phi, drive_theta, n_full = True, False, 500
     drive_phi, drive_theta, n_full = False, True, 100 # 50 states →12 workers, (100 states/40 workers, 200/160). 
     t1 = 170 # μs
-    tg_list = [8] # [1, 5, 9, 13, 17 ] # np.arange(18).tolist() #  [17] # 
+    # tg_list = [8]
+    tg_list = [1, 5, 9, 13, 17] # np.arange(18).tolist() #  [17] # 
     charge_truc = True  # whether to truncate the charge space
     calculate_ideal, calculate_noise = False, True  # whether to calculate noisy fidelity
     num_cpus = 4 # Lower num_cpus <4 can reduce num of workers while >4 won’t change the num.
