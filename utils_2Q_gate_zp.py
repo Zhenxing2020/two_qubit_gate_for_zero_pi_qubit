@@ -898,8 +898,9 @@ def xgate_fidelity_log(argz):
     logi_state = [0, 2]
     logi_idx = [hilbert_space.index(s) for s in logi_state]
     c_op_list = []
-    Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, logi_idx, return_all=True)
-    fidelity = qt.average_gate_fidelity(Uc, target=qt.sigmax())
+    Uc = get_propagator(H_qbt_drive, tlist, n_cpu, c_op_list, pulse_args, logi_idx, return_all=True,
+                        keep_idx=list(range(len(hilbert_space))))
+    fidelity = qt.average_gate_fidelity(truncate_2(Uc[-1], logi_idx), target=qt.sigmax())
     # error_leak = 1 - 0.5*(Uc.dag()*Uc).tr()
     # fidelity = gate_fidelity(Utarg=qt.sigmax(), Ucand=Uc)
 
@@ -907,13 +908,20 @@ def xgate_fidelity_log(argz):
     # Only supported for noiseless right now
     if len(c_op_list) == 0:
         # Population in logical state
-        pops = np.zeros((2, tlist.size, len(logi_state)))
-        for j, state in enumerate(logi_state):
-            state_idx = hilbert_space.index(state)
-            for i, l_state in enumerate(logi_state):
-                pops[i, :, j] = np.array([np.abs(U[state_idx, i])**2 for U in Uc])
-        if np.any(np.sum(pops[0], axis=1) < 1-max_int) or np.any(np.sum(pops[1], axis=1) < 1-max_int):
-            fidelity = 0.0
+        pops = np.zeros((tlist.size, len(logi_state), len(logi_state)))
+        for i, i_l in enumerate(logi_idx):
+            for j, j_l in enumerate(logi_idx):
+                pops[:, i, j] = np.array([np.abs(U[i_l, j])**2 for U in Uc])
+
+        # Check whether the most population out of the logical
+        # states for any starting state for any timestep
+        # is above the maximum
+        pop_int = 1 - pops.sum(axis=1).min(axis=1).min()
+        if pop_int > max_int:
+            penalty = (1/(100*(pop_int-max_int)))**2
+            penalty = min(1, penalty)
+            penalty = 0
+            fidelity *= penalty
 
     return np.log10(1 - fidelity)
 
@@ -1036,27 +1044,28 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx, return_a
         options =qt.Options(max_step=0, nsteps=1e4, num_cpus=num_cpus)
 
         if num_cpus > 1:
-            u = np.zeros([N, dimz, len(tlist)], dtype=complex)
+            prop = np.zeros((len(tlist), len(keep_idx), dimz), dtype=np.complex128)
             output = qt.parallel.parallel_map(parallel_sesolve, logi_idx,
                                     task_args=(N, H, tlist, pulse_args, options),
                                     num_cpus=num_cpus)
             for n in range(dimz):
                 for k, t in enumerate(tlist):
-                    u[:, n, k] = output[n].states[k].full().T
-            prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
+                    prop[k, :, n] = output[n].states[k].full().T
+            prop = [qt.Qobj(prop[k, :, :], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
         else:
             # Computes the propagator for noiseless systems.
-            prop = np.zeros((len(tlist), H0.shape[0], dimz), dtype=np.complex128)
+            prop = np.zeros((len(tlist), len(keep_idx), dimz), dtype=np.complex128)
             for i in logi_idx:
                 res = qt.sesolve(H, qt.basis(H[0].shape[0], i), tlist, options=options, args=pulse_args)
                 for it in range(len(tlist)):
-                    prop[it, :, logi_idx.index(i)] = res.states[it].full().flatten()
-                prop = [qt.Qobj(p) for p in prop]
+                    try:
+                        prop[it, :, logi_idx.index(i)] = truncate_2(res.states[it], keep_idx).full().flatten()
+                    except:
+                        breakpoint()
+            prop = [qt.Qobj(p) for p in prop]
         if not return_all:
             prop = prop[-1]
-            return truncate_2(prop, keep_idx)
-        else:
-            return [truncate_2(p, keep_idx) for p in prop]
+        return prop
     else:
         options =qt.Options(max_step=1e-3, nsteps=1e4, num_cpus=num_cpus)
         # Computes the propagator for noisy systems.

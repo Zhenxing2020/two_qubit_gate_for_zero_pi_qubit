@@ -79,9 +79,9 @@ if __name__ == '__main__':
     # drive_phi, drive_theta, drive_0  = True, False, False
     drive_phi, drive_theta, drive_0  = False, True, True
     if drive_theta:
-        amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.01, 0.05), (0.025, 0.2), (-0.17, -0.2), (0.1, 0.3)] # theta big
-        # amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.01, 0.08), (0.003, 0.03), (0, 0.01), (0, 0.01)] # theta small
-        tg_vec = np.arange(40, 50, step=1).tolist() # theta
+        # amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.01, 0.05), (0.025, 0.2), (-0.17, -0.2), (0.1, 0.3)] # theta big
+        amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.00, 0.2), (0.00, 0.2), (0, 0.2), (0, 0.2)] # theta small
+        tg_vec = np.arange(40, 150, step=10).tolist() # theta
     else:
         amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.15, 0.3), (0, 0.3), (0.3, 0.5), (0.3, 0.5)] # phi
         tg_vec = np.arange(10, 50, step=10).tolist() # phi
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2',
     #                     'detune_1', 'detune_2']].to_numpy()[[10, 12, 13, 15],:] #[[10,8,6,4,2],:]
 
-    workers, popsize = 4, 10
+    workers, popsize = 100, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     truc1, truc_full = 150, 500 # theta
     print('drive_phi=', drive_phi, ', drive_theta = ', drive_theta, ', drive_0 = ', drive_0)
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     hspace_charge.sort()
 #####################################################################
     hspace_full = np.arange(truc_full).tolist()
-    max_int = 0.1
+    max_int = 0.2
     print('truc1 =', truc1, ', truc2 (in optimization) =', len(hspace_charge))
     print('truc1_full =', truc_full, ', truc2_full =', len(hspace_full))
     print('Max intermediate state population =', 0.1)
