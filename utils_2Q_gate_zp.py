@@ -920,8 +920,10 @@ def xgate_fidelity_log(argz):
         if pop_int > max_int:
             penalty = (1/(100*(pop_int-max_int)))**2
             penalty = min(1, penalty)
-            penalty = 0
+            penalty = 1
             fidelity *= penalty
+    
+    breakpoint()
 
     return np.log10(1 - fidelity)
 
@@ -1057,6 +1059,7 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx, return_a
             prop = np.zeros((len(tlist), len(keep_idx), dimz), dtype=np.complex128)
             for i in logi_idx:
                 res = qt.sesolve(H, qt.basis(H[0].shape[0], i), tlist, options=options, args=pulse_args)
+                breakpoint()
                 for it in range(len(tlist)):
                     try:
                         prop[it, :, logi_idx.index(i)] = truncate_2(res.states[it], keep_idx).full().flatten()

@@ -37,7 +37,7 @@ def fidelity_de(max_int=0.1):
             mutation=mutation,
             recombination=recombination,
             tol=tol,
-            # x0=x0_vec[jdx],
+            x0=x0_vec[jdx],
             polish=False, # 'True' will make the for-loop break
             )
         fidelity.append(res.fun)
@@ -80,19 +80,21 @@ if __name__ == '__main__':
     drive_phi, drive_theta, drive_0  = False, True, True
     if drive_theta:
         # amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.01, 0.05), (0.025, 0.2), (-0.17, -0.2), (0.1, 0.3)] # theta big
+        tg_vec = [50] # theta
         amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.00, 0.2), (0.00, 0.2), (0, 0.2), (0, 0.2)] # theta small
-        tg_vec = np.arange(40, 150, step=10).tolist() # theta
+        # tg_vec = np.arange(40, 150, step=10).tolist() # theta
     else:
         amp1_bounds, amp2_bounds, detune1_bounds,  detune2_bounds = [(0.15, 0.3), (0, 0.3), (0.3, 0.5), (0.3, 0.5)] # phi
         tg_vec = np.arange(10, 50, step=10).tolist() # phi
 
-    tg_bound = (-0.01, 0.01)
+    tg_bound = (-1, 1)
+    
     folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
-    f_xgate = pd.read_csv('data/'+folder)
-    # x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2',
-    #                     'detune_1', 'detune_2']].to_numpy()[[10, 12, 13, 15],:] #[[10,8,6,4,2],:]
+    f_xgate = pd.read_csv('../../data/'+folder)
+    x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()[[8],:] #[[10,8,6,4,2],:]
+    # breakpoint()
 
-    workers, popsize = 100, 10
+    workers, popsize = 1, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     truc1, truc_full = 150, 500 # theta
     print('drive_phi=', drive_phi, ', drive_theta = ', drive_theta, ', drive_0 = ', drive_0)
@@ -152,8 +154,15 @@ if __name__ == '__main__':
     print('truc1_full =', truc_full, ', truc2_full =', len(hspace_full))
     print('Max intermediate state population =', 0.1)
 
+    ## TEST
+    n_cpu = 1
+    args = [H0, drive_term, w_trans_1, w_trans_2, hspace_charge, n_cpu, max_int]
+    arg = x0_vec[0]
+    res = ut.xgate_fidelity_parallel(arg, *args)
+    breakpoint()
+
     ### optimize
-    fidelity_de(max_int=max_int)
+    # fidelity_de(max_int=max_int)
 
 
 
