@@ -16,7 +16,7 @@ settings.OVERLAP_THRESHOLD = 0.3
 
 
 
-def fidelity_de():
+def fidelity_de(**kwargs):
     """
     Optimize gate fidelity using differential evolution.
 
@@ -27,10 +27,10 @@ def fidelity_de():
     drive_param = []
     fidelity_full = []
     args = [H_truc, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy]
+    x0_vec = kwargs.get("x0_vec", [None]*len(tg_vec))
     for jdx, tg in tqdm(enumerate(tg_vec)):
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
         bounds = (tg_bounds, amp1_bounds, amp2_bounds, detune1_bounds, detune2_bounds)
-
         res = sp.optimize.differential_evolution(
             func=ut.xgate_fidelity_log_noise,
             bounds=bounds,
@@ -43,6 +43,7 @@ def fidelity_de():
             mutation=mutation,
             recombination=recombination,
             tol=tol,
+            x0=x0_vec[jdx],
             polish=False
         )
         fidelity.append(res.fun)
@@ -108,6 +109,15 @@ if __name__ == '__main__':
     hspace_full = np.arange(n_full).tolist()
     H_full, drive_full, logi_idx_full = ut.build_hamiltonian_xgate(evals, drive_term, hspace_full, logi_state)
 
+    # Load pre-optimized if there
+    load_x0 = True
+    if load_x0:
+        folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
+        f_xgate = pd.read_csv('../../data/'+folder)
+        x0_vec = f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()[[8],:]
+    else:
+        x0_vec = [None]*len(tg_vec)
+
     # Print configuration
     print("drive_phi=", drive_phi, ", drive_theta=", drive_theta)
     print("tg_vec:", tg_vec)
@@ -117,4 +127,8 @@ if __name__ == '__main__':
     print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
 
     # Run optimization
-    fidelity_de()
+    tg_vec = [50]
+    tg_bound = (-0.5, 0.5)
+    amp1_bounds, amp2_bounds = (0.0, 0.2), (0.0, 0.2)
+    detune1_bounds, detune2_bounds = (-0.5, 0.5), (-0.5, 0.5)
+    fidelity_de(x0_vec=x0_vec)

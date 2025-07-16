@@ -1125,7 +1125,8 @@ def parallel_sesolve(n, N, H, tlist, args, options):
     output = qt.sesolve(H, psi0, tlist, [], args, options, _safe_mode=False)
     return output
 
-def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx, option_ideal=None, option_noisy=None):
+def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx,
+                   option_ideal=None, option_noisy=None, return_all=False):
     """
     Compute the propagator for a quantum system, supporting both noiseless and noisy systems.
 
@@ -1149,24 +1150,29 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx, option_i
     if len(c_op_list) == 0:
 
         N = H0.shape[0]
+        u = np.zeros([N, dimz, len(tlist)], dtype=np.complex128)
         if num_cpus > 1:
-            u = np.zeros([N, dimz, len(tlist)], dtype=complex)
             output = qt.parallel.parallel_map(parallel_sesolve, logi_idx,
                                     task_args=(N, H, tlist, pulse_args, option_ideal),
                                     num_cpus=num_cpus)
             for n in range(dimz):
                 for k, t in enumerate(tlist):
                     u[:, n, k] = output[n].states[k].full().T
-            prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
-            return truncate_2(prop, logi_idx)
+            prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
+        # else:
+        #     # Computes the propagator for noiseless systems.
+        #     for n in range(dimz):
+        #         res = qt.sesolve(H, qt.basis(H[0].shape[0], n), tlist, options=option_ideal, args=pulse_args)
+        #         for k, t in enumerate(tlist):
+        #             u[:, n, k] = output[n].states[k].full().T
+        #     prop[:, logi_idx.index(i)] = res.states[-1].full().flatten()
+        #     Uc = truncate_2(qt.Qobj(prop), logi_idx)
+        #     return Uc
+
+        if not return_all:
+            return truncate_2(prop[-1], logi_idx)
         else:
-            # Computes the propagator for noiseless systems.
-            prop = np.zeros((H0.shape[0], dimz), dtype=np.complex128)
-            for i in logi_idx:
-                res = qt.sesolve(H, qt.basis(H[0].shape[0], i), tlist, options=option_ideal, args=pulse_args)
-                prop[:, logi_idx.index(i)] = res.states[-1].full().flatten()
-            Uc = truncate_2(qt.Qobj(prop), logi_idx)
-            return Uc
+            return [truncate_2(p, logi_idx) for p in prop]
 
     else: # noise
 
