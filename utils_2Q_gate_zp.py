@@ -1051,9 +1051,15 @@ def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=2
     return H0, drive_term, w_trans_1, w_trans_2, hspace_charge
 
 def xgate_fidelity_log(argz):
+
+    
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B, 
-     H_qbt_drive, w_trans_1, w_trans_2, num_cpus, 
-     c_op_list, logi_idx, option_ideal, option_noisy] = argz
+    H_qbt_drive, w_trans_1, w_trans_2, num_cpus, 
+    c_op_list, logi_idx, option_ideal, option_noisy] = argz[:13]
+    if len(argz) == 14:
+        max_int = argz[13]
+    else:
+        max_int = 1
 
     pulse_args = {
         'drive_amp_A': drive_amp_A,
@@ -1064,9 +1070,11 @@ def xgate_fidelity_log(argz):
     }
     tlist = np.linspace(0, tg, num= 3*int(tg))
     propagator = get_propagator(H_qbt_drive, tlist, num_cpus, 
-                                c_op_list, pulse_args, logi_idx, option_ideal, option_noisy)
-    fidelity = get_fidelity_super_operator(propagator, logi_idx, qt.sigmax(), c_op_list)
-    return np.log10(1 - fidelity)
+                                c_op_list, pulse_args, logi_idx, option_ideal, option_noisy,
+                                return_all=True)
+    fidelity = get_fidelity_super_operator(propagator[-1], logi_idx, qt.sigmax(), c_op_list)
+
+    
 
 def xgate_fidelity_log_noise(args_indep, *args):
     """
@@ -1093,7 +1101,12 @@ def xgate_fidelity_log_noise(args_indep, *args):
         float: Logarithm of the infidelity for the X-gate in a noisy system.
     """
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = args_indep
-    [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy] = args
+
+    [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy] = args[:8]
+    if len(args) == 9:
+        max_int = args[8]
+    else:
+        max_int = 1
 
     pulse_args = {
         'drive_amp_A': drive_amp_A,
@@ -1104,8 +1117,29 @@ def xgate_fidelity_log_noise(args_indep, *args):
     }
     tlist = np.linspace(0, tg, num= 3*int(tg))
     propagator = get_propagator(H_qbt_drive, tlist, num_cpus, 
-                                c_op_list, pulse_args, logi_idx, option_ideal, option_noisy)
-    fidelity = get_fidelity_super_operator(propagator, logi_idx, qt.sigmax(), c_op_list)
+                                c_op_list, pulse_args, logi_idx, option_ideal, option_noisy,
+                                return_all=True)
+    fidelity = get_fidelity_super_operator(propagator[-1], logi_idx, qt.sigmax(), c_op_list)
+
+    ######## Check max population outside of logical states
+    # Only supported for noiseless right now
+    if len(c_op_list) == 0:
+        # Population in logical state
+        pops = np.zeros((tlist.size, len(logi_idx), len(logi_idx)))
+        for i, i_l in enumerate(logi_idx):
+            for j, j_l in enumerate(logi_idx):
+                pops[:, i, j] = np.array([np.abs(U[i, j])**2 for U in propagator])
+
+        # Check whether the most population out of the logical
+        # states for any starting state for any timestep
+        # is above the maximum
+        pop_int = 1 - pops.sum(axis=1).min(axis=1).min()
+        if pop_int > max_int:
+            penalty = abs(1/(100*(pop_int-max_int)))
+            penalty = min(1, penalty)
+            fidelity *= penalty
+
+    return np.log10(1 - fidelity)
 
     # print(f'\n len(c_op_list)={len(c_op_list)}')
     # print(f'U_noise.istp={propagator.istp}')
@@ -1116,8 +1150,6 @@ def xgate_fidelity_log_noise(args_indep, *args):
     #     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     #     qt.qsave(propagator, f'U_noise_tg={tg:.0f}_truc={H_qbt_drive[0].shape[0]}_{current_time}')
     ### U_loaded = qt.qload('U_noise')
-    
-    return np.log10(1 - fidelity)
 
 def parallel_sesolve(n, N, H, tlist, args, options):
     """Parallel SESolve function for solving the Schrodinger equation."""
@@ -1158,17 +1190,15 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx,
             for n in range(dimz):
                 for k, t in enumerate(tlist):
                     u[:, n, k] = output[n].states[k].full().T
-            prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
-        # else:
-        #     # Computes the propagator for noiseless systems.
-        #     for n in range(dimz):
-        #         res = qt.sesolve(H, qt.basis(H[0].shape[0], n), tlist, options=option_ideal, args=pulse_args)
-        #         for k, t in enumerate(tlist):
-        #             u[:, n, k] = output[n].states[k].full().T
-        #     prop[:, logi_idx.index(i)] = res.states[-1].full().flatten()
-        #     Uc = truncate_2(qt.Qobj(prop), logi_idx)
-        #     return Uc
-
+        else:
+            # Computes the propagator for noiseless systems.
+            for n in range(dimz):
+                output = qt.sesolve(H, qt.basis(H[0].shape[0], logi_idx[n]),
+                                    tlist, options=option_ideal, args=pulse_args)
+                for k, t in enumerate(tlist):
+                    u[:, n, k] = output.states[k].full().T
+        
+        prop = [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))]
         if not return_all:
             return truncate_2(prop[-1], logi_idx)
         else:

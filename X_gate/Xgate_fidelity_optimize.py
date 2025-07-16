@@ -23,11 +23,15 @@ def fidelity_de(**kwargs):
     Returns:
         None
     """
+
+    
+    x0_vec = kwargs.get("x0_vec", [None]*len(tg_vec))
+    max_int = kwargs.get("max_int", 1)
+
     fidelity = []
     drive_param = []
     fidelity_full = []
-    args = [H_truc, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy]
-    x0_vec = kwargs.get("x0_vec", [None]*len(tg_vec))
+    args = [H_truc, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy, max_int]
     for jdx, tg in tqdm(enumerate(tg_vec)):
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
         bounds = (tg_bounds, amp1_bounds, amp2_bounds, detune1_bounds, detune2_bounds)
@@ -51,10 +55,7 @@ def fidelity_de(**kwargs):
 
         # Evaluate full system fidelity
         [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = res.x
-        argz = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B, 
-                H_full, w_trans_1, w_trans_2, num_cpus, 
-                [], logi_idx_full, option_ideal, option_noisy]
-        fidelity_full.append(ut.xgate_fidelity_log(argz))
+        fidelity_full.append(ut.xgate_fidelity_log_noise(res.x, *args))
 
         # Print progress
         print(f"\nOptimal result for tg={tg}:")
@@ -64,6 +65,7 @@ def fidelity_de(**kwargs):
         print(f"Drive parameters:")
         print(np.round(res.x, 6).tolist())
         print(f"Full system error (truc_full={n_full}):")
+        breakpoint()
         print(', '.join(map(str, np.round(fidelity_full[-4:], 8))))
         ut.print_data(f'f_optimize', fidelity)
         ut.print_data(f'f_optimize', fidelity_full)
@@ -79,19 +81,23 @@ if __name__ == '__main__':
 
     # Parameter bounds
     if drive_theta:
-        amp1_bounds, amp2_bounds = (0.01, 0.05), (0.025, 0.2)
-        detune1_bounds, detune2_bounds = (-0.17, -0.2), (0.1, 0.3)
+        # amp1_bounds, amp2_bounds = (0.01, 0.05), (0.025, 0.2)
+        # detune1_bounds, detune2_bounds = (-0.17, -0.2), (0.1, 0.3)
+        amp1_bounds, amp2_bounds = (0.0, 0.2), (0.0, 0.2)
+        detune1_bounds, detune2_bounds = (-0.5, 0.5), (-0.5, 0.5)
+        max_int = 0.20
         tg_vec = [2,3,4] # np.arange(40, 50, step=1).tolist()
     else:
         amp1_bounds, amp2_bounds = (0.15, 0.3), (0, 0.3)
         detune1_bounds, detune2_bounds = (0.3, 0.5), (0.3, 0.5)
         tg_vec = np.arange(10, 50, step=10).tolist()
 
-    tg_bound = (-0.01, 0.01)
+    # tg_bound = (-0.01, 0.01)
+    tg_bound = (-0.5, 0.5)
 
     # Differential evolution hyperparameters
     num_cpus = 1 # Lower num_cpus <4 can reduce num of workers while >4 won’t change the num.
-    workers, popsize = 100, 10
+    workers, popsize = 4, 10
     recombination, tol, mutation = 0.7, 0.01, (0.5, 1.0)
     n_truc, n_full = 150, 300
 
@@ -110,7 +116,7 @@ if __name__ == '__main__':
     H_full, drive_full, logi_idx_full = ut.build_hamiltonian_xgate(evals, drive_term, hspace_full, logi_state)
 
     # Load pre-optimized if there
-    load_x0 = True
+    load_x0 = False
     if load_x0:
         folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
         f_xgate = pd.read_csv('../../data/'+folder)
@@ -127,8 +133,4 @@ if __name__ == '__main__':
     print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
 
     # Run optimization
-    tg_vec = [50]
-    tg_bound = (-0.5, 0.5)
-    amp1_bounds, amp2_bounds = (0.0, 0.2), (0.0, 0.2)
-    detune1_bounds, detune2_bounds = (-0.5, 0.5), (-0.5, 0.5)
-    fidelity_de(x0_vec=x0_vec)
+    fidelity_de(x0_vec=x0_vec, max_int=max_int)
