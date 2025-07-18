@@ -65,7 +65,6 @@ def fidelity_de(**kwargs):
         print(f"Drive parameters:")
         print(np.round(res.x, 6).tolist())
         print(f"Full system error (truc_full={n_full}):")
-        breakpoint()
         print(', '.join(map(str, np.round(fidelity_full[-4:], 8))))
         ut.print_data(f'f_optimize', fidelity)
         ut.print_data(f'f_optimize', fidelity_full)
@@ -86,7 +85,8 @@ if __name__ == '__main__':
         amp1_bounds, amp2_bounds = (0.0, 0.2), (0.0, 0.2)
         detune1_bounds, detune2_bounds = (-0.5, 0.5), (-0.5, 0.5)
         max_int = 0.20
-        tg_vec = [2,3,4] # np.arange(40, 50, step=1).tolist()
+        tg_vec = [100]
+        # tg_vec = [2,3,4] # np.arange(40, 50, step=1).tolist()
     else:
         amp1_bounds, amp2_bounds = (0.15, 0.3), (0, 0.3)
         detune1_bounds, detune2_bounds = (0.3, 0.5), (0.3, 0.5)
@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     # Differential evolution hyperparameters
     num_cpus = 1 # Lower num_cpus <4 can reduce num of workers while >4 won’t change the num.
-    workers, popsize = 4, 10
+    workers, popsize = 150, 30
     recombination, tol, mutation = 0.7, 0.01, (0.5, 1.0)
     n_truc, n_full = 150, 300
 
