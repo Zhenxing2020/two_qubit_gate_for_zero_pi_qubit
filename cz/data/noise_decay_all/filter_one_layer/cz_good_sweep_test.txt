@@ -1,0 +1,53 @@
+get_fidelity_2q_good_copy.py
+NUMEXPR_NUM_THREADS = 32
+MKL_NUM_THREADS = 32
+
+Current Mountain Time: 2025-07-26 09:16:46.268464+08:00
+Using CZ gate with W_20_50 = 15.982875383444132
+get_hamiltonian_given_state_list = True
+t1_tphi_other = 170, import_2000=False
+truc_full= 1000
+num_cpus= 16 , n_job= 1
+calculate_ideal = False, calculate_noise = True
+Ideal: max_step = 0.001, nsteps = 1000.0
+Noisy: max_step = 0.001, nsteps = 1000.0
+
+params = np.array([
+[116.077689, 0.013154, 0.020213] ,
+])
+
+hspace_select (len=15) = np.array([
+'0-0', '2-2', '0-2', '2-0', '5-0', '0-1', '2-1', '0-5', '2-5', '1-0' ,
+'5-2', '1-2', '5-1', '0-4', '2-4' ,
+])
+
+index_select (len=15) = np.array([
+0, 13, 3, 4, 10, 1, 9, 8, 24, 2 ,
+27, 11, 21, 5, 18 ,
+])
+filter_ratio = 0.1, np.shape(c_op_list) = (510, 15, 15)
+
+f_170us_15 = np.array([
+-0.7780096316152088 ,
+])
+
+Current Mountain Time: 2025-07-26 09:16:56.250153+08:00
+
+hspace_select (len=16) = np.array([
+'0-0', '2-2', '0-2', '2-0', '5-0', '0-1', '2-1', '0-5', '2-5', '1-0' ,
+'5-2', '1-2', '5-1', '0-4', '2-4', '1-1' ,
+])
+
+index_select (len=16) = np.array([
+0, 13, 3, 4, 10, 1, 9, 8, 24, 2 ,
+27, 11, 21, 5, 18, 7 ,
+])
+filter_ratio = 0.1, np.shape(c_op_list) = (510, 16, 16)
+
+f_170us_16 = np.array([
+-1.757550923272409 ,
+])
+
+Current Mountain Time: 2025-07-26 09:17:04.722281+08:00
+209.45user 20.88system 0:21.41elapsed 1075%CPU (0avgtext+0avgdata 1704688maxresident)k
+0inputs+32outputs (23major+4011648minor)pagefaults 0swaps

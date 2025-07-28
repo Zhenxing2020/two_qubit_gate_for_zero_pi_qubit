@@ -9,7 +9,6 @@ import utils_2Q_gate_zp as ut
 from datetime import datetime
 import numpy as np
 import qutip as qt
-from multiprocessing import Pool
 import scqubits as scq
 from sympy import symbols
 from joblib import Parallel, delayed
@@ -100,7 +99,7 @@ def generate_ekettot_3ncut(test=True):
 
 
 def generate_nop_3ncut():
-    truc1, truc_tot, charge_pick = 150, 1000, True
+    truc1, truc_tot, charge_pick = 150, 2000, True
     # truc1, truc_tot, charge_pick = 11, 15, False
 
     if charge_pick:
@@ -131,13 +130,15 @@ def generate_nop_3ncut():
                                 for i in range(n0)]
     arg = [bare_state, n0, n1]
 
-    print("ut.find_overlap..... Time:", datetime.now(pytz.timezone('America/Denver')))
+    print("ut.find_overlap..... Time:")
+    ut.print_time()
     result = Parallel(n_jobs=100)(delayed(ut.find_overlap)(i, *arg) for i in eket_tot)
     top_index = [result[i][0] for i in range(eval_tot.shape[0])]
     top_overlap = [result[i][1] for i in range(eval_tot.shape[0])]
     np.save(folder_save+f'top_index.npy', top_index)
     np.save(folder_save+f'top_overlap.npy', top_overlap)
-    print("pd.DataFrame(top_overlap)..... Time:", datetime.now(pytz.timezone('America/Denver')))
+    print("pd.DataFrame(top_overlap)..... Time:")
+    ut.print_time()
 
     ##############################################################################################
     ### Get the dressed states index
@@ -159,7 +160,8 @@ def generate_nop_3ncut():
     n_theta1_dress = ssp.kron(ssp.identity(n0), n_theta1)
     n_theta0_dress = (eket_tot @ n_theta0_dress @ eket_tot.conj().T).todense()
     n_theta1_dress = (eket_tot @ n_theta1_dress @ eket_tot.conj().T).todense()
-    print("folder_save.... Time:", datetime.now(pytz.timezone('America/Denver')))
+    print("folder_save.... Time:")
+    ut.print_time()
 
     pd.DataFrame(hspace_full).to_csv(folder_save+ f'hspace_full.txt', sep=',', index=False, header=True)
     np.save(folder_save+f'n_theta0_dress.npy', n_theta0_dress)
@@ -178,8 +180,8 @@ if __name__ == '__main__':
     # generate_data()
     # generate_data_3ncut()
     # reduce_eket()
-    generate_ekettot_3ncut(test=False)
-    # generate_nop_3ncut()
+    # generate_ekettot_3ncut(test=False)
+    generate_nop_3ncut()
     # generate_eval()
 
     ut.print_time()

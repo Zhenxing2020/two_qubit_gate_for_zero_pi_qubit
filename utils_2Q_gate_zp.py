@@ -12,6 +12,7 @@ from IPython.display import display, Math
 import pandas as pd
 from datetime import datetime
 import pytz, os
+import networkx as nx
 
 
 # max_step, nsteps = 1e-3, 1e4
@@ -337,24 +338,9 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
     bare_state = [[qt.tensor(qt.basis(len(hspace_0), i), qt.basis(len(hspace_1), j))
                             for j in range(len(hspace_1))]
                                 for i in range(len(hspace_0))]
-    def find_overlap(eket):
-        overlaps = np.array([[np.abs( (eket @ bare_state[i][j].data).todense()[0,0] )
-                            for j in range(len(eval1))]
-                                for i in range(len(eval0))])
-        flat_array = overlaps.flatten() # Flatten the 2D array
-        # Find the indices of the top 3 largest values (in the flattened 1D array)
-        top_indices_flat = np.argpartition(-flat_array, 10)[:10]
-        # Convert the flat indices to 2D indices
-        top_indices_2d = np.unravel_index(top_indices_flat, overlaps.shape)
-        # Extract the values corresponding to the indices
-        top_values = overlaps[top_indices_2d]
-        # Sort the values in descending order
-        sorted_indices = np.argsort(-top_values)  # Use a negative sign for descending order
-        sorted_top_indices = [tuple(zip(top_indices_2d[0], top_indices_2d[1]))[i] for i in sorted_indices]
-        sorted_top_values = top_values[sorted_indices]
-        return sorted_top_indices, sorted_top_values
 
-    result = Parallel(n_jobs=10, verbose=0)(delayed(find_overlap)(arg) for arg in eket_tot)
+    arg = [bare_state, len(eval0), len(eval1)]
+    result = Parallel(n_jobs=10, verbose=0)(delayed(find_overlap)(eket, arg) for eket in eket_tot)
     top_index = [result[i][0] for i in range(eval_tot.shape[0])]
     top_overlap = [result[i][1] for i in range(eval_tot.shape[0])]
     # for i in range(truc_tot):
@@ -392,6 +378,23 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
     #         n_theta0_dress, n_theta1_dress, eval_tot, hspace_full]
     return [hspace_0, hspace_1, eval_tot, eket_tot]
 
+def find_overlap(eket, *arg):
+    bare_state, dim_0, dim_1 = arg
+    overlaps = np.array([[np.abs( (eket @ bare_state[i][j].data).todense()[0,0] )
+                        for j in range(dim_1)]
+                            for i in range(dim_0)])
+    flat_array = overlaps.flatten() # Flatten the 2D array
+    # Find the indices of the top 3 largest values (in the flattened 1D array)
+    top_indices_flat = np.argpartition(-flat_array, 10)[:10]
+    # Convert the flat indices to 2D indices
+    top_indices_2d = np.unravel_index(top_indices_flat, overlaps.shape)
+    # Extract the values corresponding to the indices
+    top_values = overlaps[top_indices_2d]
+    # Sort the values in descending order
+    sorted_indices = np.argsort(-top_values)  # Use a negative sign for descending order
+    sorted_top_indices = [tuple(zip(top_indices_2d[0], top_indices_2d[1]))[i] for i in sorted_indices]
+    sorted_top_values = top_values[sorted_indices]
+    return sorted_top_indices, sorted_top_values
 
 ###################################################################
 # CNOT-gate
@@ -627,6 +630,8 @@ def cz_phase_correct(U_kraus):
     return U_final
 
 def cz_fidelity_log(arg_all):
+    # print_time()
+    # print('debug: good in cz_fidelity_log beginning')
     [tg, drive_amp, detune, 
      H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx, 
      option_ideal, option_noisy] = arg_all
@@ -636,8 +641,13 @@ def cz_fidelity_log(arg_all):
                 'gate_time': tg}
     tlist = np.linspace(0, tg, num=3*int(tg))  # total time
 
+    # print_time()
+    # print('debug: good in cz_fidelity_log  before get_propagator')
     propagator = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, 
                                 logi_idx, option_ideal, option_noisy)
+    
+    # print_time()
+    # print('debug: good in cz_fidelity_log  before get_fidelity_super_operator')
     fidelity = get_fidelity_super_operator(propagator, logi_idx, cz_gate(), c_op_list)
     # p0_kraus = qt.to_kraus(qt.to_super(propagator))
     # if len(c_op_list) != 0:
@@ -713,10 +723,10 @@ def load_qubit_data_2q(truc_full, import_2000=False, truc1=300):
     folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
     hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
     hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
-    dim_0 = len(hspace_0)
-    dim_1 = len(hspace_1)    
+   
     logi_state = ['0-0', '0-2', '2-0', '2-2']
-    return hspace_full, eket_tot, eval_tot, n_theta0_dress, n_theta1_dress, dim_0, dim_1, logi_state
+    return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
+            n_theta1_dress, hspace_0, hspace_1, logi_state]
 
 
 # def cz_fidelity_optimize(arg, *args):
@@ -1348,23 +1358,6 @@ def get_w_trans(evals, hspace_full, n_op, state_pop):
     return w_trans, n_trans, trans_int
 
 
-def find_overlap(eket, *arg):
-    bare_state, dim_0, dim_1 = arg
-    overlaps = np.array([[np.abs( (eket @ bare_state[i][j].data).todense()[0,0] )
-                        for j in range(dim_1)]
-                            for i in range(dim_0)])
-    flat_array = overlaps.flatten() # Flatten the 2D array
-    # Find the indices of the top 3 largest values (in the flattened 1D array)
-    top_indices_flat = np.argpartition(-flat_array, 10)[:10]
-    # Convert the flat indices to 2D indices
-    top_indices_2d = np.unravel_index(top_indices_flat, overlaps.shape)
-    # Extract the values corresponding to the indices
-    top_values = overlaps[top_indices_2d]
-    # Sort the values in descending order
-    sorted_indices = np.argsort(-top_values)  # Use a negative sign for descending order
-    sorted_top_indices = [tuple(zip(top_indices_2d[0], top_indices_2d[1]))[i] for i in sorted_indices]
-    sorted_top_values = top_values[sorted_indices]
-    return sorted_top_indices, sorted_top_values
 
 
 def get_jump_op(state_i, *args):
@@ -1383,39 +1376,46 @@ def get_jump_op(state_i, *args):
     jump_tphi_b = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_i] )* a_I_ii  ).data @ eket_tot.conj().T)
     return [jump_t1_a, jump_t1_b, jump_tphi_a, jump_tphi_b]
 
-def get_jump_op_charge_pick(state_vec, *args):
-    state_i, state_j = state_vec
-    dim_0, dim_1, n_theta, gamma_dephase, eket_tot, qubit_a = args
-    if qubit_a:
-        # t_1
-        ladder_ij = qt.basis(dim_0, state_i) * qt.basis(dim_0, state_j).dag()
-        a_ij_I = qt.tensor(ladder_ij, qt.qeye(dim_1))
-        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(abs(n_theta[state_i, state_j]))* a_ij_I ).data @ eket_tot.conj().T )
-        # t_phi
-        proj_jj = qt.basis(dim_0, state_j).proj()
-        a_jj_I = qt.tensor(proj_jj, qt.qeye(dim_1))
-        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_j] )* a_jj_I  ).data @ eket_tot.conj().T)
-    else: # qubit_b
-        # t_1
-        ladder_ij = qt.basis(dim_1, state_i) * qt.basis(dim_1, state_j).dag()
-        a_I_ij = qt.tensor(qt.qeye(dim_0), ladder_ij)
-        jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(abs(n_theta[state_i, state_j]))* a_I_ij ).data @ eket_tot.conj().T )
-        # t_phi
-        proj_jj = qt.basis(dim_1, state_j).proj()
-        a_I_jj = qt.tensor(qt.qeye(dim_0), proj_jj)
-        jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_j] )* a_I_jj  ).data @ eket_tot.conj().T)
-    return [jump_t1, jump_tphi]
+# def get_jump_op_charge_pick(state_vec, *args):
+#     state_i, state_j = state_vec
+#     dim_0, dim_1, n_theta, gamma_dephase, eket_tot, qubit_a = args
+#     if qubit_a:
+#         # t_1
+#         ladder_ij = qt.basis(dim_0, state_i) * qt.basis(dim_0, state_j).dag()
+#         a_ij_I = qt.tensor(ladder_ij, qt.qeye(dim_1))
+#         jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(abs(n_theta[state_i, state_j]))* a_ij_I ).data @ eket_tot.conj().T )
+#         # t_phi
+#         proj_jj = qt.basis(dim_0, state_j).proj()
+#         a_jj_I = qt.tensor(proj_jj, qt.qeye(dim_1))
+#         jump_tphi = qt.Qobj( eket_tot @ ( np.sqrt(2*gamma_dephase[state_j] )* a_jj_I  ).data @ eket_tot.conj().T)
+#     else: # qubit_b
+#         # t_1
+#         ladder_ij = qt.basis(dim_1, state_i) * qt.basis(dim_1, state_j).dag()
+#         a_I_ij = qt.tensor(qt.qeye(dim_0), ladder_ij)
+#         jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(abs(n_theta[state_i, state_j]))* a_I_ij ).data @ eket_tot.conj().T )
+#         # t_phi
+#         proj_jj = qt.basis(dim_1, state_j).proj()
+#         a_I_jj = qt.tensor(qt.qeye(dim_0), proj_jj)
+#         jump_tphi = qt.Qobj( eket_tot @ 
+#                             ( np.sqrt(2*gamma_dephase[state_j] )* a_I_jj  ).data @
+#                               eket_tot.conj().T)
+#     return [jump_t1, jump_tphi]
 
-def get_jump_op_decay(state_vec, *args):
-    state_i, state_j = state_vec
-    dim_0, dim_1, n_theta, eket_tot, qubit_a = args
+
+
+def get_jump_op_decay(transition, *args):
+    state_i, state_j = transition
+    dim_0, dim_1, n_theta_trunc, eket_tot, qubit_a, Gamma_decay = args
+
     if qubit_a:
         ladder_ij = qt.basis(dim_0, state_i) * qt.basis(dim_0, state_j).dag()
-        jump_t1 = np.sqrt(abs(n_theta[state_i, state_j])) * qt.tensor(ladder_ij, qt.qeye(dim_1))
+        jump_t1 = ( np.sqrt(Gamma_decay * abs(n_theta_trunc[state_i, state_j])**2 )
+                     * qt.tensor(ladder_ij, qt.qeye(dim_1)) )
     else: # qubit_b
         ladder_ij = qt.basis(dim_1, state_i) * qt.basis(dim_1, state_j).dag()
-        jump_t1 = np.sqrt(abs(n_theta[state_i, state_j])) * qt.tensor(qt.qeye(dim_0), ladder_ij)
-    jump_t1 = qt.Qobj( eket_tot @ ( np.sqrt(abs(n_theta[state_i, state_j])) * jump_t1 ).data @ eket_tot.conj().T )
+        jump_t1 = ( np.sqrt(Gamma_decay * abs(n_theta_trunc[state_i, state_j])**2 )
+                     * qt.tensor(qt.qeye(dim_0), ladder_ij) )        
+    jump_t1 = qt.Qobj( eket_tot @ jump_t1.data @ eket_tot.conj().T )
     return jump_t1
 
 def get_jump_op_dephase(state_j, *args):
@@ -1428,6 +1428,55 @@ def get_jump_op_dephase(state_j, *args):
         jump_tphi = np.sqrt( 2*gamma_dephase[state_j] ) * qt.tensor(qt.qeye(dim_0), proj_jj)
     jump_tphi = qt.Qobj( eket_tot @ jump_tphi.data @ eket_tot.conj().T)
     return jump_tphi
+
+def get_transitions_for_collapse(hspace, n_theta, low_states=50, filter_ratio=0.01):
+    low = [s for s in hspace if s < low_states]
+    n_theta_low = truncate_2(n_theta, low)
+    n_max = np.abs(n_theta_low.data).max()
+
+    n_theta_trunc = truncate_2(n_theta, hspace)
+    def ratio(sj):
+        return filter_ratio if sj < low_states else 10 * filter_ratio
+    transition = [
+        (i, j)
+        for i, si in enumerate(hspace)
+        for j, sj in enumerate(hspace)
+        if i < j and abs(n_theta_trunc[i, j]) > n_max * ratio(sj)
+    ]
+    return transition, n_theta_trunc
+
+def construct_c_ops_2q(dim_0, dim_1, n_theta0_trunc, n_theta1_trunc, 
+                        gamma_dephase_02_q0, gamma_dephase_02_q1, eket_tot, 
+                        Gamma_decay_q0, Gamma_decay_q1, 
+                        transition_a, transition_b):
+    """
+    Constructs collapse operators for dissipation.
+    """
+    qubit_a = True
+    arg_a_decay = [dim_0, dim_1, n_theta0_trunc, eket_tot, qubit_a, Gamma_decay_q0] 
+    jump_t1_a = Parallel(n_jobs=10)(delayed(get_jump_op_decay)
+                                    (transition, *arg_a_decay) 
+                                    for transition in transition_a)
+
+    arg_a_dephase = [dim_0, dim_1, gamma_dephase_02_q0, eket_tot, qubit_a] 
+    jump_tphi_a = Parallel(n_jobs=10)(delayed(get_jump_op_dephase)
+                                      (state_j, *arg_a_dephase) 
+                                      for state_j in range(1,dim_0))
+
+    qubit_a = False
+    arg_b_decay = [dim_0, dim_1, n_theta1_trunc, eket_tot, qubit_a, Gamma_decay_q1] 
+    jump_t1_b = Parallel(n_jobs=10)(delayed(get_jump_op_decay)
+                                    (transition, *arg_b_decay) 
+                                    for transition in transition_b)
+
+    arg_b_dephase = [dim_0, dim_1, gamma_dephase_02_q1, eket_tot, qubit_a] 
+    jump_tphi_b = Parallel(n_jobs=10)(delayed(get_jump_op_dephase)
+                                      (state_j, *arg_b_dephase) 
+                                      for state_j in range(1,dim_1))
+
+    return jump_t1_a + jump_tphi_a + jump_t1_b + jump_tphi_b
+
+
 
 def zeropi_eval(flux=0, truncation=10):
     ncut, phi_cut = 90, 300
@@ -1465,7 +1514,7 @@ def zeropi_eval(flux=0, truncation=10):
     return evals
 
 
-def get_collapse_op(t1tphi_other, eket_tot_select, hspace_0_dim, hspace_1_dim):
+# def get_collapse_op(t1tphi_other, eket_tot_select, hspace_0_dim, hspace_1_dim):
 
     # tphi_logi = 100 # μs
     # gamma_decay_logi =  1 / 1600e3
@@ -1477,7 +1526,7 @@ def get_collapse_op(t1tphi_other, eket_tot_select, hspace_0_dim, hspace_1_dim):
 
     # if charge_pick == False:
     #     args = [truc1, gamma_decay_old, gamma_dephase_old, eket_tot]
-    #     jump_op = Parallel(n_jobs=100)(delayed(ut.get_jump_op)(state, *args) for state in range(1,truc1))
+    #     jump_op = Parallel(n_jobs=100)(delayed(get_jump_op)(state, *args) for state in range(1,truc1))
     #     jump_t1 = np.array(jump_op)[:,:2]
     #     jump_tphi = np.array(jump_op)[:,2:]
     #     jump_t1_list = [qt.Qobj(matrix) for row in jump_t1 for matrix in row]
@@ -1497,28 +1546,28 @@ def get_collapse_op(t1tphi_other, eket_tot_select, hspace_0_dim, hspace_1_dim):
     # print(f"T1_other = {1/gamma_decay_other} ns") if gamma_decay_other != 0 else None
     # print(f"Tphi_other = {1/gamma_dephase_other} ns") if gamma_dephase_other != 0 else None
 
-    folder = f'../data/3ncut_two_zeropi/truc1=500/'
-    gamma_q0 = pd.read_csv(folder+ 'data_gamma_qubit0.txt')
-    gamma_q1 = pd.read_csv(folder+ 'data_gamma_qubit1.txt')
-    gamma_decay_48_q0 = gamma_q0['t1_50us_48'].to_numpy() *50 /t1tphi_other
-    gamma_decay_48_q1 = gamma_q1['t1_50us_48'].to_numpy() *50 /t1tphi_other
-    gamma_dephase_02_q0 = gamma_q0['tphi_02'].to_numpy() *50 /t1tphi_other
-    gamma_dephase_02_q1 = gamma_q1['tphi_02'].to_numpy() *50 /t1tphi_other
+    # folder = f'../data/3ncut_two_zeropi/truc1=500/'
+    # gamma_q0 = pd.read_csv(folder+ 'data_gamma_qubit0.txt')
+    # gamma_q1 = pd.read_csv(folder+ 'data_gamma_qubit1.txt')
+    # gamma_decay_48_q0 = gamma_q0['t1_50us_48'].to_numpy() *50 /t1tphi_other
+    # gamma_decay_48_q1 = gamma_q1['t1_50us_48'].to_numpy() *50 /t1tphi_other
+    # gamma_dephase_02_q0 = gamma_q0['tphi_02'].to_numpy() *50 /t1tphi_other
+    # gamma_dephase_02_q1 = gamma_q1['tphi_02'].to_numpy() *50 /t1tphi_other
 
-    qubit_a = True
-    arg_a = [hspace_0_dim, hspace_1_dim, gamma_decay_48_q0, gamma_dephase_02_q0, eket_tot_select, qubit_a]
-    jump_op_a = Parallel(n_jobs=100)(delayed(get_jump_op_charge_pick)(state, *arg_a) for state in range(1,hspace_0_dim))
+    # qubit_a = True
+    # arg_a = [hspace_0_dim, hspace_1_dim, gamma_decay_48_q0, gamma_dephase_02_q0, eket_tot_select, qubit_a]
+    # jump_op_a = Parallel(n_jobs=100)(delayed(get_jump_op_charge_pick)(state, *arg_a) for state in range(1,hspace_0_dim))
 
-    qubit_a = False
-    arg_b = [hspace_0_dim, hspace_1_dim, gamma_decay_48_q1, gamma_dephase_02_q1, eket_tot_select, qubit_a]
-    jump_op_b = Parallel(n_jobs=100)(delayed(get_jump_op_charge_pick)(state, *arg_b) for state in range(1,hspace_1_dim))
-    jump_t1_list = np.array(jump_op_a)[:,0].tolist() + np.array(jump_op_b)[:,0].tolist()
-    jump_tphi_list = np.array(jump_op_a)[:,1].tolist() + np.array(jump_op_b)[:,1].tolist()
-    jump_t1_list = [qt.Qobj(matrix) for matrix in jump_t1_list]
-    jump_tphi_list = [qt.Qobj(matrix) for matrix in jump_tphi_list]
-    c_op_list = jump_t1_list + jump_tphi_list
+    # qubit_a = False
+    # arg_b = [hspace_0_dim, hspace_1_dim, gamma_decay_48_q1, gamma_dephase_02_q1, eket_tot_select, qubit_a]
+    # jump_op_b = Parallel(n_jobs=100)(delayed(get_jump_op_charge_pick)(state, *arg_b) for state in range(1,hspace_1_dim))
+    # jump_t1_list = np.array(jump_op_a)[:,0].tolist() + np.array(jump_op_b)[:,0].tolist()
+    # jump_tphi_list = np.array(jump_op_a)[:,1].tolist() + np.array(jump_op_b)[:,1].tolist()
+    # jump_t1_list = [qt.Qobj(matrix) for matrix in jump_t1_list]
+    # jump_tphi_list = [qt.Qobj(matrix) for matrix in jump_tphi_list]
+    # c_op_list = jump_t1_list + jump_tphi_list
 
-    return c_op_list
+    # return c_op_list
 
 def print_data(label, data, num_each_row=4, num_digits=None, 
                n_make_blank_line=None):
@@ -1542,9 +1591,16 @@ def print_data(label, data, num_each_row=4, num_digits=None,
     print('])')
 
 def print_time():
-    """Print the current time in Mountain Time (America/Denver)."""
-    mountain_time = datetime.now(pytz.timezone('America/Denver'))
-    print("\nCurrent Mountain Time:", mountain_time)    
+    """Print the current time."""
+    # # Get current time in Mountain Time (Denver)
+    # mountain_tz = pytz.timezone('America/Denver')
+    # mountain_time = datetime.now(mountain_tz)
+
+    # Convert to Beijing Time
+    beijing_tz = pytz.timezone('Asia/Shanghai')
+    beijing_time = datetime.now(beijing_tz)    
+
+    print("\nCurrent China Time:", beijing_time)    
 
 
 def build_hamiltonian_2q(cz_run, index_select, eval_tot, eket_tot, drive_term):
@@ -1663,6 +1719,195 @@ cz_truc_model['short_path'] = [
 '51-2', '28-8', '81-0', '74-0', '34-8', '37-5', '77-0', '37-8', '56-1', '28-9' ,
 ]
 
+cz_truc_model['cz_all_500_500_detune1']  = [
+
+'0-0', '5-0', '0-2', '2-0', '2-2', '5-1', '0-1', '2-1', '0-5', '2-5' ,
+'1-0', '5-2', '1-2', '9-0', '5-4', '2-4', '0-4', '1-1', '0-9', '2-9' ,
+'5-5', '4-0', '9-1', '1-5', '4-2', '0-12', '2-12', '2-8', '0-8', '9-2' ,
+'2-16', '0-16', '0-13', '2-13', '2-21', '12-0', '5-8', '4-5', '2-18', '0-18' ,
+'0-21', '1-16', '2-20', '0-26', '1-8', '18-0', '5-26', '2-24', '2-26', '0-24' ,
+
+'15-0', '9-4', '1-12', '8-0', '0-20', '2-45', '0-45', '5-9', '2-39', '1-4' ,
+'0-25', '0-39', '8-12', '2-25', '4-9', '2-33', '0-33', '5-12', '5-20', '2-35' ,
+'0-34', '5-33', '2-34', '15-4', '5-16', '5-24', '0-36', '5-34', '0-52', '2-52' ,
+'2-36', '13-0', '2-46', '9-8', '1-9', '15-1', '2-59', '0-59', '2-30', '2-65' ,
+'0-65', '0-42', '2-42', '0-55', '2-55', '8-1', '1-25', '12-1', '5-35', '0-35' ,
+
+'4-8', '5-21', '8-9', '4-4', '4-1', '0-57', '1-30', '1-21', '9-5', '18-1' ,
+'2-53', '0-30', '2-57', '5-13', '1-39', '5-25', '5-45', '2-68', '9-24', '0-68' ,
+'1-20', '1-26', '5-30', '9-16', '5-52', '1-18', '5-18', '8-2', '1-24', '1-13' ,
+'12-2', '0-54', '0-83', '0-46', '0-73', '12-4', '2-54', '2-66', '18-2', '2-44' ,
+'20-0', '9-34', '9-26', '0-44', '0-53', '5-53', '13-1', '12-5', '2-64', '15-8' ,
+
+'9-33', '1-45', '0-64', '8-5', '5-39', '4-12', '5-46', '2-60', '9-12', '4-44' ,
+'15-16', '0-76', '1-34', '5-36', '5-42', '0-66', '15-2', '0-81', '1-33', '4-39' ,
+'18-5', '5-44', '4-25', '8-18', '9-9', '0-82', '4-16', '2-28', '8-39', '4-24' ,
+'0-78', '12-12', '1-35', '0-77', '9-20', '0-60', '9-13', '22-0', '13-2', '0-70' ,
+'4-18', '24-1', '1-52', '15-5', '2-70', '8-21', '4-21', '8-4', '1-42', '12-9' ,
+
+'5-28', '1-65', '37-1', '15-25', '4-13', '22-4', '8-16', '0-28', '1-28', '0-89' ,
+'1-55', '4-26', '4-30', '22-2', '5-54', '20-9', '1-59', '1-60', '9-36', '12-30' ,
+'20-8', '33-0', '9-35', '1-54', '1-44', '13-12', '8-8', '8-26', '4-34', '12-18' ,
+'24-0', '1-46', '20-1', '1-68', '0-93', '4-20', '24-4', '18-12', '9-25', '18-18' ,
+'24-9', '4-35', '18-4', '13-4', '12-20', '18-8', '1-36', '9-21', '20-12', '22-5' ,
+
+'1-53', '0-86', '18-16', '4-42', '25-0', '13-18', '9-28', '1-73', '8-35', '13-26' ,
+'1-57', '4-33', '22-1', '30-0', '8-25', '59-1', '12-26', '20-2', '1-64', '15-9' ,
+'12-33', '12-13', '30-5', '8-20', '0-92', '4-57', '9-18', '15-28', '15-12', '4-46' ,
+'4-54', '1-70', '37-0', '12-8', '12-16', '13-9', '0-90', '4-28', '8-34', '13-8' ,
+'46-0', '20-24', '24-2', '12-24', '26-8', '12-34', '20-5', '18-9', '24-13', '22-12' ,
+
+'25-9', '1-77', '4-53', '33-1', '50-4', '30-9', '8-44', '45-1', '13-25', '4-36' ,
+'9-30', '34-0', '37-4', '9-39', '13-20', '12-21', '35-2', '4-52', '56-4', '15-13' ,
+'8-30', '20-4', '15-24', '12-35', '1-78', '18-20', '46-2', '4-45', '8-24', '13-5' ,
+'8-13', '13-21', '13-16', '22-18', '41-1', '15-18', '25-16', '24-8', '18-24', '35-0' ,
+'28-4', '22-8', '8-33', '39-2', '22-13', '15-21', '22-9', '25-1', '1-76', '15-20' ,
+
+'39-1', '54-1', '15-26', '8-45', '20-18', '13-24', '20-21', '28-1', '12-36', '25-4' ,
+'25-2', '58-0', '35-12', '44-0', '26-0', '60-0', '25-12', '8-42', '26-2', '12-25' ,
+'1-66', '30-2', '20-20', '20-13', '25-8', '35-5', '37-2', '44-1', '46-1', '4-59' ,
+'35-9', '35-8', '26-12', '24-12', '26-13', '25-5', '24-16', '13-13', '24-18', '8-36' ,
+'13-30', '59-2', '4-55', '35-1', '4-60', '22-16', '45-4', '45-0', '20-16', '34-1' ,
+
+'8-28', '33-9', '34-4', '28-2', '18-21', '39-5', '41-0', '45-2', '18-13', '25-13' ,
+'33-12', '33-8', '54-2', '22-20', '44-5', '30-12', '41-2', '39-0', '30-1', '60-1' ,
+'28-0', '34-8', '50-0', '34-12', '26-9', '28-13', '46-5', '41-5', '41-4', '34-2' ,
+'33-2', '39-4', '26-1', '12-28', '30-4', '50-2', '26-16', '58-1', '34-5', '75-0' ,
+'28-12', '54-0', '64-0', '30-8', '28-8', '35-4', '66-0', '59-0', '26-5', '65-2' ,
+
+'33-5', '69-0', '44-4', '56-0', '70-0', '56-2', '46-4', '13-28', '81-0', '65-0' ,
+'51-0', '28-5', '39-8', '24-5', '37-5', '84-0', '58-2', '37-9', '34-9', '39-9' ,
+'33-4', '41-8', '50-1', '66-1', '45-5', '26-4', '44-2', '51-1', '54-4', '64-2' ,
+'37-8', '64-1', '74-0', '86-0', '51-5', '75-1', '85-0', '50-5', '70-1', '56-1' ,
+'51-2', '69-1', '28-9', '51-4', '28-16', '79-0', '60-2', '65-1', '74-1', '77-0' ,
+]
+
+cz_truc_model['cz_short_500_500_detune1']  = [
+
+'0-0', '2-2', '0-2', '2-0', '5-0', '0-1', '2-1', '0-5', '2-5', '1-0' ,
+'5-2', '1-2', '5-1', '0-4', '2-4', '1-1', '0-9', '2-9', '4-0', '5-5' ,
+'1-5', '4-2', '9-0', '0-12', '5-4', '2-12', '0-8', '2-8', '9-2', '4-1' ,
+'1-9', '9-1', '0-16', '2-16', '1-4', '8-0', '4-5', '0-13', '2-13', '0-18' ,
+'2-18', '1-12', '9-5', '9-4', '2-21', '5-9', '4-4', '0-21', '1-16', '0-26' ,
+
+'5-8', '18-0', '1-8', '5-12', '15-4', '2-26', '8-2', '0-24', '2-24', '2-45' ,
+'0-20', '0-45', '2-20', '2-39', '0-39', '8-12', '8-1', '0-25', '1-18', '2-25' ,
+'12-0', '0-33', '2-33', '0-34', '4-9', '2-34', '5-16', '0-36', '0-52', '2-52' ,
+'2-36', '2-59', '0-59', '2-65', '0-65', '15-0', '15-1', '0-42', '2-42', '0-30' ,
+'9-8', '2-30', '0-55', '2-55', '12-2', '1-20', '1-21', '5-13', '8-5', '13-0' ,
+
+'1-25', '8-4', '5-26', '9-9', '0-35', '5-24', '5-21', '0-57', '1-30', '8-9' ,
+'2-35', '2-57', '1-39', '5-25', '2-68', '4-12', '18-1', '24-1', '0-68', '1-13' ,
+'15-2', '1-26', '12-4', '15-8', '5-18', '12-1', '0-54', '18-2', '0-83', '4-8' ,
+'1-24', '5-20', '0-73', '20-0', '0-46', '2-54', '5-30', '5-33', '12-5', '9-12' ,
+'9-16', '25-0', '2-46', '0-44', '0-53', '5-34', '4-16', '8-16', '2-44', '2-53' ,
+
+'0-64', '2-64', '1-45', '5-39', '12-9', '5-45', '15-5', '0-76', '4-44', '5-42' ,
+'22-1', '1-34', '4-39', '4-25', '13-1', '18-5', '1-33', '0-81', '5-35', '0-82' ,
+'0-66', '0-78', '8-18', '2-66', '1-35', '4-24', '0-28', '2-28', '2-60', '9-13' ,
+'5-52', '13-2', '0-70', '33-0', '1-52', '0-77', '0-60', '2-70', '4-21', '12-12' ,
+'5-28', '8-8', '9-24', '5-36', '4-13', '1-65', '8-21', '1-42', '1-28', '0-89' ,
+
+'24-4', '1-36', '1-59', '4-18', '1-55', '22-2', '22-4', '18-4', '22-0', '1-60' ,
+'4-30', '4-26', '5-54', '15-16', '20-9', '1-54', '1-44', '8-39', '20-8', '9-34' ,
+'4-34', '5-53', '20-1', '9-35', '9-26', '37-1', '9-21', '1-46', '25-1', '1-68' ,
+'0-93', '5-44', '46-0', '9-33', '4-20', '15-12', '12-8', '8-25', '5-46', '1-57' ,
+'9-18', '13-4', '9-20', '9-25', '33-1', '1-53', '13-5', '13-12', '24-0', '18-16' ,
+
+'1-73', '9-28', '0-86', '4-33', '8-20', '15-9', '8-26', '20-2', '12-16', '4-35' ,
+'18-12', '59-1', '22-8', '1-64', '12-33', '30-0', '0-92', '1-70', '1-78', '22-5' ,
+'15-25', '15-28', '15-13', '18-8', '13-16', '8-24', '12-13', '4-45', '24-2', '0-90' ,
+'4-54', '4-28', '20-24', '13-9', '18-18', '12-34', '8-13', '9-39', '12-30', '24-13' ,
+'12-20', '8-34', '1-66', '9-36', '1-77', '24-8', '12-24', '12-18', '15-26', '8-44' ,
+
+'4-36', '20-5', '1-76', '18-9', '4-42', '20-12', '4-52', '25-2', '45-1', '9-30' ,
+'35-2', '8-30', '44-0', '56-4', '37-4', '4-46', '25-9', '28-1', '25-4', '4-59' ,
+'24-9', '30-9', '13-25', '25-5', '46-1', '4-57', '39-0', '20-13', '4-55', '20-4' ,
+'44-1', '4-53', '8-35', '22-12', '12-21', '8-28', '30-5', '13-8', '8-33', '39-2' ,
+'22-13', '13-21', '35-0', '13-26', '15-18', '15-21', '13-18', '15-20', '8-45', '20-18' ,
+
+'12-26', '15-24', '28-2', '41-1', '26-0', '8-36', '26-2', '30-1', '35-12', '39-1' ,
+'25-12', '33-4', '22-9', '18-21', '37-0', '39-5', '46-2', '54-1', '18-24', '35-4' ,
+'35-8', '12-25', '30-2', '13-24', '13-13', '26-8', '24-12', '18-13', '25-8', '35-9' ,
+'35-5', '50-4', '35-1', '20-20', '45-0', '24-18', '12-36', '24-5', '4-60', '20-16' ,
+'13-30', '34-0', '25-16', '45-4', '37-2', '13-20', '41-2', '41-0', '45-2', '12-35' ,
+
+'33-12', '22-16', '54-2', '20-21', '18-20', '25-13', '37-8', '22-18', '28-4', '8-42' ,
+'50-0', '39-8', '26-13', '26-16', '33-2', '34-2', '60-0', '59-2', '50-2', '41-5' ,
+'60-1', '26-1', '46-4', '28-0', '34-8', '58-0', '33-9', '12-28', '34-5', '59-0' ,
+'54-0', '28-12', '65-2', '30-4', '24-16', '34-4', '56-0', '41-4', '56-2', '28-5' ,
+'44-4', '22-20', '26-5', '65-0', '51-0', '33-8', '28-8', '26-12', '54-4', '58-2' ,
+
+'26-4', '34-12', '81-0', '46-5', '34-1', '39-4', '69-0', '26-9', '30-12', '45-5' ,
+'37-9', '41-8', '34-9', '28-9', '39-9', '33-5', '51-1', '30-8', '37-5', '44-5' ,
+'13-28', '50-1', '28-13', '75-0', '44-2', '51-5', '58-1', '64-2', '74-0', '85-0' ,
+'64-0', '50-5', '79-0', '66-0', '70-0', '56-1', '51-2', '84-0', '65-1', '51-4' ,
+'60-2', '28-16', '66-1', '69-1', '77-0', '74-1', '86-0', '64-1', '75-1', '70-1' ,
+]
+
+cz_truc_model['cz_short_500_500_detune0']  = [
+
+'0-0', '2-0', '5-0', '2-2', '0-2', '5-1', '5-2', '0-1', '2-1', '0-5' ,
+'2-5', '1-0', '1-2', '9-0', '5-4', '0-4', '2-4', '5-5', '1-1', '0-9' ,
+'2-9', '9-1', '4-0', '9-2', '1-5', '4-2', '0-12', '9-4', '2-12', '0-8' ,
+'2-8', '4-1', '4-5', '9-5', '5-8', '0-16', '2-16', '1-9', '1-12', '8-0' ,
+'5-9', '1-4', '0-13', '0-18', '2-13', '2-18', '5-12', '15-4', '9-8', '2-21' ,
+
+'12-0', '4-4', '4-9', '0-21', '8-5', '2-20', '0-26', '18-0', '1-8', '5-26' ,
+'2-26', '2-24', '25-0', '0-24', '15-0', '8-2', '5-16', '0-20', '2-45', '0-45' ,
+'15-1', '2-39', '0-39', '8-12', '5-20', '8-1', '0-25', '12-5', '2-25', '5-13' ,
+'0-33', '2-33', '1-18', '2-35', '0-34', '1-16', '5-33', '9-9', '2-34', '5-24' ,
+'0-36', '12-2', '4-12', '2-36', '1-21', '5-34', '0-52', '2-52', '13-0', '2-46' ,
+
+'5-21', '18-1', '2-59', '0-59', '2-65', '0-65', '8-9', '2-30', '0-30', '0-42' ,
+'2-42', '15-2', '0-55', '2-55', '15-8', '5-18', '8-4', '5-35', '1-25', '4-8' ,
+'0-35', '12-1', '0-57', '25-1', '9-12', '12-4', '1-30', '2-57', '2-53', '18-2' ,
+'5-25', '2-68', '5-45', '9-24', '0-68', '1-20', '9-16', '5-30', '8-16', '9-34' ,
+'12-9', '5-52', '1-13', '15-5', '0-54', '5-39', '4-16', '0-83', '1-26', '1-24' ,
+
+'0-46', '18-5', '0-73', '2-54', '22-1', '4-18', '2-66', '9-13', '4-25', '20-0' ,
+'5-53', '9-26', '0-53', '0-44', '4-13', '2-44', '9-33', '13-1', '0-64', '5-46' ,
+'24-1', '2-64', '13-2', '9-20', '5-36', '1-33', '12-8', '20-2', '2-60', '0-76' ,
+'4-44', '5-42', '15-16', '1-39', '18-4', '1-34', '5-44', '8-18', '4-39', '0-81' ,
+'0-66', '0-82', '24-4', '22-2', '1-45', '22-4', '8-39', '13-16', '2-28', '1-35' ,
+
+'22-0', '0-70', '0-28', '4-21', '8-8', '25-4', '0-60', '2-70', '0-77', '37-1' ,
+'12-12', '15-25', '5-28', '0-78', '9-21', '33-0', '4-26', '9-35', '4-24', '46-0' ,
+'15-12', '1-28', '8-21', '0-89', '20-9', '8-26', '9-18', '8-25', '1-52', '39-0' ,
+'33-1', '13-5', '5-54', '4-20', '1-36', '1-60', '9-36', '12-30', '4-30', '1-65' ,
+'24-0', '9-30', '1-54', '1-44', '20-1', '1-42', '12-18', '20-5', '15-9', '18-16' ,
+
+'22-5', '9-28', '1-59', '1-55', '20-8', '13-12', '4-34', '8-20', '9-25', '15-13' ,
+'12-16', '54-0', '8-13', '18-12', '1-46', '13-4', '22-8', '0-93', '59-1', '24-9' ,
+'18-18', '4-35', '20-12', '12-20', '18-8', '8-24', '13-9', '24-2', '1-57', '4-42' ,
+'1-53', '8-35', '1-68', '4-36', '13-26', '13-18', '0-86', '9-39', '4-33', '8-34' ,
+'41-2', '24-13', '12-26', '18-9', '30-5', '15-26', '12-24', '12-13', '24-8', '1-64' ,
+
+'12-33', '25-2', '0-92', '37-4', '30-0', '4-57', '44-1', '45-1', '1-73', '44-0' ,
+'28-1', '4-46', '1-70', '37-0', '25-8', '13-8', '15-28', '0-90', '30-2', '41-0' ,
+'46-1', '25-9', '20-24', '13-21', '25-5', '26-8', '30-9', '50-4', '13-25', '12-34' ,
+'4-54', '35-0', '39-1', '22-12', '4-45', '4-53', '39-2', '1-66', '8-30', '8-44' ,
+'34-0', '4-28', '4-52', '13-20', '15-20', '12-21', '20-4', '1-76', '35-2', '1-77' ,
+
+'56-4', '8-45', '28-2', '18-20', '15-24', '12-35', '33-4', '46-2', '8-33', '22-18' ,
+'28-4', '1-78', '18-24', '35-4', '20-18', '13-30', '41-1', '60-0', '4-59', '22-9' ,
+'54-1', '15-18', '18-21', '12-25', '15-21', '35-8', '8-36', '20-16', '25-12', '22-13' ,
+'20-13', '4-55', '13-13', '4-60', '13-24', '20-21', '24-5', '12-36', '51-0', '26-0' ,
+'58-0', '24-18', '35-5', '35-12', '30-1', '28-0', '34-4', '8-42', '26-2', '39-4' ,
+
+'37-2', '20-20', '37-8', '28-8', '22-16', '26-13', '54-2', '45-4', '35-1', '18-13' ,
+'24-12', '59-2', '24-16', '8-28', '41-5', '26-12', '46-4', '35-9', '34-12', '41-4' ,
+'39-8', '12-28', '45-0', '34-1', '25-16', '60-1', '33-12', '39-5', '34-2', '26-16' ,
+'59-0', '25-13', '33-9', '45-2', '44-4', '30-12', '33-8', '44-5', '22-20', '28-12' ,
+'28-5', '50-0', '28-13', '34-8', '51-1', '26-9', '33-2', '46-5', '30-4', '81-0' ,
+
+'50-2', '26-1', '58-1', '75-0', '54-4', '58-2', '30-8', '34-5', '64-0', '65-2' ,
+'37-9', '26-4', '26-5', '66-0', '28-9', '56-0', '33-5', '70-0', '56-2', '69-0' ,
+'13-28', '45-5', '65-0', '37-5', '79-0', '84-0', '39-9', '41-8', '34-9', '66-1' ,
+'50-1', '44-2', '64-2', '65-1', '51-5', '69-1', '28-16', '51-2', '64-1', '86-0' ,
+'51-4', '74-0', '75-1', '85-0', '50-5', '70-1', '56-1', '77-0', '74-1', '60-2' ,
+]
+
 cz_truc_model['hand_pick'] = [
 '0-0', '0-1', '1-0', '0-2', '2-0', '0-4', '4-0', '1-1', '0-5', '2-1' ,
 '5-0', '1-2', '0-8', '2-2', '8-0', '1-4', '4-1', '0-9', '2-4', '9-0' ,
@@ -1739,3 +1984,295 @@ cnot_truc_model['hand_pick'] = [
 '22-9', '33-0', '33-4', '22-4', '54-2', '8-18', '28-1', '0-45', '50-0', '24-1' ,
 '13-1', '51-2', '33-5', '2-30', '1-21', '4-18', '59-0', '15-12', '0-25', '8-24' ,    
 ]
+
+
+def shortest_path_to_core(G, core_states, target_state):
+    """Finds the sortest path to the specified core states
+
+    Args:
+        G (nx.Graph): graph where nodes are states and edges
+                      represent a population transfer rate under
+                      the specified drive
+        core_states (list[int, str]): list of core states, as they are
+                                      labeled in the graph
+        target (int or str): target state
+
+    Returns:
+       target, (shortest path length, shortest path)
+    """
+    shortest_path = ""
+    shortest_path_len = np.inf
+    for source in core_states[:-1]:
+        if nx.has_path(G, source, target_state):
+            path = nx.shortest_path(G, source=source, target=target_state,
+                                    weight="weight")
+            path_len = nx.path_weight(G, path,'weight')
+            # path_len = nx.shortest_path_length(G, source=source, target=target, weight="weight")            
+        if path_len < shortest_path_len:
+            shortest_path_len = path_len
+            shortest_path = ",".join([str(x) for x in path])
+    return shortest_path_len, shortest_path
+
+
+def all_path_to_core(G, core_states, target_state, cutoff=2):
+    """Finds all paths to the specified core states
+    under a specified length
+
+    Args:
+        G (nx.Graph): graph where nodes are states and edges
+                      represent a population transfer rate under
+                      the specified drive
+        core_states (list[int, str]): list of core states, as they are
+                                      labeled in the graph
+        target (int or str): target state
+        cutoff (float): maximum length to consider for paths
+
+    Returns:
+       target, (total length of paths, all paths)
+    """
+    path_tot = []
+    if target_state in core_states:
+        weight_tot = 1
+    else:
+        weight_tot = 0
+        for source in core_states:
+            for path in nx.all_simple_paths(G, source, target_state, cutoff=cutoff):
+                weight_tot += np.exp( - nx.path_weight(G, path,'weight') )
+                path_tot.append(path)
+    return -np.log(weight_tot), path_tot
+
+
+# def trunc_by_thresh(core_states_index, drive_term, thresh=1e-2, total_trunc=None):
+#     """
+#     Returns a list of state indices that are connected to the specified core states
+#     via large entries in the given drive term
+
+#     Args:
+#         core_states_index (list[int]): The indices of the states to begin with
+#                                    (should be the logical states).
+#         drive_term (np.array complex): The operator used to drive a gate.
+#         thresh (float, optional): The threshold above which states count as connected.
+#                                   Defaults to 1e-2.
+#         total_trunc (int, optional): Highest index to consider. If none is given
+#                                      then considers all entries in drive_term
+
+#     Returns:
+#         list[int]: list of state indices
+#     """
+
+#     if total_trunc is None:
+#         total_trunc = drive_term.shape[1]
+
+#     hspace_index = [s for s in core_states_index]
+#     # Add every state that is connected by entries above thresh
+#     # to the core states in the drive term
+#     # By adding to hspace_index as you're looping through it,
+#     # we consider as many degrees of connection as we need
+#     for s in hspace_index:
+#         for i, s2 in enumerate(np.arange(total_trunc)):
+#             if np.abs(drive_term[s, i]) > thresh and i not in hspace_index:
+#                 hspace_index.append(i)
+#     return sorted(hspace_index)
+
+
+def pop_rate(A, n_ij, delta):
+    """Calculates the maximum population that could transfer
+    between two states if it were considered as a two state system
+
+    Args:
+        A (float): drive amplitude
+        n_ij (complex): entry i,j of the operator used to drive
+        delta (float): detuning from drive transition
+    Returns:
+        float: max population that could transfer (between 0-1)
+    """
+    return (abs(A*n_ij)**2) / (abs(A*n_ij)**2 + delta**2)
+    # return (np.abs(A*n_ij)**2) / (np.abs(A*n_ij)**2 + delta**2)
+
+
+def make_rate_graph(drive_term, evals, wd, A, labels = None, normalization=True):
+    """
+    Makes a graph that represents the population transfer rate
+    of a system under the presence of the specified monotone drive
+
+    Args:
+        drive_term (np.array[complex]): The operator used to drive a gate.
+        evals (list[float]): eigenvalues of the system
+        wd (float): drive frequency
+        A (float): drive amplitude
+        labels (list[str], optional): labels to use for each state. Uses
+                                      the index of the state if none is given
+
+    Returns:
+        nx.Graph: Graph representing the system
+    """
+
+    if labels is None:
+        labels = np.arange(drive_term.shape[0])
+
+    G = nx.DiGraph()
+    max_n_ij = np.max(np.abs(drive_term.data))
+    for i, s_i in enumerate(labels):
+        for j, s_j in enumerate(labels):
+            if i < j:
+                n_ij = np.abs(drive_term[i, j])
+                if normalization:
+                    n_ij *= n_ij/max_n_ij
+                delta = abs(wd - (evals[j] - evals[i]))
+                population_rate = pop_rate(A, n_ij, delta)
+                if population_rate > 0:
+                    G.add_edge(s_i, s_j, weight=-np.log(population_rate))
+    return G
+
+
+def make_leakage_df(core_states, drive_term, evals, wd, A, labels=None,
+                    path_func=shortest_path_to_core, G=None):
+    """
+    Makes a dataframe where each row is a state rated by how much
+    leakage is expected
+
+    Args:
+        core_states (list[int]): The indices of the states to begin with
+                                   (should be the logical states).
+        drive_term (np.array[complex]): The operator used to drive a gate.
+        evals (list[float]): eigenvalues of the system
+        wd (float or list of float): drive frequency(s)
+        A (float or list of float): drive amplitude(s)
+        labels (list[str], optional): labels to use for each state. Uses
+                                      the index of the state if none is given
+        path_func (func): function that takes in (G, core_states, s) and returns
+                          a distance from s to core_states. Either shortest_path_to_core
+                          or all_path_to_core
+        G (nx.Graph): pre-computed rate-graph. Makes one if none is given.
+
+    Returns:
+        dataframe
+    """
+    if labels is None:
+        labels = np.arange(drive_term.shape[0])
+
+    df = []
+    if G is None:
+        G = make_rate_graph(drive_term, evals, wd, A, labels = labels)
+
+    for target_state in labels:
+        shortest_path_len, shortest_path = path_func(G, core_states, target_state)
+        entry = {}
+        entry["i"] = target_state
+        entry["path"] = shortest_path
+        entry["path_len"] = np.exp(-shortest_path_len)
+        df.append(entry)
+
+    return pd.DataFrame(df).sort_values(by="path_len", ascending=False)
+
+
+def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, labels=None,
+                            path_func=shortest_path_to_core):
+    """
+    Returns indices/state labels for a truncated model, keeping the n most important states
+    according to the graph search estimate.
+
+    You can give multiple drive pulses by making wd and A lists. In this case it
+    will combine the dataframes, keeping the maximum entry for each state.
+
+    Args:
+        n (int): number of states to include in the reduced model
+        core_states (list[int]): The indices of the states to begin with
+                                   (should be the logical states).
+        drive_term (np.array[complex]): The operator used to drive a gate.
+        evals (list[float]): eigenvalues of the system
+        wd (float or list of float): drive frequency(s)
+        A (float or list of float): drive amplitude(s)
+        labels (list[str], optional): labels to use for each state. Uses
+                                      the index of the state if none is given
+        path_func (func): function that takes in (G, core_states, s) and returns
+                          a distance from s to core_states. Either shortest_path_to_core
+                          or all_path_to_core
+        G (nx.graph or list of nx.graph): precomputed rate graphs, must match len of A,wd
+
+    Returns:
+        list of state indices/labels
+    """
+
+    if isinstance(wd, float):
+        wd = [wd]
+    if isinstance(A, float):
+        A = [A]
+
+    df_list = []
+    for i in range(len(wd)):
+        df = make_leakage_df(core_states, drive_term, evals, wd[i], A[i], 
+                             G=None, labels=labels, path_func=path_func)
+        df_list.append(df)
+    df = pd.concat(
+                    df_list
+                    ).sort_values(
+                                    "path_len", ascending=False
+                                    ).drop_duplicates("i", keep="first")
+    return list(df["i"].values[:n])
+
+def compare_two_lists(list1, list2):
+    only_in_list1 = [item for item in list1 if item not in list2]
+    only_in_list2 = [item for item in list2 if item not in list1]
+    unique_elements = only_in_list1 + only_in_list2
+    common_elements = [item for item in list1 if item in list2]
+
+    print(f'list1 and list2 have {len(common_elements)} common elements'
+          +f' and {len(list1) - len(common_elements)} unique elements.')
+
+    print_data(f'Only in list1 (len={len(only_in_list1)})', only_in_list1, 
+                  num_each_row=10, n_make_blank_line=50)
+    list1_index = [list1.index(i) for i in only_in_list1]
+    print_data(f'index Only in list1 (len={len(only_in_list1)})', list1_index, 
+                  num_each_row=10, n_make_blank_line=50)
+    
+    print_data(f'Only in list2 (len={len(only_in_list2)})', only_in_list2, 
+                  num_each_row=10, n_make_blank_line=50)    
+    list2_index = [list2.index(i) for i in only_in_list2]
+    print_data(f'index Only in list2 (len={len(only_in_list2)})', list2_index, 
+                  num_each_row=10, n_make_blank_line=50)    
+
+def load_drive_params_2q(cz_run):
+    """
+    Load two-qubit-gate drive parameters from a CSV file.
+    """
+    if cz_run:
+        folder = 'data/data_cz_3ncut_truc1=300_select.txt'
+        params = pd.read_csv(folder)[['tg', 'drive_amp', 'detune']].to_numpy()
+    else:
+        folder = '../cnot/data/data_cnot_fidelity_3ncut.txt'
+        params = pd.read_csv(folder)[['tg', 'drive_amp_1', 'drive_amp_2', 
+                                      'detune_1', 'detune_2']].to_numpy()
+    return params
+
+
+def load_noise_data_2q(t1_tphi_other, 
+                    folder = '../../data/3ncut_two_zeropi/truc1=500/'):
+    """
+    Load dephasing rates calculated for 50μs.    
+    """    
+    gamma_q0 = pd.read_csv(folder+ 'data_gamma_qubit0.txt')
+    gamma_q1 = pd.read_csv(folder+ 'data_gamma_qubit1.txt')
+    n_theta0 = np.load(folder+'n_theta0.npy')
+    n_theta1 = np.load(folder+'n_theta1.npy')
+    gamma_dephase_02_q0 = gamma_q0['tphi_02'].to_numpy() *50 /t1_tphi_other
+    gamma_dephase_02_q1 = gamma_q1['tphi_02'].to_numpy() *50 /t1_tphi_other
+    return n_theta0, n_theta1, gamma_dephase_02_q0, gamma_dephase_02_q1
+
+
+def max_index_2d_array(arr, arr_name=None):
+    row, col = np.unravel_index(np.argmax(arr), arr.shape)
+    print(f'{arr_name}.shape = {np.shape(arr)}, '
+          +f'maximum = {np.round(abs(arr[row, col]), 8)}, '
+          +f'row={row}, column={col}')
+
+
+
+
+
+
+
+
+
+
+
