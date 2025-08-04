@@ -252,7 +252,29 @@ def labmert_proj(xx, yy, zz):
 def PolyArea(x,y):
     return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
 
-def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n_cut=60, phi_cut=200):
+def get_coupling_rate():
+    zp = scq.Circuit(zp_yml, from_file=False)
+    zp.configure(transformation_matrix=np.linalg.inv(transform_2zeropi))
+    system_hierarchy = [[1,2],  [5,6]]
+    subsystem_trunc_dims = [100, 100]
+    zp.configure(system_hierarchy=system_hierarchy,
+                subsystem_trunc_dims=subsystem_trunc_dims)    
+    zp.cutoff_ext_1, zp.cutoff_ext_5 = 50, 50
+    zp.cutoff_n_2, zp.cutoff_n_6 = 20, 20        
+    n2, n6 = symbols('n2 n6')
+    g = float(zp.sym_interaction((1,0), return_expr=True).coeff(n2*n6) )
+    return g
+
+def clean_eval_eket(eval, eket):
+    sorted_idx = np.argsort(eval)
+    eval = eval[sorted_idx]
+    eval = eval - eval[0]
+    eket = ssp.csr_matrix([eket[:,idx] for idx in sorted_idx])
+    return eval,eket
+
+def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, 
+                            n_cut=60, phi_cut=200, test=False):
+    
     zp = scq.Circuit(zp_yml, from_file=False)
     zp.Ec0 = Ec0
     zp.configure(transformation_matrix=np.linalg.inv(transform_2zeropi))
@@ -263,23 +285,24 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
     subsystem_trunc_dims = [100, 100]
     zp.configure(system_hierarchy=system_hierarchy,
                 subsystem_trunc_dims=subsystem_trunc_dims)
-
-    zp.cutoff_ext_1, zp.cutoff_ext_5 = phi_cut, phi_cut
-    zp.cutoff_n_2, zp.cutoff_n_6 = n_cut, n_cut
+    if test:
+        zp.cutoff_ext_1, zp.cutoff_ext_5 = 50, 50
+        zp.cutoff_n_2, zp.cutoff_n_6 = 20, 20        
+    else:
+        zp.cutoff_ext_1, zp.cutoff_ext_5 = phi_cut, phi_cut
+        zp.cutoff_n_2, zp.cutoff_n_6 = n_cut, n_cut
+    n2, n6 = symbols('n2 n6')
+    g = float(zp.sym_interaction((1,0), return_expr=True).coeff(n2*n6) )
+    # print(f'zp.cutoff_ext_1, zp.cutoff_n_2 = {zp.cutoff_ext_1}, {zp.cutoff_n_2}')
 
     ### the two-line code below takes time when truc1 is large
     eval0, eket0 = zp.subsystems[0].eigensys(evals_count=truc1)
     eval1, eket1 = zp.subsystems[1].eigensys(evals_count=truc1)
 
-    sorted_idx0 = np.argsort(eval0)
-    eval0 = eval0[sorted_idx0]
-    eval0 = eval0 - eval0[0]
-    eket0 = ssp.csr_matrix([eket0[:,idx] for idx in range(truc1)])
-
-    sorted_idx1 = np.argsort(eval1)
-    eval1 = eval1[sorted_idx1]
-    eval1 = eval1 - eval1[0]
-    eket1 = ssp.csr_matrix([eket1[:,idx] for idx in range(truc1)])
+    eval0, eket0 = clean_eval_eket(eval0, eket0)
+    eval1, eket1 = clean_eval_eket(eval1, eket1)
+    # eket0 = ssp.csr_matrix([eket0[:,idx] for idx in range(truc1)])
+    # eket1 = ssp.csr_matrix([eket1[:,idx] for idx in range(truc1)])
 
     # get the n-operator in qubit basis of single qubit
     n_theta0 = (eket0 @ zp.subsystems[0].n2_operator() @ eket0.conj().T).todense()
@@ -288,20 +311,9 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
     ###  Truncate two qubits using charge matrix elements
     hspace_0 = np.arange(truc1)
     hspace_1 = np.arange(truc1)
-    thresh_matrix_element=1e-4
     if charge_pick:
-        hspace_0 = [0, 2]
-        hspace_1 = [0, 2]
-        for s in hspace_0:
-            for i in range(truc1):
-                if np.abs(n_theta0[s, i]) > thresh_matrix_element and i not in hspace_0:
-                    hspace_0.append(i)
-        hspace_0.sort()
-        for s in hspace_1:
-            for i in range(truc1):
-                if np.abs(n_theta1[s, i]) > thresh_matrix_element and i not in hspace_1:
-                    hspace_1.append(i)
-        hspace_1.sort()
+        hspace_0 = get_truncated_subspace_xgate(n_theta0, truc1)
+        hspace_1 = get_truncated_subspace_xgate(n_theta1, truc1)
         # if hspace_theta != None:
         #     hspace_0 = hspace_theta
         #     hspace_1 = hspace_theta
@@ -314,8 +326,7 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
 
     ##############################################################################################
     ###  Compute eigenvalues and eigenvectors for coupling H
-    n2, n6 = symbols('n2 n6')
-    g = float(zp.sym_interaction((1,0), return_expr=True).coeff(n2*n6) )
+
     Hint = qt.tensor(qt.Qobj(n_theta0) , qt.Qobj(n_theta1))
     H_bare = (  qt.tensor(qt.Qobj(np.diag(eval0)),  qt.identity(len(hspace_1)))
             +  qt.tensor(qt.identity(len(hspace_0)),  qt.Qobj(np.diag(eval1))) )
@@ -348,20 +359,7 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
 
     ##############################################################################################
     ### Get the dressed states index
-    index_array = [] # array index in each qubit (# in hspace_0, hspace_1)
-    for i, index in enumerate(top_index):
-        j=0
-        while j < len(index):
-            if index[j] not in index_array:
-                index_array.append(index[j])
-                break
-            else:
-                j+=1
-            if j==10:
-                index_array.append((0,0))
-                print(i, 'need to further compare overlap')
-    hspace_full = [(str(hspace_0[idx[0]])+'-'+str(hspace_1[idx[1]])) for idx in index_array] # actual state index in each qubit
-
+    hspace_full = get_dressed_states_index(top_index, hspace_0, hspace_1)
     n_theta0_dress = ssp.kron(n_theta0, ssp.identity(len(hspace_1)))
     n_theta0_dress = np.abs(np.round(eket_tot @ n_theta0_dress @ eket_tot.conj().T, 8)).todense()
     n_theta1_dress = ssp.kron(ssp.identity(len(hspace_0)), n_theta1)
@@ -380,12 +378,13 @@ def get_operator_two_zeropi(Ec0=1.0, truc1=30, truc_tot=50, charge_pick=False, n
 
 def find_overlap(eket, *arg):
     bare_state, dim_0, dim_1 = arg
+    num = 20
     overlaps = np.array([[np.abs( (eket @ bare_state[i][j].data).todense()[0,0] )
                         for j in range(dim_1)]
                             for i in range(dim_0)])
     flat_array = overlaps.flatten() # Flatten the 2D array
-    # Find the indices of the top 3 largest values (in the flattened 1D array)
-    top_indices_flat = np.argpartition(-flat_array, 10)[:10]
+    # Find the indices of the top 10 largest values (in the flattened 1D array)
+    top_indices_flat = np.argpartition(-flat_array, num)[:num]
     # Convert the flat indices to 2D indices
     top_indices_2d = np.unravel_index(top_indices_flat, overlaps.shape)
     # Extract the values corresponding to the indices
@@ -703,30 +702,7 @@ def cz_fidelity_log_old(arg_all):
     fidelity = qt.average_gate_fidelity(Ucprime, target=cz_gate())
     return np.log10(1-fidelity)
 
-def load_qubit_data_2q(truc_full, import_2000=False, truc1=300):
-    """
-    Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
-    The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
-    """    
-    if import_2000:
-        folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick=False/'
-    else:
-        folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
-    eket_tot = ssp.csr_matrix(np.load(folder+ 'eket_tot.npy'))[:truc_full]
-    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
-    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
-    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
-    n_theta0_dress = truncate_2(n_theta0_dress, np.arange(truc_full))
-    n_theta1_dress = truncate_2(n_theta1_dress, np.arange(truc_full))
 
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
-    hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
-    hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
-   
-    logi_state = ['0-0', '0-2', '2-0', '2-2']
-    return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
-            n_theta1_dress, hspace_0, hspace_1, logi_state]
 
 
 # def cz_fidelity_optimize(arg, *args):
@@ -907,28 +883,10 @@ def build_hamiltonian_xgate(evals, drive_term, hspace, logi_state):
     H_qbt_drive = [H0_truc, [drive_truc, drive_gauss_A], [drive_truc, drive_gauss_B]]
     return H_qbt_drive, drive_truc, logi_idx
 
-def load_qubit_data_xgate(qubit_0 = True, folder = '../../data/3ncut_one_zeropi/'):
-    """
-    Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
-    The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
 
-    Parameters:
-        qubit_0 (bool): If True, load data for qubit 0; otherwise, load for qubit 1.
-        folder (str): Path to the directory containing the data files.
-    Returns:
-        evals (np.ndarray): Energy levels.
-        n_theta (np.ndarray): Matrix elements for theta drive.
-        n_phi (np.ndarray): Matrix elements for phi drive.
-    """    
-    suffix = '0' if qubit_0 else '1'
-    evals = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_specdata_truc=1000_3ncut.h5').energy_table
-    n_theta = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_n_theta_truc=1000_3ncut.h5').matrixelem_table
-    n_phi = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_n_phi_truc=1000_3ncut.h5').matrixelem_table
-    evals -= evals[0]
-    logi_state = [0, 2]
-    return evals, n_theta, n_phi, logi_state
 
-def construct_c_ops_xgate(n_hspace, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hspace, state_idx_tphi):
+def construct_c_ops_xgate(n_hspace, drive_truc, Gamma_t1, gamma_dephase_new, tphi, hspace, state_idx_tphi, 
+                            apply_decay=True, apply_dephase=True):
     """
     Constructs collapse operators for dissipation.
 
@@ -948,34 +906,21 @@ def construct_c_ops_xgate(n_hspace, drive_truc, Gamma_t1, gamma_dephase_new, tph
     # the dephasing rate is calculated in some file for 50μs for 2 state, the line below change dephasing coeffs to the input tphi (170, 30, 3μs)
     gamma_dephase_new = gamma_dephase_new * 50 / tphi
     jump_t1, jump_tphi = [], []
-    for i in range(1, n_hspace):
-        for j in range(i): # only consider downwards deacy
-            jump_t1.append(np.sqrt(gamma_decay_new[j, i]) * qt.basis(n_hspace, j) * qt.basis(n_hspace, i).dag())
-    for i, state in enumerate(hspace):
-        if state in list(state_idx_tphi):
-            idx = list(state_idx_tphi).index(state) 
-            jump_tphi.append(np.sqrt(2 * gamma_dephase_new[idx]) * qt.basis(n_hspace, i).proj())
-        else:
-            jump_tphi.append(qt.Qobj(np.zeros((n_hspace, n_hspace))))
-    
-    # print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
+    if apply_decay:
+        for i in range(1, n_hspace):
+            for j in range(i): # only consider downwards deacy
+                jump_t1.append(np.sqrt(gamma_decay_new[j, i]) * qt.basis(n_hspace, j) * qt.basis(n_hspace, i).dag())
+    if apply_dephase:
+        for i, state in enumerate(hspace):
+            if state in list(state_idx_tphi):
+                idx = list(state_idx_tphi).index(state) 
+                jump_tphi.append(np.sqrt(2 * gamma_dephase_new[idx]) * qt.basis(n_hspace, i).proj())
+            else:
+                jump_tphi.append(qt.Qobj(np.zeros((n_hspace, n_hspace))))    
+    print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
     return jump_t1 + jump_tphi
 
-def load_dephasing_data_xgate(drive_theta):
-    """
-    Load dephasing rates calculated for 50μs.
 
-    Parameters:
-        drive_theta (bool): If True, load theta dephasing; otherwise, phi.
-
-    Returns:
-        np.ndarray: Dephasing rates for each state.
-    """
-    gamma_file = 'data/data_gamma_theta_500.txt' if drive_theta else 'data/data_gamma_phi_500.txt'
-    gamma_new = pd.read_csv(gamma_file)
-    gamma_dephase = gamma_new['tphi_50us_02'].to_numpy()
-    state_idx = gamma_new['hspace'].to_numpy()
-    return state_idx, gamma_dephase
 
 
 def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=200):
@@ -1401,34 +1346,6 @@ def get_jump_op(state_i, *args):
 #                               eket_tot.conj().T)
 #     return [jump_t1, jump_tphi]
 
-
-
-def get_jump_op_decay(transition, *args):
-    state_i, state_j = transition
-    dim_0, dim_1, n_theta_trunc, eket_tot, qubit_a, Gamma_decay = args
-
-    if qubit_a:
-        ladder_ij = qt.basis(dim_0, state_i) * qt.basis(dim_0, state_j).dag()
-        jump_t1 = ( np.sqrt(Gamma_decay * abs(n_theta_trunc[state_i, state_j])**2 )
-                     * qt.tensor(ladder_ij, qt.qeye(dim_1)) )
-    else: # qubit_b
-        ladder_ij = qt.basis(dim_1, state_i) * qt.basis(dim_1, state_j).dag()
-        jump_t1 = ( np.sqrt(Gamma_decay * abs(n_theta_trunc[state_i, state_j])**2 )
-                     * qt.tensor(qt.qeye(dim_0), ladder_ij) )        
-    jump_t1 = qt.Qobj( eket_tot @ jump_t1.data @ eket_tot.conj().T )
-    return jump_t1
-
-def get_jump_op_dephase(state_j, *args):
-    dim_0, dim_1, gamma_dephase, eket_tot, qubit_a = args
-    if qubit_a:
-        proj_jj = qt.basis(dim_0, state_j).proj()
-        jump_tphi = np.sqrt( 2*gamma_dephase[state_j] ) * qt.tensor(proj_jj, qt.qeye(dim_1))
-    else: # qubit_b
-        proj_jj = qt.basis(dim_1, state_j).proj()
-        jump_tphi = np.sqrt( 2*gamma_dephase[state_j] ) * qt.tensor(qt.qeye(dim_0), proj_jj)
-    jump_tphi = qt.Qobj( eket_tot @ jump_tphi.data @ eket_tot.conj().T)
-    return jump_tphi
-
 def get_transitions_for_collapse(hspace, n_theta, low_states=50, filter_ratio=0.01):
     low = [s for s in hspace if s < low_states]
     n_theta_low = truncate_2(n_theta, low)
@@ -1445,37 +1362,70 @@ def get_transitions_for_collapse(hspace, n_theta, low_states=50, filter_ratio=0.
     ]
     return transition, n_theta_trunc
 
+def get_jump_op_decay(transition, *args):
+    state_i, state_j = transition
+    dim_0, dim_1, n_theta_trunc, eket_tot, qubit_a, Gamma_decay = args
+    decay_rate = np.sqrt(Gamma_decay * abs(n_theta_trunc[state_i, state_j])**2)
+    if qubit_a:
+        ladder_ij = qt.basis(dim_0, state_i) * qt.basis(dim_0, state_j).dag()
+        jump_t1 = ( decay_rate* qt.tensor(ladder_ij, qt.qeye(dim_1)) )
+    else: # qubit_b
+        ladder_ij = qt.basis(dim_1, state_i) * qt.basis(dim_1, state_j).dag()
+        jump_t1 = ( decay_rate* qt.tensor(qt.qeye(dim_0), ladder_ij) )        
+    jump_t1 = qt.Qobj( eket_tot @ jump_t1.data @ eket_tot.conj().T )
+    return jump_t1
+
+def get_jump_op_dephase(state_j, *args):
+    dim_0, dim_1, gamma_dephase, eket_tot, qubit_a = args
+    dephasing_rate = np.sqrt(2 * gamma_dephase[state_j])
+    if qubit_a:
+        proj_jj = qt.basis(dim_0, state_j).proj()
+        jump_tphi = dephasing_rate* qt.tensor(proj_jj, qt.qeye(dim_1))
+    else: # qubit_b
+        proj_jj = qt.basis(dim_1, state_j).proj()
+        jump_tphi = dephasing_rate* qt.tensor(qt.qeye(dim_0), proj_jj)
+    jump_tphi = qt.Qobj( eket_tot @ jump_tphi.data @ eket_tot.conj().T)
+    return jump_tphi
+
 def construct_c_ops_2q(dim_0, dim_1, n_theta0_trunc, n_theta1_trunc, 
                         gamma_dephase_02_q0, gamma_dephase_02_q1, eket_tot, 
                         Gamma_decay_q0, Gamma_decay_q1, 
-                        transition_a, transition_b):
+                        transition_a, transition_b, 
+                        apply_decay=True, apply_dephase=True, decay_enlarge=1):
     """
     Constructs collapse operators for dissipation.
     """
+    jump_t1_a, jump_tphi_a, jump_t1_b, jump_tphi_b = [], [], [], []
     qubit_a = True
-    arg_a_decay = [dim_0, dim_1, n_theta0_trunc, eket_tot, qubit_a, Gamma_decay_q0] 
-    jump_t1_a = Parallel(n_jobs=10)(delayed(get_jump_op_decay)
-                                    (transition, *arg_a_decay) 
-                                    for transition in transition_a)
-
-    arg_a_dephase = [dim_0, dim_1, gamma_dephase_02_q0, eket_tot, qubit_a] 
-    jump_tphi_a = Parallel(n_jobs=10)(delayed(get_jump_op_dephase)
-                                      (state_j, *arg_a_dephase) 
-                                      for state_j in range(1,dim_0))
+    if apply_decay:
+        arg_a_decay = [dim_0, dim_1, n_theta0_trunc, eket_tot, qubit_a, Gamma_decay_q0] 
+        jump_t1_a = Parallel(n_jobs=10)(delayed(get_jump_op_decay)
+                                        (transition, *arg_a_decay) 
+                                        for transition in transition_a)
+    if apply_dephase:
+        arg_a_dephase = [dim_0, dim_1, gamma_dephase_02_q0, eket_tot, qubit_a] 
+        jump_tphi_a = Parallel(n_jobs=10)(delayed(get_jump_op_dephase)
+                                        (state_j, *arg_a_dephase) 
+                                        for state_j in range(1,dim_0))
 
     qubit_a = False
-    arg_b_decay = [dim_0, dim_1, n_theta1_trunc, eket_tot, qubit_a, Gamma_decay_q1] 
-    jump_t1_b = Parallel(n_jobs=10)(delayed(get_jump_op_decay)
-                                    (transition, *arg_b_decay) 
-                                    for transition in transition_b)
-
-    arg_b_dephase = [dim_0, dim_1, gamma_dephase_02_q1, eket_tot, qubit_a] 
-    jump_tphi_b = Parallel(n_jobs=10)(delayed(get_jump_op_dephase)
-                                      (state_j, *arg_b_dephase) 
-                                      for state_j in range(1,dim_1))
-
-    return jump_t1_a + jump_tphi_a + jump_t1_b + jump_tphi_b
-
+    if apply_decay:
+        arg_b_decay = [dim_0, dim_1, n_theta1_trunc, eket_tot, qubit_a, Gamma_decay_q1] 
+        jump_t1_b = Parallel(n_jobs=10)(delayed(get_jump_op_decay)
+                                        (transition, *arg_b_decay) 
+                                        for transition in transition_b)
+    if apply_dephase:
+        arg_b_dephase = [dim_0, dim_1, gamma_dephase_02_q1, eket_tot, qubit_a] 
+        jump_tphi_b = Parallel(n_jobs=10)(delayed(get_jump_op_dephase)
+                                        (state_j, *arg_b_dephase) 
+                                        for state_j in range(1,dim_1))
+    
+    # print(f'decay_enlarge = {decay_enlarge}')
+    # print(f'len(jump_tphi_a) = {len(jump_tphi_a)}, len(jump_tphi_b) = {len(jump_tphi_b)}')
+    # print(f'len(jump_t1_a) = {len(jump_t1_a)}, len(jump_t1_b) = {len(jump_t1_b)}')
+    return (jump_tphi_a + jump_tphi_b 
+            + [jump_t1_a[i] * decay_enlarge for i in range(len(jump_t1_a))]
+            + [jump_t1_b[i] * decay_enlarge for i in range(len(jump_t1_b))] )
 
 
 def zeropi_eval(flux=0, truncation=10):
@@ -1584,8 +1534,10 @@ def print_data(label, data, num_each_row=4, num_digits=None,
         if isinstance(data[0], str):
             print(", ".join(f"'{x}'" for x in data[i:i + num_each_row]), ',')
         else:
-            if num_digits != None and isinstance(data[0], float):
-                print(', '.join(map(str, np.round(data[i:i + num_each_row], num_digits).tolist())), ',')
+            # if num_digits != None and isinstance(data[0], float):
+            #     print(', '.join(map(str, np.round(data[i:i + num_each_row], num_digits).tolist())), ',')
+            if num_digits is not None and isinstance(data[0], float):
+                print(', '.join(f"{x:.{num_digits}f}" for x in data[i:i + num_each_row]), ',')                
             else:
                 print(', '.join(map(str, data[i:i + num_each_row])), ',')
     print('])')
@@ -1719,7 +1671,7 @@ cz_truc_model['short_path'] = [
 '51-2', '28-8', '81-0', '74-0', '34-8', '37-5', '77-0', '37-8', '56-1', '28-9' ,
 ]
 
-cz_truc_model['cz_all_500_500_detune1']  = [
+cz_truc_model['cz_all_500_detune1']  = [
 
 '0-0', '5-0', '0-2', '2-0', '2-2', '5-1', '0-1', '2-1', '0-5', '2-5' ,
 '1-0', '5-2', '1-2', '9-0', '5-4', '2-4', '0-4', '1-1', '0-9', '2-9' ,
@@ -1782,7 +1734,73 @@ cz_truc_model['cz_all_500_500_detune1']  = [
 '51-2', '69-1', '28-9', '51-4', '28-16', '79-0', '60-2', '65-1', '74-1', '77-0' ,
 ]
 
-cz_truc_model['cz_short_500_500_detune1']  = [
+cz_truc_model['cz_short_300_detune1']  = [
+
+'0-0', '2-0', '2-2', '5-0', '0-2', '5-1', '5-2', '0-1', '2-1', '0-5' ,
+'2-5', '1-0', '1-2', '9-0', '5-4', '0-4', '2-4', '5-5', '1-1', '0-9' ,
+'2-9', '9-1', '4-0', '9-2', '1-5', '4-2', '0-12', '9-4', '2-12', '0-8' ,
+'2-8', '4-1', '4-5', '9-5', '5-8', '0-16', '2-16', '1-9', '1-12', '8-0' ,
+'5-9', '1-4', '0-13', '0-18', '2-13', '2-18', '5-12', '15-4', '9-8', '2-21' ,
+
+'12-0', '4-4', '4-9', '0-21', '8-5', '2-20', '0-26', '18-0', '1-8', '5-26' ,
+'2-26', '2-24', '25-0', '0-24', '15-0', '8-2', '5-16', '0-20', '2-45', '0-45' ,
+'15-1', '2-39', '0-39', '8-12', '5-20', '8-1', '0-25', '12-5', '2-25', '5-13' ,
+'0-33', '2-33', '1-18', '2-35', '0-34', '1-16', '5-33', '9-9', '2-34', '5-24' ,
+'0-36', '12-2', '4-12', '2-36', '1-21', '5-34', '0-52', '13-0', '2-46', '5-21' ,
+
+'18-1', '0-59', '0-65', '8-9', '2-30', '0-30', '0-42', '2-42', '15-2', '0-55' ,
+'15-8', '5-18', '8-4', '5-35', '1-25', '4-8', '0-35', '12-1', '0-57', '25-1' ,
+'9-12', '12-4', '1-30', '18-2', '5-25', '9-24', '0-68', '1-20', '9-16', '5-30' ,
+'8-16', '12-9', '1-13', '15-5', '0-54', '4-16', '1-26', '1-24', '0-46', '18-5' ,
+'0-73', '22-1', '4-18', '9-13', '4-25', '20-0', '0-53', '0-44', '4-13', '2-44' ,
+
+'13-1', '0-64', '24-1', '13-2', '9-20', '5-36', '1-33', '12-8', '20-2', '15-16' ,
+'1-39', '18-4', '1-34', '8-18', '4-39', '0-66', '24-4', '22-2', '1-45', '22-4' ,
+'13-16', '2-28', '1-35', '22-0', '0-70', '0-28', '4-21', '8-8', '25-4', '0-60' ,
+'37-1', '12-12', '5-28', '9-21', '33-0', '4-26', '4-24', '46-0', '15-12', '1-28' ,
+'8-21', '20-9', '8-26', '9-18', '8-25', '1-52', '39-0', '33-1', '13-5', '4-20' ,
+
+'1-36', '4-30', '24-0', '1-54', '1-44', '20-1', '1-42', '12-18', '20-5', '15-9' ,
+'22-5', '1-55', '20-8', '13-12', '4-34', '8-20', '9-25', '15-13', '12-16', '54-0' ,
+'8-13', '18-12', '1-46', '13-4', '22-8', '24-9', '4-35', '18-8', '8-24', '13-9' ,
+'24-2', '1-53', '4-36', '4-33', '41-2', '18-9', '30-5', '12-13', '24-8', '25-2' ,
+'37-4', '30-0', '44-1', '45-1', '44-0', '28-1', '37-0', '25-8', '13-8', '30-2' ,
+
+'41-0', '46-1', '25-5', '26-8', '35-0', '39-1', '39-2', '34-0', '4-28', '20-4' ,
+'35-2', '28-2', '33-4', '28-4', '35-4', '41-1', '60-0', '22-9', '13-13', '24-5' ,
+'51-0', '26-0', '58-0', '30-1', '28-0', '34-4', '26-2', '39-4', '37-2', '28-8' ,
+'35-1', '45-0', '34-1', '34-2', '59-0', '45-2', '28-5', '50-0', '51-1', '33-2' ,
+'30-4', '26-1', '64-0', '26-4', '26-5', '56-0', '33-5', '65-0', '50-1', '44-2' ,
+]
+
+cz_truc_model['cz_short_200_detune1']  = [
+'0-0', '2-0', '2-2', '5-0', '0-2', '5-1', '5-2', '0-1', '2-1', '0-5' ,
+'2-5', '1-0', '1-2', '9-0', '5-4', '0-4', '2-4', '5-5', '1-1', '0-9' ,
+'2-9', '9-1', '4-0', '9-2', '1-5', '4-2', '0-12', '9-4', '2-12', '0-8' ,
+'2-8', '4-1', '4-5', '9-5', '5-8', '0-16', '2-16', '1-9', '1-12', '8-0' ,
+'5-9', '1-4', '0-13', '0-18', '2-13', '2-18', '5-12', '15-4', '9-8', '2-21' ,
+
+'12-0', '4-4', '4-9', '0-21', '8-5', '2-20', '0-26', '18-0', '1-8', '2-26' ,
+'2-24', '25-0', '0-24', '15-0', '8-2', '5-16', '0-20', '0-45', '15-1', '0-39' ,
+'8-12', '5-20', '8-1', '0-25', '12-5', '2-25', '5-13', '0-33', '2-33', '1-18' ,
+'2-35', '0-34', '1-16', '9-9', '2-34', '5-24', '0-36', '12-2', '4-12', '2-36' ,
+'1-21', '0-52', '13-0', '5-21', '18-1', '8-9', '2-30', '0-30', '0-42', '15-2' ,
+
+'0-55', '15-8', '5-18', '8-4', '1-25', '4-8', '0-35', '12-1', '0-57', '25-1' ,
+'9-12', '12-4', '1-30', '18-2', '1-20', '9-16', '8-16', '12-9', '1-13', '15-5' ,
+'0-54', '4-16', '1-26', '1-24', '0-46', '18-5', '22-1', '4-18', '9-13', '4-25' ,
+'20-0', '0-53', '0-44', '4-13', '13-1', '24-1', '13-2', '1-33', '12-8', '20-2' ,
+'1-39', '18-4', '1-34', '8-18', '24-4', '22-2', '22-4', '2-28', '1-35', '22-0' ,
+
+'0-28', '4-21', '8-8', '25-4', '37-1', '12-12', '33-0', '4-26', '4-24', '46-0' ,
+'1-28', '39-0', '33-1', '13-5', '4-20', '1-36', '24-0', '20-1', '20-5', '15-9' ,
+'22-5', '8-13', '13-4', '13-9', '24-2', '25-2', '30-0', '44-0', '28-1', '37-0' ,
+'13-8', '30-2', '41-0', '35-0', '34-0', '20-4', '28-2', '24-5', '51-0', '26-0' ,
+'30-1', '28-0', '26-2', '35-1', '45-0', '34-1', '50-0', '33-2', '26-1', '26-4' ,
+]
+
+
+cz_truc_model['cz_short_500_detune1']  = [
 
 '0-0', '2-2', '0-2', '2-0', '5-0', '0-1', '2-1', '0-5', '2-5', '1-0' ,
 '5-2', '1-2', '5-1', '0-4', '2-4', '1-1', '0-9', '2-9', '4-0', '5-5' ,
@@ -1845,7 +1863,7 @@ cz_truc_model['cz_short_500_500_detune1']  = [
 '60-2', '28-16', '66-1', '69-1', '77-0', '74-1', '86-0', '64-1', '75-1', '70-1' ,
 ]
 
-cz_truc_model['cz_short_500_500_detune0']  = [
+cz_truc_model['cz_short_500_detune0']  = [
 
 '0-0', '2-0', '5-0', '2-2', '0-2', '5-1', '5-2', '0-1', '2-1', '0-5' ,
 '2-5', '1-0', '1-2', '9-0', '5-4', '0-4', '2-4', '5-5', '1-1', '0-9' ,
@@ -2232,6 +2250,152 @@ def compare_two_lists(list1, list2):
     print_data(f'index Only in list2 (len={len(only_in_list2)})', list2_index, 
                   num_each_row=10, n_make_blank_line=50)    
 
+
+
+
+def max_index_2d_array(arr, arr_name=None):
+    row, col = np.unravel_index(np.argmax(arr), arr.shape)
+    print(f'{arr_name}.shape = {np.shape(arr)}, '
+          +f'maximum = {np.round(abs(arr[row, col]), 8)}, '
+          +f'row={row}, column={col}')
+
+def get_qutip_options(max_step_ideal, max_step_noisy, num_cpus=1):
+    """
+    Get the qutip options 
+    """
+    nsteps_ideal = 1/ max_step_ideal  # Set nsteps to a large number for parallel execution
+    nsteps_noisy = 1/ max_step_noisy  # Set nsteps to a large number for parallel execution
+
+    option_ideal =qt.Options(max_step=max_step_ideal, nsteps=nsteps_ideal, num_cpus=num_cpus)  
+    option_noisy =qt.Options(max_step=max_step_noisy, nsteps=nsteps_noisy, num_cpus=num_cpus) 
+
+    print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
+    print(f'Noisy: max_step = {option_noisy.max_step}, nsteps = {option_noisy.nsteps}')
+    return option_ideal, option_noisy
+
+def get_dressed_states_index(top_index, hspace_0, hspace_1):
+    """
+    Get the dressed states index for each eigenstate.
+
+    Args:
+        top_index (list): List of index pairs for each eigenstate.
+        hspace_0 (list or np.ndarray): Indices for qubit 0.
+        hspace_1 (list or np.ndarray): Indices for qubit 1.
+
+    Returns:
+        hspace_full (list): List of string indices for dressed states.
+    """
+    index_array = []
+    for i, index in enumerate(top_index):
+        j = 0
+        while j < len(index):
+            if index[j] not in index_array:
+                index_array.append(index[j])
+                break
+            else:
+                j += 1
+            if j == 10:
+                index_array.append((0, 0))
+                print(i, 'need to further compare overlap')
+    hspace_full = [f"{hspace_0[idx[0]]}-{hspace_1[idx[1]]}" for idx in index_array]
+    return hspace_full
+
+def load_qubit_data_xgate(qubit_0 = True, folder = '../../data/3ncut_one_zeropi/'):
+    """
+    Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
+    The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
+
+    Parameters:
+        qubit_0 (bool): If True, load data for qubit 0; otherwise, load for qubit 1.
+        folder (str): Path to the directory containing the data files.
+    Returns:
+        evals (np.ndarray): Energy levels.
+        n_theta (np.ndarray): Matrix elements for theta drive.
+        n_phi (np.ndarray): Matrix elements for phi drive.
+    """    
+    suffix = '0' if qubit_0 else '1'
+    evals = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_specdata_truc=1000_3ncut.h5').energy_table
+    n_theta = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_n_theta_truc=1000_3ncut.h5').matrixelem_table
+    n_phi = 2 * np.pi * scq.read(folder + f'zeropi_{suffix}_n_phi_truc=1000_3ncut.h5').matrixelem_table
+    evals -= evals[0]
+    logi_state = [0, 2]
+    return evals, n_theta, n_phi, logi_state
+
+    ##############################################################################################
+    #### data loading functions ######################################################
+    ##############################################################################################
+
+def load_dephasing_data_xgate(drive_theta):
+    """
+    Load dephasing rates calculated for 50μs.
+
+    Parameters:
+        drive_theta (bool): If True, load theta dephasing; otherwise, phi.
+
+    Returns:
+        np.ndarray: Dephasing rates for each state.
+    """
+    gamma_file = 'data/data_gamma_theta_500.txt' if drive_theta else 'data/data_gamma_phi_500.txt'
+    gamma_new = pd.read_csv(gamma_file)
+    gamma_dephase = gamma_new['tphi_50us_02'].to_numpy()
+    state_idx = gamma_new['hspace'].to_numpy()
+    return state_idx, gamma_dephase
+
+def load_drive_params_xgate(drive_theta):
+    """
+    Load X-gate drive parameters from a CSV file.
+
+    Parameters:
+        drive_theta (bool): If True, load theta-drive data; else load phi-drive data.
+
+    Returns:
+        np.ndarray: Parameters array. different rows mean different gate time. 
+        columns mean 'tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
+    """
+    folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
+    f_xgate = pd.read_csv('data/' + folder)
+    return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
+
+def load_1q_data_for_2q(truc1, folder = '../../data/3ncut_two_zeropi/truc1=500/'):
+    
+    eval0 = pd.read_csv(folder+ 'eval0.txt').to_numpy().flatten()
+    eval1 = pd.read_csv(folder+ 'eval1.txt').to_numpy().flatten()
+    n_theta0 = np.load(folder+'n_theta0.npy')
+    n_theta1 = np.load(folder+'n_theta1.npy')
+
+    eval0 = eval0[:truc1]
+    eval1 = eval1[:truc1]
+    hspace_0 = np.arange(truc1)
+    hspace_1 = np.arange(truc1)
+    n_theta0 = truncate_2(n_theta0, hspace_0)
+    n_theta1 = truncate_2(n_theta1, hspace_1)
+    return eval0,eval1,n_theta0,n_theta1
+
+def load_qubit_data_2q(truc_full, import_2000=False, truc1=300):
+    """
+    Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
+    The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
+    """    
+    if import_2000:
+        folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick=False/'
+    else:
+        folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
+    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
+    eket_tot = ssp.csr_matrix(np.load(folder+ 'eket_tot.npy'))[:truc_full]
+    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
+    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
+    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
+    n_theta0_dress = truncate_2(n_theta0_dress, np.arange(truc_full))
+    n_theta1_dress = truncate_2(n_theta1_dress, np.arange(truc_full))
+
+    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
+    hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
+    hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
+   
+    logi_state = ['0-0', '0-2', '2-0', '2-2']
+    return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
+            n_theta1_dress, hspace_0, hspace_1, logi_state]
+
 def load_drive_params_2q(cz_run):
     """
     Load two-qubit-gate drive parameters from a CSV file.
@@ -2260,11 +2424,17 @@ def load_noise_data_2q(t1_tphi_other,
     return n_theta0, n_theta1, gamma_dephase_02_q0, gamma_dephase_02_q1
 
 
-def max_index_2d_array(arr, arr_name=None):
-    row, col = np.unravel_index(np.argmax(arr), arr.shape)
-    print(f'{arr_name}.shape = {np.shape(arr)}, '
-          +f'maximum = {np.round(abs(arr[row, col]), 8)}, '
-          +f'row={row}, column={col}')
+
+
+
+
+
+
+
+
+
+
+
 
 
 

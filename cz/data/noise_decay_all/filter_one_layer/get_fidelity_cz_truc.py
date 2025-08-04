@@ -22,7 +22,7 @@ if __name__ == '__main__':
     ut.print_time()
 
     # n_truc = 200
-    n_truc_list = [55] # [ 20, 40, 50, 60, 80, 100, 150, 200, ] # [100, 200, 300, 400, 500] # List of truncation sizes to test
+    n_truc_list = [20, 40, 60, 80, 100, 150] # [ 20, 40, 50, 60, 80, 100, 150, 200, ] # [100, 200, 300, 400, 500] # List of truncation sizes to test
     filter_ratio = 0.01
 
     cz_run = True # True  # whether to use CZ gate or CNOT gate
@@ -32,12 +32,12 @@ if __name__ == '__main__':
 
     # 'short_path', 'all_path', 'hand_pick', 
     # 'cz_short_500_500_detune0', 'cz_short_500_500_detune1' 
-    use_truc_model, truc_model_name = True, 'hand_pick'
+    use_truc_model, truc_model_name = True, 'cz_short_500_500_detune1'
 
     # whether to calculate noisy fidelity, they should not be true at the same time to avoid error
-    calculate_ideal, calculate_noise = True, False # False, True #   
+    calculate_ideal, calculate_noise = False, True # True, False #    
     t1_tphi_other = 3 # μs
-    tg_list = [2, 9, 16, 23, 30] # Select the first row for testing
+    tg_list = [16] # [2, 9, 16, 23, 30] # Select the first row for testing
 
     max_step_ideal = 1e-3 # Set max_step to 0 for parallel execution
     nsteps_ideal = 1 / max_step_ideal  # Set nsteps to a large number for parallel execution
@@ -141,13 +141,16 @@ if __name__ == '__main__':
             arg_select = [H_drive_select, W_20_50, num_cpus, c_op_list, logi_idx_select, 
                         option_ideal, option_noisy]
             
-            f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)
-                                                (args_indep, *arg_select)
-                                            for args_indep in params)
-            ut.print_data(f'f_{t1_tphi_other}us_{n_truc}', f_noise)
+            # f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)
+            #                                     (args_indep, *arg_select)
+            #                                 for args_indep in params)
+            
+            f_noise = ut.cz_fidelity_log_noise(params[0], *arg_select)
+                        
+            ut.print_data(f'f_{t1_tphi_other}us_{n_truc}', [f_noise])
             ut.print_time()
 
         f_list.append(f_ideal if calculate_ideal else f_noise)
     print(f'n_truc_list = {n_truc_list}')     
-    ut.print_data(f'fidelity_list', f_list)
+    ut.print_data(f'fidelity_list', f_list, num_each_row=4, num_digits=8)
     

@@ -56,54 +56,33 @@ import utils_2Q_gate_zp as ut
 settings.OVERLAP_THRESHOLD = 0.3  # Update scqubits settings
 
 
-def load_drive_params(drive_theta):
-    """
-    Load X-gate drive parameters from a CSV file.
-
-    Parameters:
-        drive_theta (bool): If True, load theta-drive data; else load phi-drive data.
-
-    Returns:
-        np.ndarray: Parameters array. different rows mean different gate time. 
-        columns mean 'tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
-    """
-    folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
-    f_xgate = pd.read_csv('data/' + folder)
-    return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
-
-
 def xgate_fidelity_decay_all():
     """
     Run X-gate fidelity simulations (ideal + noisy) and print results.
     """
 
-    # drive_phi, drive_theta, n_full = False, True, 400
-    drive_phi, drive_theta, n_full = True, False, 500 # 50 states →12 workers, (100 states/40 workers, 200/160). 
+    drive_phi, drive_theta, n_full = False, True, 150
+    # drive_phi, drive_theta, n_full = True, False, 500 # 50 states →12 workers, (100 states/40 workers, 200/160). 
     t1 = 170 # μs
-    tg_list = [1, 5, 9, 13, 17 ] # np.arange(18).tolist() #  ## 18 for theta, 19 for phi     
+    tg_list = [9] # [1, 5, 9, 13, 17 ] # np.arange(18).tolist() #  ## 18 for theta, 19 for phi     
     charge_truc = True  # whether to truncate the charge space
-    calculate_ideal, calculate_noise = False, True # True, False # False, True #   whether to calculate noisy fidelity
+    calculate_ideal, calculate_noise = True, True # True, False # False, True #   whether to calculate noisy fidelity
     num_cpus = 4 # Lower num_cpus <4 can reduce num of workers while >4 won’t change the num.
+    apply_decay, apply_dephase = True, True # False, True # True, False #
 
-    max_step_ideal = 1e-3 # Set max_step to 0 for parallel execution
-    nsteps_ideal = 1/ max_step_ideal  # Set nsteps to a large number for parallel execution
-    max_step_noisy = 3e-4 # Set max_step to 0 for parallel execution
-    nsteps_noisy = 1/ max_step_noisy  # Set nsteps to a large number for parallel execution
-
-    option_ideal =qt.Options(max_step=max_step_ideal, nsteps=nsteps_ideal, num_cpus=1)  
-    option_noisy =qt.Options(max_step=max_step_noisy, nsteps=nsteps_noisy, num_cpus=1)  
+    max_step_ideal, max_step_noisy = 1e-3, 3e-4 # Set max_step to 0 for parallel execution
     print("drive_phi=", drive_phi, "; drive_theta =", drive_theta, "; n_full =", n_full, "; charge_truc =", charge_truc)
     print(f"T1 = Tphi = {t1} μs, num_cpus = {num_cpus}")
     print(f"calculate_ideal = {calculate_ideal}, calculate_noise = {calculate_noise}")
-    print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
-    print(f'Noisy: max_step = {option_noisy.max_step}, nsteps = {option_noisy.nsteps}')
+    option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy) 
+    print(f'apply_decay = {apply_decay}, apply_dephase = {apply_dephase}')
 
     gamma_t1 = 1 / 1e3 / t1 # calculate decay rate given T1, unit in micro-second
     tphi = t1 # calculate decay rate given T1, unit in micro-second
 
     # Load data
     evals, n_theta, n_phi, logi_state = ut.load_qubit_data_xgate() # Load spectrum and matrix elements
-    params = load_drive_params(drive_theta)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
+    params = ut.load_drive_params_xgate(drive_theta)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
     n_job = len(params)    
     
     # Build Hamiltonian
@@ -126,19 +105,19 @@ def xgate_fidelity_decay_all():
         # Ideal fidelity simulation
         args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy]
         f_ideal = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
-        ut.print_data(f'f_ideal_{n_hspace}', f_ideal)
+        ut.print_data(f'f_ideal_{n_hspace}', f_ideal, num_digits=8)
         ut.print_time()
 
     if calculate_noise:
         # Load data and prepare operators for noisy fidelity simulation
         state_idx_tphi, gamma_dephase_new = ut.load_dephasing_data_xgate(drive_theta) # Load dephasing data
         c_op_list = ut.construct_c_ops_xgate(n_hspace, drive_truc, Gamma_t1, gamma_dephase_new, 
-                                    tphi, hspace, state_idx_tphi) # Construct collapse operators
+                                    tphi, hspace, state_idx_tphi, apply_decay, apply_dephase) # Construct collapse operators
 
         # Noisy fidelity simulation
         args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy]
         f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
-        ut.print_data(f'f_{t1}us_{n_hspace}', f_noise)
+        ut.print_data(f'f_{t1}us_{n_hspace}', f_noise, num_digits=8)
 
 def xgate_population():
     # [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = [39.991616, 0.105045, 0.028058, 0.002171, 0.003988] # theta state 7
@@ -259,8 +238,8 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    # xgate_fidelity_decay_all()
-    xgate_population()
+    xgate_fidelity_decay_all()
+    # xgate_population()
 
     ut.print_time()
 

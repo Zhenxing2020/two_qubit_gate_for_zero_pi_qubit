@@ -16,55 +16,20 @@ import scipy.sparse as ssp
 
 
 def generate_ekettot_3ncut(test=True):
-    # zp = scq.Circuit(ut.zp_yml, from_file=False)
-    # zp.configure(transformation_matrix=np.linalg.inv(ut.transform_2zeropi))
-    # system_hierarchy = [[1,2],  [5,6]]
-    # subsystem_trunc_dims = [100, 100]
-    # zp.configure(system_hierarchy=system_hierarchy,
-    #             subsystem_trunc_dims=subsystem_trunc_dims)    
-    # if test:
-    #     zp.cutoff_ext_1, zp.cutoff_ext_5 = 50, 50
-    #     zp.cutoff_n_2, zp.cutoff_n_6 = 20, 20        
-    # else:
-    #     zp.cutoff_ext_1, zp.cutoff_ext_5 = 300, 300
-    #     zp.cutoff_n_2, zp.cutoff_n_6 = 90, 90
-    # n2, n6 = symbols('n2 n6')
-    # g = float(zp.sym_interaction((1,0), return_expr=True).coeff(n2*n6) )
-    # print(f'zp.cutoff_ext_1, zp.cutoff_n_2 = {zp.cutoff_ext_1}, {zp.cutoff_n_2}')
-
     if test:
         truc1, truc_tot, charge_pick = 11, 15, True       
     else:
-        truc1, truc_tot, charge_pick = 150, 2000, False   
+        truc1, truc_tot, charge_pick = 300, 2000, True   
     g=0.030961990356445312
-    folder = f'../../data/3ncut_two_zeropi/truc1=500/'
-    eval0 = pd.read_csv(folder+ 'eval0.txt').to_numpy().flatten()
-    eval1 = pd.read_csv(folder+ 'eval1.txt').to_numpy().flatten()
-    n_theta0 = np.load(folder+'n_theta0.npy')
-    n_theta1 = np.load(folder+'n_theta1.npy')
+    print(f'truc1, truc_tot, charge_pick = {truc1}, {truc_tot}, {charge_pick}')
+    print(f'g={g}')
 
-    eval0 = eval0[:truc1]
-    eval1 = eval1[:truc1]
-    hspace_0 = np.arange(truc1)
-    hspace_1 = np.arange(truc1)
-    n_theta0 = ut.truncate_2(n_theta0, hspace_0)
-    n_theta1 = ut.truncate_2(n_theta1, hspace_1)
+    eval0, eval1, n_theta0, n_theta1 = ut.load_1q_data_for_2q(truc1)
 
     ##############################################################################################
-    thresh_matrix_element=1e-4
     if charge_pick:
-        hspace_0 = [0, 2]
-        hspace_1 = [0, 2]
-        for s in hspace_0:
-            for i in range(truc1):
-                if np.abs(n_theta0[s, i]) > thresh_matrix_element and i not in hspace_0:
-                    hspace_0.append(i)
-        hspace_0.sort()
-        for s in hspace_1:
-            for i in range(truc1):
-                if np.abs(n_theta1[s, i]) > thresh_matrix_element and i not in hspace_1:
-                    hspace_1.append(i)
-        hspace_1.sort()
+        hspace_0 = ut.get_truncated_subspace_xgate(n_theta0, truc1)
+        hspace_1 = ut.get_truncated_subspace_xgate(n_theta1, truc1)
         n_theta0 = ut.truncate_2(n_theta0, hspace_0)
         n_theta1 = ut.truncate_2(n_theta1, hspace_1)
         eval0 = eval0[hspace_0]
@@ -73,8 +38,6 @@ def generate_ekettot_3ncut(test=True):
     ##############################################################################################
     ###  Compute eigenvalues and eigenvectors for coupling H
     print(f'len(hspace_0)={len(hspace_0)}, len(hspace_1)={len(hspace_1)}')
-    print(f'truc1, truc_tot, charge_pick = {truc1}, {truc_tot}, {charge_pick}')
-    print(f'g={g}')
     Hint = qt.tensor(qt.Qobj(n_theta0) , qt.Qobj(n_theta1))
     H_bare = (  qt.tensor(qt.Qobj(np.diag(eval0)),  qt.identity(len(hspace_1)))
             +  qt.tensor(qt.identity(len(hspace_0)),  qt.Qobj(np.diag(eval1))) )
@@ -86,10 +49,7 @@ def generate_ekettot_3ncut(test=True):
         k = truc_tot
     eval_tot, eket_tot = ssp.linalg.eigsh(Htot.data, k=k, which='SA', tol=1.e-10)
 
-    sorted_idx_tot = np.argsort(eval_tot)
-    eval_tot = eval_tot[sorted_idx_tot]
-    eval_tot = eval_tot - eval_tot[0]
-    eket_tot = ssp.csr_matrix([eket_tot[:,idx] for idx in sorted_idx_tot])
+    eval_tot, eket_tot = ut.clean_eval_eket(eval_tot, eket_tot)
 
     folder_save = f'data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
     os.mkdir(folder_save)
@@ -98,12 +58,18 @@ def generate_ekettot_3ncut(test=True):
     print(f'np.shape(eket_tot)={np.shape(eket_tot)}')
 
 
+
+
+
+
+
+
 def generate_nop_3ncut():
     truc1, truc_tot, charge_pick = 150, 2000, True
-    # truc1, truc_tot, charge_pick = 11, 15, False
+    # truc1, truc_tot, charge_pick = 11, 15, True
 
     if charge_pick:
-        folder = f'../../data/3ncut_two_zeropi/truc1=150_truc2=1000_pick=True/'
+        folder = f'data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
         hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
         hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
     else:
@@ -141,20 +107,7 @@ def generate_nop_3ncut():
     ut.print_time()
 
     ##############################################################################################
-    ### Get the dressed states index
-    index_array = [] # array index in each qubit (# in hspace_0, hspace_1)
-    for i, index in enumerate(top_index):
-        j=0
-        while j < len(index):
-            if index[j] not in index_array:
-                index_array.append(index[j])
-                break
-            else:
-                j+=1
-            if j==10:
-                index_array.append((0,0))
-                print(i, 'need to further compare overlap')
-    hspace_full = [(str(idx[0])+'-'+str(idx[1])) for idx in index_array] # actual state index in each qubit
+    hspace_full = ut.get_dressed_states_index(top_index, hspace_0, hspace_1)
 
     n_theta0_dress = ssp.kron(n_theta0, ssp.identity(n1))
     n_theta1_dress = ssp.kron(ssp.identity(n0), n_theta1)
@@ -180,8 +133,8 @@ if __name__ == '__main__':
     # generate_data()
     # generate_data_3ncut()
     # reduce_eket()
-    # generate_ekettot_3ncut(test=False)
-    generate_nop_3ncut()
+    generate_ekettot_3ncut(test=False)
+    # generate_nop_3ncut()
     # generate_eval()
 
     ut.print_time()

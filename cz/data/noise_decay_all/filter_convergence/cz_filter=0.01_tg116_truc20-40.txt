@@ -1,15 +1,15 @@
-get_fidelity_2q_good.py
+get_fidelity_2q_good_copy.py
 NUMEXPR_NUM_THREADS = 32
 MKL_NUM_THREADS = 32
 
-Current China Time: 2025-07-27 11:03:18.315821+08:00
+Current Mountain Time: 2025-07-26 09:23:44.092042+08:00
 Using CZ gate with W_20_50 = 15.982875383444132
-n_truc_list = [20, 40], filter_ratio = 3
 get_hamiltonian_given_state_list = True
-t1_tphi_other = 3, import_2000=False
+t1_tphi_other = 170, import_2000=False
 truc_full= 1000
 num_cpus= 16 , n_job= 1
 calculate_ideal = False, calculate_noise = True
+Ideal: max_step = 0.001, nsteps = 1000.0
 Noisy: max_step = 0.001, nsteps = 1000.0
 
 params = np.array([
@@ -25,13 +25,13 @@ index_select (len=20) = np.array([
 0, 13, 3, 4, 10, 1, 9, 8, 24, 2 ,
 27, 11, 21, 5, 18, 7, 17, 41, 6, 48 ,
 ])
-np.shape(c_op_list) = (307, 20, 20)
+filter_ratio = 0.01, np.shape(c_op_list) = (1495, 20, 20)
 
-f_3us_20 = np.array([
--1.1594312855083375 ,
+f_170us_20 = np.array([
+-1.1902930320895941 ,
 ])
 
-Current China Time: 2025-07-27 11:03:55.062513+08:00
+Current Mountain Time: 2025-07-26 09:24:08.733267+08:00
 
 hspace_select (len=40) = np.array([
 '0-0', '2-2', '0-2', '2-0', '5-0', '0-1', '2-1', '0-5', '2-5', '1-0' ,
@@ -46,12 +46,8 @@ index_select (len=40) = np.array([
 20, 22, 19, 23, 38, 56, 12, 34, 46, 16 ,
 35, 36, 29, 67, 15, 14, 39, 28, 65, 40 ,
 ])
-np.shape(c_op_list) = (307, 40, 40)
+filter_ratio = 0.01, np.shape(c_op_list) = (1495, 40, 40)
 
-f_3us_40 = np.array([
--2.1211826456934935 ,
+f_170us_40 = np.array([
+-2.857391638872854 ,
 ])
-
-Current China Time: 2025-07-27 11:11:18.372148+08:00
-4817.94user 346.27system 8:05.31elapsed 1064%CPU (0avgtext+0avgdata 1702072maxresident)k
-0inputs+32outputs (3major+53570606minor)pagefaults 0swaps

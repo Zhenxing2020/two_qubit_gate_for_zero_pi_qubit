@@ -16,9 +16,9 @@ if __name__ == "__main__":
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
             
-    gate = 'cnot' # 'x_gate_theta', 'x_gate_phi', 'cz', ''cnot
-    n_full = 500 # number of states in the full system
-    n_truc = 500 # number of states in the graph model
+    gate = 'cz' # 'x_gate_theta', 'x_gate_phi', 'cz', ''cnot
+    n_full = 200 # number of states in the full system
+    n_truc = n_full # number of states in the graph model
 
     if gate == 'x_gate_phi': ## X-gate nphi
         A = [0.214044, 0.120290] # [0.02, 0.02]
