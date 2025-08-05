@@ -2371,14 +2371,16 @@ def load_1q_data_for_2q(truc1, folder = '../../data/3ncut_two_zeropi/truc1=500/'
     n_theta1 = truncate_2(n_theta1, hspace_1)
     return eval0,eval1,n_theta0,n_theta1
 
-def load_qubit_data_2q(truc_full, import_2000=False, truc1=300):
+def load_qubit_data_2q(import_2000=False, truc1=300):
     """
     Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
     The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
     """    
     if import_2000:
+        truc_full = 2000 # If import_2000 = True, n_full=2000, else 1000
         folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick=False/'
     else:
+        truc_full = 1000 # If import_2000 = True, n_full=2000, else 1000
         folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
     hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
     eket_tot = ssp.csr_matrix(np.load(folder+ 'eket_tot.npy'))[:truc_full]

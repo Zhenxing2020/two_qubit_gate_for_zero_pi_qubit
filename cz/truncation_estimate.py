@@ -1,14 +1,8 @@
 import os
 import sys
 sys.path.append('../')
-from multiprocessing import Pool
-from copy import deepcopy
-from tqdm import tqdm
 import numpy as np
-import pandas as pd
-import networkx as nx
 import utils_2Q_gate_zp as ut
-import scqubits as scq
 
 if __name__ == "__main__":
     print(os.path.basename(__file__)) # Print the name of the current Python file
@@ -16,8 +10,8 @@ if __name__ == "__main__":
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
             
-    gate = 'cz' # 'x_gate_theta', 'x_gate_phi', 'cz', ''cnot
-    n_full = 200 # number of states in the full system
+    gate = 'cnot' # 'x_gate_theta', 'x_gate_phi', 'cz', ''cnot
+    n_full = 1000 # number of states in the full system
     n_truc = n_full # number of states in the graph model
 
     if gate == 'x_gate_phi': ## X-gate nphi
@@ -51,19 +45,26 @@ if __name__ == "__main__":
          _, _, logi_state] = ut.load_qubit_data_2q(n_full)
 
         if gate == 'cnot':
-            A = [0.02, 0.02]
+            #### mean=[0.04089, 0.023365]; median=[0.031868, 0.0203525]
+            A = [0.031868, 0.0203525] 
+
+            #### mean=[-0.00697,-0.0088359375]; median= [-0.006548, -0.006191]
+            detune = [-0.006548, -0.006191] 
             drive_term = n_theta0_dress
             state_mid = '8-2'
             idx_0 = hspace_full.index('0-2')
             idx_1 = hspace_full.index('2-2')
             idx_2 = hspace_full.index(state_mid)
             core_states = logi_state + [state_mid]
-            W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
-            W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
+            W_0_2 = eval_tot[idx_2] - eval_tot[idx_0] + 2 * np.pi * detune[0]
+            W_1_2 = eval_tot[idx_2] - eval_tot[idx_1] + 2 * np.pi * detune[1]
             wd = [W_0_2, W_1_2]
         elif gate == 'cz':
-            A = [0.015]
-            detune = 0 # 0.023
+            #### mean= 0.01717, median= 0.013895
+            A = [0.013895] 
+
+            #### mean=0.019343, median=0.018197
+            detune = 0.018197 
             drive_term = n_theta1_dress
             state_mid = '5-0'
             core_states = logi_state + [state_mid]
@@ -72,7 +73,7 @@ if __name__ == "__main__":
                   + 2 * np.pi * detune)
     print(f'gate={gate}, n_full={n_full}, n_truc={n_truc}')
     print(f'A={A}, detune={detune}')
-    print(f'wd={wd}, core_states={core_states}')
+    print(f'wd={wd},\n core_states={core_states}')
 
     # hspace_index_2 = trunc_by_thresh(hspace_index, drive_term, thresh=1e-2)
     # G = make_rate_graph(drive_term, evals, wd, A, labels = hspace_full)

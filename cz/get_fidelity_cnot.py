@@ -21,37 +21,31 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    # n_truc = 200
-    n_truc_list = [100, 600, 800, 1200, 1400, 1600, 1800] # List of truncation sizes to test
-    filter_ratio = 0.01
-
+    n_truc_list = [100] # np.arange(50, 201, 25) #
     cz_run = False # True  # whether to use CZ gate or CNOT gate
-    import_2000_states = False # whether to import 2000 or 1000 states Hamiltonian
-    truc_one_qubit = 300 # truncation for single zero pi
-    n_full = 1000 # don't change this value, If import_2000 = True, n_full=2000, else 1000
+
+    # set truncation for single zero pi and whether to import 2000 or 1000 states Hamiltonian
+    # 300, False --> 300_1000_True; 300, True --> 300_2000_False
+    truc_one_qubit, import_2000_states = 300, False 
 
     # 'short_path', 'all_path', 'hand_pick', 
-    # 'cz_short_500_500_detune0', 'cz_short_500_500_detune1' 
-    use_truc_model, truc_model_name = False, 'hand_pick'
+    # 'cz_short_500_detune0', 'cz_short_500_detune1' 
+    use_truc_model, truc_model_name = False, 'cz_short_200_detune1'
 
-    # whether to calculate noisy fidelity, they should not be true at the same time to avoid error
-    calculate_ideal, calculate_noise = True, False # False, True # True, False #
+    # below sets whether to calculate noisy fidelity, they should not be true at the same time to avoid error
+    calculate_ideal, calculate_noise = True, False # False, True #    
+    apply_decay, apply_dephase = True, True # True, False # Whether to apply decay and dephasing
+    decay_enlarge = 1 # change this to test decay
+    filter_ratio = 0.3
+
     t1_tphi_other = 170 # μs
     tg_list = [2, 9, 16, 23, 30] # Select the first row for testing
-
-    max_step_ideal = 1e-3 # Set max_step to 0 for parallel execution
-    nsteps_ideal = 1 / max_step_ideal  # Set nsteps to a large number for parallel execution
-    max_step_noisy = 1e-3 # Set max_step to 0 for parallel execution
-    nsteps_noisy = 1/ max_step_noisy  # Set nsteps to a large number for parallel execution
-    option_ideal =qt.Options(max_step=max_step_ideal, 
-                                nsteps=nsteps_ideal, num_cpus=1)  
-    option_noisy =qt.Options(max_step=max_step_noisy, 
-                                nsteps=nsteps_noisy, num_cpus=1)  
-
+    max_step_ideal, max_step_noisy = 1e-3, 1e-3 # Set max_step to 0 for parallel execution
     num_cpus, n_job = 16, len(tg_list) # Number of CPUs and jobs for parallel processing
+
     [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
         n_theta1_dress, hspace_0, hspace_1, logi_state
-        ] = ut.load_qubit_data_2q(n_full, import_2000_states, truc_one_qubit)
+        ] = ut.load_qubit_data_2q(import_2000_states, truc_one_qubit)
     dim_0 = len(hspace_0)
     dim_1 = len(hspace_1) 
     params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
@@ -71,17 +65,17 @@ if __name__ == '__main__':
         W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
         print(f'Using CNOT gate with W_0_2 = {W_0_2}, W_1_2 = {W_1_2}')
         print('\nmid_state = ', mid_state)
-    print(f'get_hamiltonian_given_state_list = {use_truc_model}')
-    print(f"t1_tphi_other = {t1_tphi_other}, import_2000={import_2000_states}")
-    print('truc_full=', n_full )
-    print('num_cpus=', num_cpus, ', n_job=', n_job)
     print(f"calculate_ideal = {calculate_ideal}, calculate_noise = {calculate_noise}")
-    ut.print_data(f'params', params.tolist(), num_each_row=1)    
-    if calculate_ideal:
-        print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
-    if calculate_noise:
-        print(f'Noisy: max_step = {option_noisy.max_step}, nsteps = {option_noisy.nsteps}')
+    print(f'apply_decay={apply_decay}, apply_dephase={apply_dephase}')
+    option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy) 
+    print(f'filter_ratio = {filter_ratio}, decay_enlarge = {decay_enlarge}')     
+    print(f'use_truc_model = {use_truc_model}, truc_model_name = {truc_model_name}')
+    print(f"t1_tphi_other = {t1_tphi_other}, import_2000={import_2000_states}")
+    print('if import_2000=True, use 300_2000_False, else, use 300_1000_True')
+    print('num_cpus=', num_cpus, ', n_job=', n_job)
+    ut.print_data('params', params.tolist(), num_each_row=1)    
 
+    f_list = []
     for n_truc in n_truc_list:
         if use_truc_model:
             if cz_run:
@@ -132,16 +126,19 @@ if __name__ == '__main__':
             c_op_list = ut.construct_c_ops_2q(dim_0, dim_1, n_theta0_trunc, n_theta1_trunc, 
                                                 gamma_dephase_02_q0, gamma_dephase_02_q1, eket_truc, 
                                                 Gamma_decay_q0, Gamma_decay_q1, 
-                                                transition_a, transition_b)     
-            print(f'filter_ratio = {filter_ratio}, np.shape(c_op_list) = {np.shape(c_op_list)}')     
+                                                transition_a, transition_b, 
+                                                apply_decay, apply_dephase, decay_enlarge )     
+            print(f'np.shape(c_op_list) = {np.shape(c_op_list)}')     
 
-        arg_select = [H_drive_select, W_20_50, num_cpus, c_op_list, logi_idx_select, 
-                    option_ideal, option_noisy]
-        
-        f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)
-                                            (args_indep, *arg_select)
-                                        for args_indep in params)
+            arg_select = [H_drive_select, W_20_50, num_cpus, c_op_list, logi_idx_select, 
+                        option_ideal, option_noisy]
+            
+            f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)
+                                                (args_indep, *arg_select)
+                                            for args_indep in params)
+            ut.print_data(f'f_{t1_tphi_other}us_{n_truc}', f_noise, num_digits=8)
+            ut.print_time()
+        f_list.append(f_ideal if calculate_ideal else f_noise)
+    print(f'n_truc_list = {np.array(n_truc_list).tolist()}')     
+    ut.print_data('fidelity_list', f_list, num_each_row=1, num_digits=8)
 
-        ut.print_data(f'f_{t1_tphi_other}us_{n_truc}', f_noise)
-
-        ut.print_time()
