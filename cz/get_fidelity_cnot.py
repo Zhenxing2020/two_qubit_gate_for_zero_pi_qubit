@@ -21,7 +21,7 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = [100] # np.arange(50, 201, 25) #
+    n_truc_list = np.arange(50, 501, 50) #
     cz_run = False # True  # whether to use CZ gate or CNOT gate
 
     # set truncation for single zero pi and whether to import 2000 or 1000 states Hamiltonian

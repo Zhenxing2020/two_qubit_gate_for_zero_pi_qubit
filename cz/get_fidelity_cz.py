@@ -21,19 +21,20 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = np.arange(50, 201, 25) #
+    n_truc_list = [40] # np.arange(50, 201, 25) #
     cz_run = True # True  # whether to use CZ gate or CNOT gate
-    import_2000_states = False # whether to import 2000 or 1000 states Hamiltonian
-    truc_one_qubit = 300 # truncation for single zero pi
-    n_full = 1000 # don't change this value, If import_2000 = True, n_full=2000, else 1000
+    
+    # set truncation for single zero pi and whether to import 2000 or 1000 states Hamiltonian
+    # 300, False --> 300_1000_True; 300, True --> 300_2000_False
+    truc_one_qubit, import_2000_states = 300, False 
 
     # 'short_path', 'all_path', 'hand_pick', 
     # 'cz_short_500_detune0', 'cz_short_500_detune1' 
-    use_truc_model, truc_model_name = True, 'cz_short_200_detune1'
+    use_truc_model, truc_model_name = True, 'cz_short_500_detune1'
 
     # below sets whether to calculate noisy fidelity, they should not be true at the same time to avoid error
-    calculate_ideal, calculate_noise = True, False # False, True #    
-    apply_decay, apply_dephase = True, True # True, False # Whether to apply decay and dephasing
+    calculate_ideal, calculate_noise = False, True # True, False #     
+    apply_decay, apply_dephase = False, False # True, False # Whether to apply decay and dephasing
     decay_enlarge = 1 # change this to test decay
     filter_ratio = 0.3
 
@@ -44,7 +45,7 @@ if __name__ == '__main__':
 
     [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
         n_theta1_dress, hspace_0, hspace_1, logi_state
-        ] = ut.load_qubit_data_2q(n_full, import_2000_states, truc_one_qubit)
+        ] = ut.load_qubit_data_2q(import_2000_states, truc_one_qubit)
     dim_0 = len(hspace_0)
     dim_1 = len(hspace_1) 
     params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
@@ -70,7 +71,6 @@ if __name__ == '__main__':
     print(f'filter_ratio = {filter_ratio}, decay_enlarge = {decay_enlarge}')     
     print(f'use_truc_model = {use_truc_model}, truc_model_name = {truc_model_name}')
     print(f"t1_tphi_other = {t1_tphi_other}, import_2000={import_2000_states}")
-    print('truc_full=', n_full )
     print('num_cpus=', num_cpus, ', n_job=', n_job)
     ut.print_data(f'params', params.tolist(), num_each_row=1)    
 

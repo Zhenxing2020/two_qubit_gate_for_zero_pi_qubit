@@ -19,7 +19,7 @@ def generate_ekettot_3ncut(test=True):
     if test:
         truc1, truc_tot, charge_pick = 11, 15, True       
     else:
-        truc1, truc_tot, charge_pick = 300, 2000, True   
+        truc1, truc_tot, charge_pick = 300, 1500, True   
     g=0.030961990356445312
     print(f'truc1, truc_tot, charge_pick = {truc1}, {truc_tot}, {charge_pick}')
     print(f'g={g}')
@@ -58,14 +58,8 @@ def generate_ekettot_3ncut(test=True):
     print(f'np.shape(eket_tot)={np.shape(eket_tot)}')
 
 
-
-
-
-
-
-
 def generate_nop_3ncut():
-    truc1, truc_tot, charge_pick = 150, 2000, True
+    truc1, truc_tot, charge_pick = 300, 2000, True
     # truc1, truc_tot, charge_pick = 11, 15, True
 
     if charge_pick:
