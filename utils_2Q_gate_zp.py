@@ -2371,30 +2371,28 @@ def load_1q_data_for_2q(truc1, folder = '../../data/3ncut_two_zeropi/truc1=500/'
     n_theta1 = truncate_2(n_theta1, hspace_1)
     return eval0,eval1,n_theta0,n_theta1
 
-def load_qubit_data_2q(import_2000=False, truc1=300):
+def load_qubit_data_2q(truc1=300, truc_full = 2000, charge_pick=True):
     """
     Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
     The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
     """    
-    if import_2000:
-        truc_full = 2000 # If import_2000 = True, n_full=2000, else 1000
-        folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick=False/'
+     # If charge_pick = True, n_full=2000, else 1000
+    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick={charge_pick}/'
+    logi_state = ['0-0', '0-2', '2-0', '2-2']
+    if charge_pick:
+        hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
+        hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()             
     else:
-        truc_full = 1000 # If import_2000 = True, n_full=2000, else 1000
-        folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
+        hspace_0 = np.arange(truc1)
+        hspace_1 = np.arange(truc1)
+   
     hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
     eket_tot = ssp.csr_matrix(np.load(folder+ 'eket_tot.npy'))[:truc_full]
     eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
     n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
     n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
     n_theta0_dress = truncate_2(n_theta0_dress, np.arange(truc_full))
-    n_theta1_dress = truncate_2(n_theta1_dress, np.arange(truc_full))
-
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=1000_pick=True/'
-    hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
-    hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
-   
-    logi_state = ['0-0', '0-2', '2-0', '2-2']
+    n_theta1_dress = truncate_2(n_theta1_dress, np.arange(truc_full))   
     return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
             n_theta1_dress, hspace_0, hspace_1, logi_state]
 

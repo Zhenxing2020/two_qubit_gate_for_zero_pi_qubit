@@ -1,0 +1,26 @@
+get_fidelity_cnot.py
+NUMEXPR_NUM_THREADS = 1
+MKL_NUM_THREADS = 1
+
+Current China Time: 2025-08-06 21:51:08.791000+08:00
+Using CNOT gate with W_0_2 = 45.54630239175544, W_1_2 = 23.752520877272232
+
+mid_state =  8-2
+calculate_ideal = True, calculate_noise = False
+apply_decay=True, apply_dephase=True
+Ideal: max_step = 0.001, nsteps = 1000.0
+Noisy: max_step = 0.001, nsteps = 1000.0
+filter_ratio = 0.3, decay_enlarge = 1
+use_truc_model = False, truc_model_name = cz_short_200_detune1
+t1_tphi_other = 170, import_2000=True
+if import_2000=True, use 300_2000_False, else, use 300_1000_True
+num_cpus= 16 , n_job= 5
+
+params = np.array([
+[50.008813, 0.090273, 0.046546, -0.027498, -0.025767] ,
+[119.999923, 0.046969, 0.027146, -0.010649, -0.010409] ,
+[189.997344, 0.030915, 0.019755, -0.006194, -0.005848] ,
+[260.000623, 0.021992, 0.014066, -0.003138, -0.002978] ,
+[330.004173, 0.017153, 0.010944, -0.001891, -0.001804] ,
+])
+n_truc_list = [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000]
