@@ -21,16 +21,15 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = np.arange(1050, 2001, 100) #
+    n_truc_list = np.arange(50, 1001, 50) #
     cz_run = False # True  # whether to use CZ gate or CNOT gate
 
     # set truncation for single zero pi and whether to import 2000 or 1000 states Hamiltonian
-    # 300, False --> 300_1000_True; 300, True --> 300_2000_False
+    # 300_2000_True; 300_2000_False
     truc_one_qubit, truc_full, charge_pick = 300, 2000, True 
 
-    # 'short_path', 'all_path', 'hand_pick', 
-    # 'cz_short_500_detune0', 'cz_short_500_detune1' 
-    use_truc_model, truc_model_name = False, 'cz_short_200_detune1'
+    # 'cnot_short_500', 'cnot_short_1000'
+    use_truc_model, truc_model_name = True, 'cnot_short_1000'
 
     # below sets whether to calculate noisy fidelity, they should not be true at the same time to avoid error
     calculate_ideal, calculate_noise = True, False # False, True #    
@@ -80,9 +79,9 @@ if __name__ == '__main__':
     for n_truc in n_truc_list:
         if use_truc_model:
             if cz_run:
-                hspace_select = ut.cz_truc_model[truc_model_name][:n_truc]
+                hspace_select = ut.truc_model[truc_model_name][:n_truc]
             else:
-                hspace_select = ut.cnot_truc_model[truc_model_name][:n_truc]
+                hspace_select = ut.truc_model[truc_model_name][:n_truc]
         else:
             hspace_select = hspace_full[:n_truc]
         index_select = [hspace_full.index(i) for i in hspace_select]

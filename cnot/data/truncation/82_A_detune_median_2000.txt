@@ -1,0 +1,31 @@
+truncation_estimate.py
+NUMEXPR_NUM_THREADS = 1
+MKL_NUM_THREADS = 1
+
+Current China Time: 2025-08-12 09:36:07.463356+08:00
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cz/truncation_estimate.py", line 45, in <module>
+    _, _, logi_state] = ut.load_qubit_data_2q(n_full)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cz/../utils_2Q_gate_zp.py", line 2383, in load_qubit_data_2q
+    hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 948, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 611, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 1448, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 1705, in _make_engine
+    self.handles = get_handle(
+                   ^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/pandas/io/common.py", line 863, in get_handle
+    handle = open(
+             ^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '../../data/3ncut_two_zeropi/truc1=2000_truc2=2000_pick=True/hspace_0.txt'
+Command exited with non-zero status 1
+1.29user 0.36system 0:01.67elapsed 98%CPU (0avgtext+0avgdata 308912maxresident)k
+0inputs+8outputs (0major+49616minor)pagefaults 0swaps
