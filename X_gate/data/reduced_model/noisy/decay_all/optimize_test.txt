@@ -1,0 +1,43 @@
+Xgate_fidelity_optimize_copy.py
+Current Mountain Time: 2025-06-18 15:51:15.327934-06:00
+drive_phi= False , drive_theta =  True , drive_0 =  True
+amp1_bounds= (0.01, 0.05) , amp2_bounds= (0.025, 0.2) , tg_bound= (-0.01, 0.01)
+detune1_bounds= (-0.17, -0.2) , detune2_bounds= (0.1, 0.3)
+workers= 100 , popsize= 10
+recombination= 0.7 , tol= 0.01 , mutation= (0.5, 1.0)
+tg_vec = 
+2 ,
+truc1 = 150 , truc2 (in optimization) = 78
+truc1_full = 500 , truc2_full = 500
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387differential_evolution step 1: f(x)= -0.177171
+Best Solution: [2.00413852, 0.04630635, 0.04915533, -0.18579375, 0.24756054]
+Convergence: 6.0336
+----------------------------
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.17717140686448346
+       x: [ 2.004e+00  4.631e-02  4.916e-02 -1.858e-01  2.476e-01]
+     nit: 1
+    nfev: 128 
+
+
+tg =  [2]
+
+log of gate error (truc1=78) = 
+-0.17717141 ,
+
+drive_param (truc1=78) = 
+[2.004139, 0.046306, 0.049155, -0.185794, 0.247561] ,
+1it [00:04,  4.90s/it]1it [00:04,  4.90s/it]
+
+log of gate error (truc_full=500) = 
+-0.17717139 ,
+[2.004139, 0.046306, 0.049155, -0.185794, 0.247561, -0.177171] ,
+
+amp1_bounds= (0.01, 0.05) , amp2_bounds= (0.025, 0.2)
+detune1_bounds= (-0.17, -0.2) , detune2_bounds= (0.1, 0.3)
+***Current Mountain Time: 2025-06-18 15:51:23.441354-06:00 
+
+17.01user 5.85system 0:10.95elapsed 208%CPU (0avgtext+0avgdata 851868maxresident)k
+0inputs+16outputs (0major+594893minor)pagefaults 0swaps

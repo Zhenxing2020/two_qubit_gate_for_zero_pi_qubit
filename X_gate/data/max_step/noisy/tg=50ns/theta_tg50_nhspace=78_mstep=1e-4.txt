@@ -1,0 +1,35 @@
+Xgate_noise.py
+Current Mountain Time: 2025-06-30 23:29:26.459862-06:00
+drive_phi= False ; drive_theta = True ; n_full = 150 ; charge_truc = True
+T1 = Tphi = 170 μs
+Ideal: max_step = 0.0003, nsteps = 3333.3333333333335
+Noisy: max_step = 0.0001, nsteps = 10000.0
+n_hspace = 78
+num_cpus =  4 ;   n_job =  1
+
+hspace (150\78) = np.array([
+0, 1, 2, 4, 5, 7, 8, 11, 12, 16 ,
+17, 18, 21, 23, 25, 27, 30, 31, 32, 33 ,
+37, 38, 40, 41, 42, 45, 46, 47, 48, 51 ,
+52, 56, 59, 62, 63, 64, 65, 67, 72, 73 ,
+74, 76, 78, 79, 82, 83, 85, 87, 88, 90 ,
+92, 93, 96, 97, 98, 102, 103, 106, 107, 112 ,
+114, 118, 119, 120, 121, 122, 123, 124, 127, 128 ,
+131, 132, 133, 134, 137, 138, 142, 143 ,
+])
+
+params = np.array([
+[50.273181, 0.081831, 0.022089, 0.001944, 0.003051] ,
+])
+
+f_ideal_78 = np.array([
+-4.714158592362988 ,
+])
+Current Mountain Time: 2025-06-30 23:29:32.746399-06:00
+
+f_170us_78 = np.array([
+-3.838885472207149 ,
+])
+Current Mountain Time: 2025-06-30 23:56:51.523664-06:00
+32303.04user 2431.07system 27:27.24elapsed 2108%CPU (0avgtext+0avgdata 844160maxresident)k
+0inputs+24outputs (7major+1163838minor)pagefaults 0swaps

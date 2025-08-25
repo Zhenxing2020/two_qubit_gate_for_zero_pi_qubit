@@ -1,0 +1,27 @@
+Xgate_noise.py
+
+Current Mountain Time: 2025-07-05 18:42:38.840673-06:00
+drive_phi= True ; drive_theta = True ; n_full = 50 ; charge_truc = True
+T1 = Tphi = 3 μs, tg = 829
+calculate_ideal = False
+Ideal: max_step = 0.0001, nsteps = 10000.0
+Noisy: max_step = 0.0003, nsteps = 3333.3333333333335
+
+hspace (50\50) = np.array([
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ,
+10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ,
+20, 21, 22, 23, 24, 25, 26, 27, 28, 29 ,
+30, 31, 32, 33, 34, 35, 36, 37, 38, 39 ,
+40, 41, 42, 43, 44, 45, 46, 47, 48, 49 ,
+])
+
+Top 10 values: [0.4882, 0.4369, 0.056, 0.0081, 0.0057, 0.0019, 0.0014, 0.0007, 0.0005, 0.0005]
+State of large population: [ 0  2  9  4  8  6 33  3 10 15]
+
+Top 10 values: [0.4854, 0.4367, 0.0581, 0.0085, 0.006, 0.0019, 0.0015, 0.0008, 0.0006, 0.0005]
+State of large population: [ 2  0  9  4  8  6 33  3 15 10]
+data saved in data/population_phi=True_theta=True_tg=829_3us.txt
+
+Current Mountain Time: 2025-07-05 19:21:40.782505-06:00
+2323.13user 2.32system 39:05.35elapsed 99%CPU (0avgtext+0avgdata 843936maxresident)k
+0inputs+984outputs (0major+590557minor)pagefaults 0swaps
