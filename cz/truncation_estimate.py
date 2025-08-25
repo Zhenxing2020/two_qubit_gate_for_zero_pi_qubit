@@ -11,7 +11,7 @@ if __name__ == "__main__":
     ut.print_time()
             
     gate = 'cnot' # 'x_gate_theta', 'x_gate_phi', 'cz', ''cnot
-    n_full = 1000 # number of states in the full system
+    n_full = 2000 # number of states in the full system
     n_truc = n_full # number of states in the graph model
 
     if gate == 'x_gate_phi': ## X-gate nphi
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     elif gate in ['cz', 'cnot']: # CZ & CNOT
         [hspace_full, _, eval_tot, n_theta0_dress, n_theta1_dress, 
-         _, _, logi_state] = ut.load_qubit_data_2q(n_full)
+         _, _, logi_state] = ut.load_qubit_data_2q(truc_full=n_full)
 
         if gate == 'cnot':
             #### mean=[0.04089, 0.023365]; median=[0.031868, 0.0203525]

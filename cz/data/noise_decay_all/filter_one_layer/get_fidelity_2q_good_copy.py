@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     if use_truc_model:
         if cz_run:
-            hspace_select = ut.cz_truc_model[truc_model_name][:n_truc]
+            hspace_select = ut.truc_model[truc_model_name][:n_truc]
         # else:
         #     hspace_select = ut.cnot_truc_model[truc_model_name][:n_truc]
     else:

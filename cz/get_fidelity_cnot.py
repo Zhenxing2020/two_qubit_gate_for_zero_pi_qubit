@@ -21,16 +21,15 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = np.arange(50, 501, 50) #
+    n_truc_list = np.arange(50, 1001, 50) #
     cz_run = False # True  # whether to use CZ gate or CNOT gate
 
     # set truncation for single zero pi and whether to import 2000 or 1000 states Hamiltonian
-    # 300, False --> 300_1000_True; 300, True --> 300_2000_False
-    truc_one_qubit, import_2000_states = 300, False 
+    # 300_2000_True; 300_2000_False
+    truc_one_qubit, truc_full, charge_pick = 300, 2000, True 
 
-    # 'short_path', 'all_path', 'hand_pick', 
-    # 'cz_short_500_detune0', 'cz_short_500_detune1' 
-    use_truc_model, truc_model_name = False, 'cz_short_200_detune1'
+    # 'cnot_short_500', 'cnot_short_1000'
+    use_truc_model, truc_model_name = True, 'cnot_short_1000'
 
     # below sets whether to calculate noisy fidelity, they should not be true at the same time to avoid error
     calculate_ideal, calculate_noise = True, False # False, True #    
@@ -45,7 +44,7 @@ if __name__ == '__main__':
 
     [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
         n_theta1_dress, hspace_0, hspace_1, logi_state
-        ] = ut.load_qubit_data_2q(import_2000_states, truc_one_qubit)
+        ] = ut.load_qubit_data_2q(truc_one_qubit, truc_full, charge_pick)
     dim_0 = len(hspace_0)
     dim_1 = len(hspace_1) 
     params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
@@ -70,18 +69,19 @@ if __name__ == '__main__':
     option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy) 
     print(f'filter_ratio = {filter_ratio}, decay_enlarge = {decay_enlarge}')     
     print(f'use_truc_model = {use_truc_model}, truc_model_name = {truc_model_name}')
-    print(f"t1_tphi_other = {t1_tphi_other}, import_2000={import_2000_states}")
+    print(f"t1_tphi_other = {t1_tphi_other}, import_2000={charge_pick}")
     print('if import_2000=True, use 300_2000_False, else, use 300_1000_True')
     print('num_cpus=', num_cpus, ', n_job=', n_job)
     ut.print_data('params', params.tolist(), num_each_row=1)    
+    print(f'n_truc_list = {np.array(n_truc_list).tolist()}')     
 
     f_list = []
     for n_truc in n_truc_list:
         if use_truc_model:
             if cz_run:
-                hspace_select = ut.cz_truc_model[truc_model_name][:n_truc]
+                hspace_select = ut.truc_model[truc_model_name][:n_truc]
             else:
-                hspace_select = ut.cnot_truc_model[truc_model_name][:n_truc]
+                hspace_select = ut.truc_model[truc_model_name][:n_truc]
         else:
             hspace_select = hspace_full[:n_truc]
         index_select = [hspace_full.index(i) for i in hspace_select]
@@ -89,10 +89,10 @@ if __name__ == '__main__':
                                                             eket_tot, drive_term)
         logi_idx_select = [hspace_select.index(i) for i in logi_state]
 
-        ut.print_data(f'hspace_select (len={len(hspace_select)})', 
-                        hspace_select, num_each_row=10)
+        # ut.print_data(f'hspace_select (len={len(hspace_select)})', 
+        #                 hspace_select, num_each_row=10)
 
-        ut.print_data(f'index_select (len={n_truc})', index_select, num_each_row=10)
+        # ut.print_data(f'index_select (len={n_truc})', index_select, num_each_row=10)
 
         if calculate_ideal: # ideal fidelity
             c_op_list = []
@@ -139,6 +139,7 @@ if __name__ == '__main__':
             ut.print_data(f'f_{t1_tphi_other}us_{n_truc}', f_noise, num_digits=8)
             ut.print_time()
         f_list.append(f_ideal if calculate_ideal else f_noise)
+        ut.print_data('fidelity_list', f_list, num_each_row=1, num_digits=8)
     print(f'n_truc_list = {np.array(n_truc_list).tolist()}')     
     ut.print_data('fidelity_list', f_list, num_each_row=1, num_digits=8)
 
