@@ -21,23 +21,23 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = [50] # np.arange(50, 201, 25) #
+    n_truc_list = [500, 1000, 1500, 2000] # np.arange(50, 201, 25) #
     cz_run = True # True  # whether to use CZ gate or CNOT gate
     
     # 300_2000_True; 300_2000_False
     truc_one_qubit, truc_full, charge_pick = 300, 2000, True 
 
     # 'cz_short_500_detune0', 'cz_short_500_detune1', 'hand_pick',
-    use_truc_model, truc_model_name = True, 'cz_short_500_detune1'
+    use_truc_model, truc_model_name = False, 'cz_short_500_detune1'
 
     # below sets whether to calculate noisy fidelity, they should not be true at the same time to avoid error
-    calculate_ideal, calculate_noise = True, True # True, False #     
+    calculate_ideal, calculate_noise = True, False # True, False #     
     apply_decay, apply_dephase = True, True # True, False # Whether to apply decay and dephasing
     decay_enlarge = 1 # change this to test decay
     filter_ratio = 0.3
 
-    t1_tphi_other = 3 # μs
-    tg_list = [2, 9, 16, 23, 30] # Select the first row for testing
+    t1_tphi_other = 170 # μs
+    tg_list = np.arange(31) # [2, 9, 16, 23, 30] # Select the first row for testing
     max_step_ideal, max_step_noisy = 1e-3, 1e-3 # Set max_step to 0 for parallel execution
     num_cpus, n_job = 16, len(tg_list) # Number of CPUs and jobs for parallel processing
 
@@ -46,7 +46,8 @@ if __name__ == '__main__':
         ] = ut.load_qubit_data_2q(truc_one_qubit, truc_full, charge_pick)
     dim_0 = len(hspace_0)
     dim_1 = len(hspace_1) 
-    params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
+
+    # params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
 
     if cz_run: # CZ
         drive_term = n_theta1_dress

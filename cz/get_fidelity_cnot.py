@@ -21,15 +21,15 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = np.arange(50, 1001, 50) #
+    n_truc_list = [200, 500, 1000] # np.arange(50, 1001, 50) #
     cz_run = False # True  # whether to use CZ gate or CNOT gate
 
     # set truncation for single zero pi and whether to import 2000 or 1000 states Hamiltonian
     # 300_2000_True; 300_2000_False
-    truc_one_qubit, truc_full, charge_pick = 300, 2000, True 
+    truc_one_qubit, truc_full, charge_pick = 300, 1000, True 
 
     # 'cnot_short_500', 'cnot_short_1000'
-    use_truc_model, truc_model_name = True, 'cnot_short_1000'
+    use_truc_model, truc_model_name = False, 'cnot_short_1000'
 
     # below sets whether to calculate noisy fidelity, they should not be true at the same time to avoid error
     calculate_ideal, calculate_noise = True, False # False, True #    
@@ -47,8 +47,17 @@ if __name__ == '__main__':
         ] = ut.load_qubit_data_2q(truc_one_qubit, truc_full, charge_pick)
     dim_0 = len(hspace_0)
     dim_1 = len(hspace_1) 
-    params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
 
+    # params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
+    params = np.array([
+# [50.008846, 0.400345, 0.076485, -0.24673, -0.239432] ,
+# [100.005688, 0.399545, 0.076435, -0.260862, -0.266337] ,
+# [149.996001, 0.430148, 0.022483, -0.251922, -0.288365] ,
+[50.008813,0.090273,0.046546,-0.027498,-0.025767] ,
+[100.006167,0.053076,0.029316,-0.01188,-0.01157],
+[149.996866,0.039078,0.024359,-0.009107,-0.008681],
+    ])  # [1::4,] # Load pulse parameters from CSV
+    
     if cz_run: # CZ
         drive_term = n_theta1_dress
         W_20_50 = ( eval_tot[hspace_full.index('5-0')] - 
@@ -70,7 +79,8 @@ if __name__ == '__main__':
     print(f'filter_ratio = {filter_ratio}, decay_enlarge = {decay_enlarge}')     
     print(f'use_truc_model = {use_truc_model}, truc_model_name = {truc_model_name}')
     print(f"t1_tphi_other = {t1_tphi_other}, import_2000={charge_pick}")
-    print('if import_2000=True, use 300_2000_False, else, use 300_1000_True')
+    # print('if import_2000=True, use 300_2000_False, else, use 300_1000_True')
+    print(f"truc_one_qubit = {truc_one_qubit}, truc_full={truc_full}, charge_pick={charge_pick}")
     print('num_cpus=', num_cpus, ', n_job=', n_job)
     ut.print_data('params', params.tolist(), num_each_row=1)    
     print(f'n_truc_list = {np.array(n_truc_list).tolist()}')     
