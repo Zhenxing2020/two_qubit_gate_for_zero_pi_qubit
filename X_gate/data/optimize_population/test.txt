@@ -1,0 +1,99 @@
+Xgate_fidelity_optimize.py
+NUMEXPR_NUM_THREADS = 1
+MKL_NUM_THREADS = 1
+
+Current Mountain Time: 2025-07-14 15:32:43.851809-06:00
+drive_phi= False , drive_theta= True
+tg_vec: [2, 3, 4]
+amp1_bounds= (0.01, 0.05) , amp2_bounds= (0.025, 0.2)
+detune1_bounds= (-0.17, -0.2) , detune2_bounds= (0.1, 0.3)
+n_truc= 150 , n_full= 300 , n_optimize)= 78
+Ideal: max_step = 0.001, nsteps = 10000.0
+0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/envs/qutip4/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 3871it [00:02,  2.38s/it]differential_evolution step 1: f(x)= -0.17613
+Best Solution: [2.00131235, 0.04713153, 0.14061684, -0.19585116, 0.17302111]
+Convergence: 180.1873
+----------------------------
+
+Optimal result for tg=2.001312351436199:
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.17613017229437727
+       x: [ 2.001e+00  4.713e-02  1.406e-01 -1.959e-01  1.730e-01]
+     nit: 1
+    nfev: 128
+Gate errors (log10) (truc1=78):
+-0.17613017
+Drive parameters:
+[2.001312, 0.047132, 0.140617, -0.195851, 0.173021]
+Full system error (truc_full=300):
+-0.17613017
+
+f_optimize = np.array([
+-0.17613017229437727 ,
+])
+
+f_optimize = np.array([
+-0.17613017195938704 ,
+])
+
+Current Mountain Time: 2025-07-14 15:32:48.688521-06:00
+2it [00:04,  2.45s/it]differential_evolution step 1: f(x)= -0.176177
+Best Solution: [3.00062901, 0.04951437, 0.1073247, -0.19062688, 0.17664387]
+Convergence: 77.5614
+----------------------------
+
+Optimal result for tg=3.00062900577459:
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.1761765448584564
+       x: [ 3.001e+00  4.951e-02  1.073e-01 -1.906e-01  1.766e-01]
+     nit: 1
+    nfev: 128
+Gate errors (log10) (truc1=78):
+-0.17613017, -0.17617654
+Drive parameters:
+[3.000629, 0.049514, 0.107325, -0.190627, 0.176644]
+Full system error (truc_full=300):
+-0.17613017, -0.17617654
+
+f_optimize = np.array([
+-0.17613017229437727, -0.1761765448584564 ,
+])
+
+f_optimize = np.array([
+-0.17613017195938704, -0.17617654392578158 ,
+])
+
+Current Mountain Time: 2025-07-14 15:32:51.186407-06:00
+3it [00:07,  2.74s/it]3it [00:07,  2.66s/it]
+differential_evolution step 1: f(x)= -0.176188
+Best Solution: [3.99603387, 0.04756159, 0.10870548, -0.17755846, 0.1793587]
+Convergence: 79.7256
+----------------------------
+
+Optimal result for tg=3.996033867131919:
+ message: Optimization terminated successfully.
+ success: True
+     fun: -0.17618837257823972
+       x: [ 3.996e+00  4.756e-02  1.087e-01 -1.776e-01  1.794e-01]
+     nit: 1
+    nfev: 128
+Gate errors (log10) (truc1=78):
+-0.17613017, -0.17617654, -0.17618837
+Drive parameters:
+[3.996034, 0.047562, 0.108705, -0.177558, 0.179359]
+Full system error (truc_full=300):
+-0.17613017, -0.17617654, -0.17618837
+
+f_optimize = np.array([
+-0.17613017229437727, -0.1761765448584564, -0.17618837257823972 ,
+])
+
+f_optimize = np.array([
+-0.17613017195938704, -0.17617654392578158, -0.17618837046293082 ,
+])
+
+Current Mountain Time: 2025-07-14 15:32:54.276491-06:00
+106.17user 25.19system 0:12.38elapsed 1060%CPU (0avgtext+0avgdata 847612maxresident)k
+0inputs+24outputs (94major+1305171minor)pagefaults 0swaps

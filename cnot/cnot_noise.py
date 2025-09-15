@@ -15,35 +15,43 @@ from sympy import symbols
 from joblib import Parallel, delayed
 import scipy.sparse as ssp
 
+def load_drive_params_cnot():
+    """
+    Load CZ-gate drive parameters from a CSV file.
+
+    """
+    cz300_se_3ncut= pd.read_csv('data/data_cnot_fidelity_3ncut.txt')
+    x0_vec = cz300_se_3ncut[['tg', 'drive_amp', 'detune']].to_numpy()
+    return x0_vec
+
 
 def import_select():
-    truc_full = 500
-    num_cpus, n_job = 16, 10
-    folder = f'../../data/3ncut_two_zeropi/truc1=300_truc2=1000_pick=True/'
-    hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
-    hspace_1 = pd.read_csv(folder+ 'hspace_1.txt').to_numpy().flatten()
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()[:truc_full]
-    eket_tot = ssp.csr_matrix(np.load(folder+ 'eket_tot.npy'))[:truc_full]
-    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()[:truc_full]
-    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
-    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
-    dim_0 = len(hspace_0)
-    dim_1 = len(hspace_1)
-    n_theta0_dress = ut.truncate_2(n_theta0_dress, np.arange(truc_full))
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, np.arange(truc_full))
+    get_hamiltonian_given_state_list = True # False  # whether to build the Hamiltonian
+    truc_full = 1000 # don't change this value, it is the full Hamiltonian size
+    n_hspace = 1000 # <=1000, Number of states to select from the full Hamiltonian
 
-    ### cnot part
-    cnot = pd.read_csv('data/data_cnot_fidelity_3ncut.txt')
-    x0_vec = cnot[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
-                      ]].to_numpy()[ 13: ,:]
-    # [[-1], :]     [ 2::3 ,:]   [ :13 ,:][1::2,:]
+    calculate_ideal, calculate_noise = True, True # True, False #  whether to calculate noisy fidelity
+    t1_tphi_other = 170 # μs
+    tg_list = [2, 9, 16, 23, 30] # [2, 9, 16, 23, 30]  # Select the first row for testing
+
+    max_step_ideal = 1e-4 # Set max_step to 0 for parallel execution
+    nsteps_ideal = 1/ max_step_ideal  # Set nsteps to a large number for parallel execution
+    max_step_noisy = 1e-4 # Set max_step to 0 for parallel execution
+    nsteps_noisy = 1/ max_step_noisy  # Set nsteps to a large number for parallel execution
+    option_ideal =qt.Options(max_step=max_step_ideal, nsteps=nsteps_ideal, num_cpus=1)  
+    option_noisy =qt.Options(max_step=max_step_noisy, nsteps=nsteps_noisy, num_cpus=1)  
+
+    hspace_full, eket_tot, eval_tot, n_theta0_dress, n_theta1_dress, dim_0, dim_1 = ut.load_qubit_data_2q(truc_full)
+    params = load_drive_params_cnot()[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
+    num_cpus, n_job = 16, len(tg_list) # Number of CPUs and jobs for parallel processing
+
+    drive_term = n_theta0_dress
     mid_state = '8-2'
     idx_0 = hspace_full.index('0-2')
     idx_1 = hspace_full.index('2-2')
     idx_2 = hspace_full.index(mid_state)
     W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
     W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
-    drive_term = n_theta0_dress
     hspace_select = [
     ## state_all
 '0-0', '0-2', '2-0', '8-2', '2-2', '12-2', '4-9', '1-2', '1-0', '5-2' ,
@@ -120,7 +128,7 @@ def import_select():
     # c_op_list = [qt.Qobj(np.zeros((len_select, len_select)))]
     c_op_list = []
     arg_select = [H_drive_select, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_select]
-    f_ideal = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_optimize)(args_indep, *arg_select)
+    f_ideal = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_noise)(args_indep, *arg_select)
                                                 for args_indep in x0_vec)
     print(f'\nf_ideal (dim={len(hspace_select)})  = [')
     for i in range(0, len(f_ideal), 4):
@@ -154,7 +162,7 @@ def import_select():
 
     c_op_list = jump_t1_list + jump_tphi_list
     arg_select = [H_drive_select, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_select]
-    f_noise = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_optimize)(args_indep, *arg_select)
+    f_noise = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_noise)(args_indep, *arg_select)
                                                 for args_indep in x0_vec)
     print(f'\nf_noise (dim={len(hspace_select)})  = [')
     for i in range(0, len(f_noise), 4):
@@ -164,204 +172,11 @@ def import_select():
 
 if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
-    print("Start Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
+    ut.print_time()
 
-    # import_True_False() # compare np.abs(true) vs (False)
-    # import_False()
     import_select()
 
-
-    print("\nCurrent Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
-
-
-
-def import_True_False():
-
-    cz300_se_3ncut= pd.read_csv('data/data_cz_3ncut_truc1=300_select.txt')
-    x0_vec = cz300_se_3ncut[['tg', 'drive_amp', 'detune']].to_numpy()[[0, 5, 15, 25, 30],:]
-
-    ### Get fidelity for input params (pick=True)
-    truc1, truc_tot, charge_pick = 300, 1000, True
-    truc_full = 352
-
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
-    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
-    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
-    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
-
-    truc_list = np.arange(truc_full)
-    hspace_full = hspace_full[:truc_full]
-    eval_tot = eval_tot[:truc_full]
-    n_theta0_dress = ut.truncate_2(n_theta0_dress, truc_list)
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, truc_list)
-    logi_state = ['0-0', '0-2', '2-0', '2-2']
-    W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
-
-    num_cpus = 16
-    n_job = 100
-    c_op_list = []
-    H0_full = qt.Qobj(np.diag(eval_tot))
-    logi_idx_full = [hspace_full.index(i) for i in logi_state]
-    H_drive_full = [H0_full, [n_theta1_dress, ut.drive_gauss_A] ]
-
-
-    len_part = 190
-    hspace_part = hspace_full[:len_part]
-    index_part = np.arange(len_part)
-    H0_part = ut.truncate_2( H0_full, index_part )
-    n_theta1_part = ut.truncate_2(n_theta1_dress, index_part)
-    logi_idx_part = [hspace_part.index(i) for i in logi_state]
-    H_drive_part = [H0_part, [n_theta1_part, ut.drive_gauss_A] ]
-
-    arg_part = [H_drive_part, W_20_50, num_cpus, c_op_list, logi_idx_part ]
-    f_part = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)(args_indep, *arg_part)
-                                                for args_indep in x0_vec)
-    print(f' fidelity (dim={len_part},{charge_pick}) =', np.round(f_part, 8).tolist())
-
-
-    arg_full = [H_drive_full, W_20_50, num_cpus, c_op_list, logi_idx_full ]
-    f_full = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)(args_indep, *arg_full)
-                                                for args_indep in x0_vec)
-    print(f'fidelity (dim={truc_full},{charge_pick}) =', np.round(f_full, 8).tolist())
-
-
-
-    ### Get fidelity for input params (pick=False)
-    truc1, truc_tot, charge_pick = 300, 1000, False
-    truc_full = 1000
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
-    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
-    n_theta1_dress =  2*np.pi* np.load(folder+'n_theta1_dress.npy')
-
-    truc_list = np.arange(truc_full)
-    hspace_full = hspace_full[:truc_full]
-    eval_tot = eval_tot[:truc_full]
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, truc_list)
-    W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
-
-    H0_full = qt.Qobj(np.diag(eval_tot))
-    logi_idx_full = [hspace_full.index(i) for i in logi_state]
-    H_drive_full = [H0_full, [n_theta1_dress, ut.drive_gauss_A] ]
-
-    len_part = 500
-    hspace_part = hspace_full[:len_part]
-    index_part = np.arange(len_part)
-    H0_part = ut.truncate_2( H0_full, index_part )
-    n_theta1_part = ut.truncate_2(n_theta1_dress, index_part)
-    logi_idx_part = [hspace_part.index(i) for i in logi_state]
-    H_drive_part = [H0_part, [n_theta1_part, ut.drive_gauss_A] ]
-
-    arg_part = [H_drive_part, W_20_50, num_cpus, c_op_list, logi_idx_part ]
-    f_part = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)(args_indep, *arg_part)
-                                                for args_indep in x0_vec)
-    print(f' fidelity (dim={len_part},{charge_pick}) =', np.round(f_part, 8).tolist())
-
-
-    arg_full = [H_drive_full, W_20_50, num_cpus, c_op_list, logi_idx_full ]
-    f_full = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)(args_indep, *arg_full)
-                                                for args_indep in x0_vec)
-    print(f'fidelity (dim={truc_full},{charge_pick}) =', np.round(f_full, 8).tolist())
-
-
-
-def import_False():
-
-    # cz300_se_3ncut= pd.read_csv('data/data_cz_3ncut_truc1=300_select.txt')
-    # x0_vec = cz300_se_3ncut[['tg', 'drive_amp', 'detune']].to_numpy()[[0, 5, 10, 15, 20, 25, 30],:]
-    x0_vec = np.array([
-[129.995414, 0.044102, 0.026819, -0.010756, -0.010313, -1.58074169, -1.52064501] ,
-
-[160.000133, 0.036595, 0.022959, -0.008237, -0.007826, -2.00077611, -2.05780752] ,
-
-[189.997344, 0.030915, 0.019755, -0.006194, -0.005848, -2.52671861, -2.53251749] ,
-
-[219.997562, 0.026349, 0.016887, -0.00455, -0.004302, -2.84964821, -2.84286097] ,
-
-[249.992868, 0.022922, 0.014688, -0.003423, -0.003252, -3.06948985, -3.06275222] ,
-
-[280.000886, 0.020289, 0.013002, -0.002675, -0.002543, -3.23079202, -3.21686124] ,
-    ])
-    print('params =')
-    for para in x0_vec:
-        print(para.tolist(), ',')
-
-    ### Get fidelity for input params (pick=False)
-    truc1, truc_tot, charge_pick = 300, 2000, False
-    truc_full = 2000
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
-    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
-    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
-    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
-    truc_list = np.arange(truc_full)
-    hspace_full = hspace_full[:truc_full]
-    eval_tot = eval_tot[:truc_full]
-    n_theta0_dress = ut.truncate_2(n_theta0_dress, truc_list)
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, truc_list)
-
-    mid_state = '8-2'
-    idx_0 = hspace_full.index('0-2')
-    idx_1 = hspace_full.index('2-2')
-    idx_2 = hspace_full.index(mid_state)
-    W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
-    W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
-    logi_state = ['0-0', '0-2', '2-0', '2-2']
-
-    num_cpus = 16
-    n_job = 100
-    c_op_list = []
-
-    H0_full = qt.Qobj(np.diag(eval_tot))
-    logi_idx_full = [hspace_full.index(i) for i in logi_state]
-    if mid_state in [ '8-2', '4-5', '1-4', '8-0' ]:
-        H_drive_full = [ H0_full,     [n_theta0_dress, ut.drive_gauss_A],
-                                        [n_theta0_dress, ut.drive_gauss_B]  ]
-    else:
-        H_drive_full = [ H0_full,     [n_theta1_dress, ut.drive_gauss_A],
-                                        [n_theta1_dress, ut.drive_gauss_B]  ]
-
-    # len_part = 500
-    # hspace_part = hspace_full[:len_part]
-    # index_part = np.arange(len_part)
-    # H0_part = ut.truncate_2( H0_full, index_part )
-    # n_theta1_part = ut.truncate_2(n_theta1_dress, index_part)
-    # logi_idx_part = [hspace_part.index(i) for i in logi_state]
-    # H_drive_part = [H0_part, [n_theta1_part, ut.drive_gauss_A] ]
-
-    # arg_part = [H_drive_part, W_20_50, num_cpus, c_op_list, logi_idx_part ]
-    # f_part = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_tg)(args_indep, *arg_part)
-    #                                             for args_indep in x0_vec)
-    # print(f' fidelity (dim={len_part},{charge_pick}) =')
-    # for i in range(0, len(f_part), 4):
-    #     print(', '.join(map(str, f_part[i:i+4])), ',')
-    # print(']')
-    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
-    arg_full = [H_drive_full, W_0_2, W_1_2, num_cpus, c_op_list, logi_idx_full]
-    f_full = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_tg)(args_indep, *arg_full)
-                                                for args_indep in x0_vec[:,:5])
-    print(f' fidelity (dim={truc_full},{charge_pick}) =')
-    for i in range(0, len(f_full), 4):
-        print(', '.join(map(str, f_full[i:i+4])), ',')
-    print(']')
-    print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    ut.print_time()
 
 
 
