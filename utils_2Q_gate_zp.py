@@ -1106,7 +1106,7 @@ def xgate_fidelity_log_noise(args_indep, *args):
         'drive_freq_B': w_trans_2 + 2 * np.pi * detune_B,
         'gate_time': tg,
     }
-    tlist = np.linspace(0, tg, num= 3*int(tg))
+    tlist = np.linspace(0, tg, num= 10*int(tg))
     propagator = get_propagator(H_qbt_drive, tlist, num_cpus, 
                                 c_op_list, pulse_args, logi_idx, option_ideal, option_noisy)
     fidelity = get_fidelity_super_operator(propagator, logi_idx, qt.sigmax(), c_op_list)
@@ -1880,7 +1880,7 @@ def max_index_2d_array(arr, arr_name=None):
           +f'maximum = {np.round(abs(arr[row, col]), 8)}, '
           +f'row={row}, column={col}')
 
-def get_qutip_options(max_step_ideal, max_step_noisy, num_cpus=1):
+def get_qutip_options(max_step_ideal, max_step_noisy, num_cpus=1, print_flag=False):
     """
     Get the qutip options 
     """
@@ -1889,9 +1889,9 @@ def get_qutip_options(max_step_ideal, max_step_noisy, num_cpus=1):
 
     option_ideal =qt.Options(max_step=max_step_ideal, nsteps=nsteps_ideal, num_cpus=num_cpus)  
     option_noisy =qt.Options(max_step=max_step_noisy, nsteps=nsteps_noisy, num_cpus=num_cpus) 
-
-    print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
-    print(f'Noisy: max_step = {option_noisy.max_step}, nsteps = {option_noisy.nsteps}')
+    if print_flag:
+        print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
+        print(f'Noisy: max_step = {option_noisy.max_step}, nsteps = {option_noisy.nsteps}')
     return option_ideal, option_noisy
 
 def get_dressed_states_index(top_index, hspace_0, hspace_1):

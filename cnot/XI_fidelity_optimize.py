@@ -122,28 +122,13 @@ if __name__ == '__main__':
     workers, popsize = 100, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     logi_state = ['0-0', '0-2', '2-0', '2-2']
-
     mid_state = '8-2'
 
     if mid_state in ['8-2', '4-5' ]:
         idx_0 = hspace_full.index('0-2')
         idx_1 = hspace_full.index('2-2')
-    elif mid_state in ['1-4', '8-0', '4-1']:
-        idx_0 = hspace_full.index('0-0')
-        idx_1 = hspace_full.index('2-0')
-
-    if mid_state in ['8-2']:        
-        hspace_part = hspace_full[:200] # ut.truc_model['cnot_short_1000'][:200]
-        # hspace_part = ut.truc_model['cnot_short_1000'][:200]
-        # hspace_part = ut.truc_model['cnot_82']
-    elif mid_state in [ '4-5']:        
-        hspace_part = ut.truc_model['cnot_45']
-    elif mid_state in [ '4-1']:        
-        hspace_part = ut.truc_model['cnot_41']
-    elif mid_state in [ '1-4']:        
-        hspace_part = ut.truc_model['cnot_14']  ### 1-4 which is indeed 8-0
-    elif mid_state in [ '8-0']:        
-        hspace_part = ut.truc_model['cnot_80']  ### 8-0 which is indeed 1-4
+      
+    hspace_part = hspace_full[:200] # ut.truc_model['cnot_short_1000'][:200]
 
     idx_2 = hspace_full.index(mid_state)
     W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
