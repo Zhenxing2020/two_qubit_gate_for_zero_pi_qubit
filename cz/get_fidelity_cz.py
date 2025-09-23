@@ -21,7 +21,7 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = [500, 1000, 1500, 2000] # np.arange(50, 201, 25) #
+    n_truc_list = [50, 200, 1000, 2000] # np.arange(50, 201, 25) #
     cz_run = True # True  # whether to use CZ gate or CNOT gate
     
     # 300_2000_True; 300_2000_False
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     dim_0 = len(hspace_0)
     dim_1 = len(hspace_1) 
 
-    # params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
+    params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] # Load pulse parameters from CSV
 
     if cz_run: # CZ
         drive_term = n_theta1_dress

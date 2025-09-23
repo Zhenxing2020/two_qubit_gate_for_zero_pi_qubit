@@ -1973,7 +1973,7 @@ def load_drive_params_xgate(drive_theta):
         np.ndarray: Parameters array. different rows mean different gate time. 
         columns mean 'tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
     """
-    folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
+    folder = 'data_xgate_theta_3ncut_mstep_3e4.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
     f_xgate = pd.read_csv('data/' + folder)
     return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
 
