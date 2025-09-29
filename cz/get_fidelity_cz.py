@@ -28,7 +28,7 @@ if __name__ == '__main__':
     truc_one_qubit, truc_full, charge_pick = 300, 2000, True 
 
     # 'cz_short_500_detune0', 'cz_short_500_detune1', 'hand_pick',
-    use_truc_model, truc_model_name = True, 'cz_short_500_detune1'
+    use_truc_model, truc_model_name = False, 'cz_short_500_detune1'
 
     # below sets whether to calculate noisy fidelity, they should not be true at the same time to avoid error
     calculate_ideal, calculate_noise = True, True # True, False #     
