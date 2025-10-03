@@ -1623,8 +1623,6 @@ def build_hamiltonian_2q(cz_run, index_select, eval_tot, eket_tot, drive_term):
     return H_drive_select, eket_tot
 
 
-
-
 def shortest_path_to_core(G, core_states, target_state):
     """Finds the sortest path to the specified core states
 
