@@ -1992,13 +1992,13 @@ def load_1q_data_for_2q(truc1, folder = '../../data/3ncut_two_zeropi/truc1=500/'
     n_theta1 = truncate_2(n_theta1, hspace_1)
     return eval0,eval1,n_theta0,n_theta1
 
-def load_qubit_data_2q(truc1=300, truc_full = 2000, charge_pick=True):
+def load_qubit_data_2q(truc1=300, truc_full = 2000, charge_pick=True,**kwargs):
     """
     Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
     The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
     """    
      # If charge_pick = True, n_full=2000, else 1000
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick={charge_pick}/'
+    folder = kwargs.get("folder", f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick={charge_pick}/')
     logi_state = ['0-0', '0-2', '2-0', '2-2']
     if charge_pick:
         hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
