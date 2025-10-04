@@ -1,0 +1,24 @@
+# Binary files - always use remote version during merge
+*.png binary merge=ours
+*.jpg binary merge=ours
+*.jpeg binary merge=ours
+*.gif binary merge=ours
+*.bmp binary merge=ours
+*.tiff binary merge=ours
+*.pdf binary merge=ours
+*.eps binary merge=ours
+*.svg binary merge=ours
+
+# Data files - always use remote version during merge
+*.npz binary merge=ours
+*.npy binary merge=ours
+*.h5 binary merge=ours
+*.hdf5 binary merge=ours
+*.mat binary merge=ours
+*.pkl binary merge=ours
+*.pickle binary merge=ours
+
+# Other binary files
+*.zip binary merge=ours
+*.tar.gz binary merge=ours
+*.bson binary merge=ours
