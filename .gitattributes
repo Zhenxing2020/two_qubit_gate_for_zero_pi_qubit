@@ -22,3 +22,6 @@
 *.zip binary merge=ours
 *.tar.gz binary merge=ours
 *.bson binary merge=ours
+
+# Jupyter notebooks - always use remote version during merge
+*.ipynb merge=theirs
