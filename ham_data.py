@@ -201,52 +201,86 @@ def save_two_qubit_data(params, folder_save):
     g = cTransInv[params["theta_mode1"], params["theta_mode2"]]
 
     # Calculate subsystem eigenvalues/vectors
-    eval1, evecs1 = zp.subsystems[0].eigensys(evals_count=params["truc1"])
-    evecs1 = evecs1.T 
-    eval2, evecs2 = zp.subsystems[1].eigensys(evals_count=params["truc2"])
-    evecs2 = evecs2.T
+    H_zp1 = zp.subsystems[0].hamiltonian()
+    eval1, evecs1 = ssp.linalg.eigsh(H_zp1, k=params["truc1"],  which='SA')
+    evecs1 = np.array(normalize_eigenvector_phases(evecs1.T))
+    H_zp2 = zp.subsystems[1].hamiltonian()
+    eval2, evecs2 = ssp.linalg.eigsh(H_zp2, k=params["truc2"],  which='SA')
+    evecs2 = np.array(normalize_eigenvector_phases(evecs2.T))
 
     # ntheta and nphi operators in single qubit bare basis
     n_theta1 = (evecs1 @ getattr(zp.subsystems[0], f"n{params['theta_mode1']+1}_operator")() @ evecs1.conj().T)
     n_theta2 = (evecs2 @ getattr(zp.subsystems[1], f"n{params['theta_mode2']+1}_operator")() @ evecs2.conj().T)
 
     # Reduced models for individual qubits
-    hspace_theta1 = trunc_by_thresh([0, 2], n_theta1, params["charge_thresh"])
-    hspace_theta2 = trunc_by_thresh([0, 2], n_theta2, params["charge_thresh"])
+    hspace_1 = trunc_by_thresh([0, 2], n_theta1, params["charge_thresh"])
+    hspace_2 = trunc_by_thresh([0, 2], n_theta2, params["charge_thresh"])
     # truncated n_theta and n_phi operators
-    n_theta1_trunc = ut.truncate_2(n_theta1, hspace_theta1)
-    n_theta2_trunc = ut.truncate_2(n_theta2, hspace_theta2)
-    eval1_trunc = eval1[hspace_theta1]
-    eval2_trunc = eval2[hspace_theta2]
-
-    breakpoint()
+    n_theta1_trunc = ut.truncate_2(n_theta1, hspace_1)
+    n_theta2_trunc = ut.truncate_2(n_theta2, hspace_2)
+    eval1_trunc = eval1[hspace_1]
+    eval2_trunc = eval2[hspace_2]
 
     # Full System Hamiltonian
     H1 = qt.Qobj(np.diag(eval1_trunc))
     H2 = qt.Qobj(np.diag(eval2_trunc))
     n_theta1_qobj = qt.Qobj(n_theta1_trunc)
     n_theta2_qobj = qt.Qobj(n_theta2_trunc)
-    H_tot = qt.tensor(H1, qt.qeye(len(hspace_theta2))) + qt.tensor(qt.qeye(len(hspace_theta1)), H2) + \
-            g * qt.tensor(n_theta1_qobj, n_theta2_qobj)
+    H_tot = qt.tensor(H1, qt.qeye(len(hspace_2))) + qt.tensor(qt.qeye(len(hspace_1)), H2) + \
+        g * qt.tensor(n_theta1_qobj, qt.qeye(len(hspace_2))) * qt.tensor(qt.qeye(len(hspace_1)),n_theta2_qobj)
     evals_tot, evecs_tot = ssp.linalg.eigsh(H_tot.data, k=params["truc_total"],  which='SA')
-    evecs_tot = normalize_eigenvector_phases(evecs_tot.T)
+    evecs_tot = np.array(normalize_eigenvector_phases(evecs_tot.T))
 
     # Construct bare/dressed basis for full system
+    hspace_idx_bare = np.array(np.unravel_index(np.arange(len(hspace_1)*len(hspace_2)), (len(hspace_1), len(hspace_2)))).T
+    result = [find_overlap_complex(ket, hspace_idx_bare) for ket in evecs_tot.T]
+    top_overlap = [res[1] for res in result]
+    top_idx = []
+    top_idx_mapped = []
+    for res in result:
+        mapped_pairs = []
+        pairs = []
+        for idx_pair in res[0]:
+            mapped_pairs.append((hspace_1[idx_pair[0]], hspace_2[idx_pair[1]]))
+            pairs.append(idx_pair)
+        top_idx.append(pairs)
+        top_idx_mapped.append(mapped_pairs)
+    hspace_full = ut.get_dressed_states_index(top_idx, hspace_1, hspace_2)
     
     # Save top overlaps and indices (i.e., dressed state decomposition)
+    with open(summary_file, 'w') as f:
+        print("Dressed states (bottom 10):", file=f)
+        for idx, state in enumerate(hspace_full[:10]):
+            dressed_str = dressed_state_decomp(top_idx_mapped[idx], top_overlap[idx],
+                                              thresh=0.01, float_round=3)
 
+        print("scqubits version:", scq.__version__, file=f)
+        print(f"circuit modes: {zp.var_categories}", file=f)
+        print(f"circuit params: {zp.symbolic_params}", file=f)
+        print("-", file=f)
+        print(f"lagrangian (node vars): {sym.nsimplify(zp.sym_lagrangian(return_expr=True))}", file=f)
+        print("-", file=f)
+        print(f"hamiltonian (transformed vars): {sym.nsimplify(zp.sym_hamiltonian(return_expr=True))}", file=f)
+        print("-", file=f)
+        print(str(zp), file=f)
+    
     # Save n_theta1 and n_theta2 operators in full dressed basis
+    n_theta1_dressed = evecs_tot @ qt.tensor(n_theta1_qobj, qt.qeye(len(hspace_2))).data @ evecs_tot.conj().T
+    n_theta2_dressed = evecs_tot @ qt.tensor(qt.qeye(len(hspace_1)), n_theta2_qobj).data @ evecs_tot.conj().T
 
-    # Save data
-    np.savez(str(Path(folder_save, 'two_qubit_data.npz')),
-                eval1=eval1, eval2=eval2,
-                n_theta1=n_theta1, n_theta2=n_theta2,
-                hspace_theta1=hspace_theta1, hspace_theta2=hspace_theta2,
-                g_theta1theta2=g,
-                evals_tot=evals_tot,
-                evecs_tot=evecs_tot,
-                params=params
-                )
+    # # Save data
+    # np.savez(str(Path(folder_save, 'two_qubit_data.npz')),
+    #             eval1=eval1, eval2=eval2,
+    #             n_theta1=n_theta1, n_theta2=n_theta2,
+    #             hspace_1=hspace_1, hspace_2=hspace_2,
+    #             g_theta1theta2=g,
+    #             evals_tot=evals_tot,
+    #             evecs_tot=evecs_tot,
+    #             n_theta1=
+    #             n_theta1_dressed=n_theta1_dressed,
+    #             n_theta2_dressed=n_theta2_dressed,
+    #             params=params
+    #             )
 
 
     
