@@ -14,14 +14,15 @@ import utils_2Q_gate_zp as ut
 
 def find_overlap_complex(eket, hspace_bare, num=10):
 
-    # flat_array = overlaps.flatten() # Flatten the 2D array
+    # Flatten the 2D array if needed
     if isinstance(eket, qt.Qobj):
         eket = eket.data
-    flat_array = eket.flatten()
-    top_indices_flat = np.argsort(-np.abs(flat_array))[:num]
-    hspace_select = [hspace_bare[i] for i in top_indices_flat]
+    if len(eket.shape) > 1:
+        eket = eket.flatten()
+    top_indices_flat = np.argsort(-np.abs(eket))[:num]
+    hspace_select = [tuple(hspace_bare[i]) for i in top_indices_flat]
     
-    return hspace_select, flat_array[top_indices_flat]
+    return hspace_select, eket[top_indices_flat]
 
 
 def dressed_state_decomp(top_states, top_values, thresh=0.001, float_round=3, dressed_state_label=None,
@@ -61,7 +62,7 @@ def dressed_state_decomp(top_states, top_values, thresh=0.001, float_round=3, dr
                 str_repr += str(np.round(overlap_val, float_round)) + \
                         r"\left|" + f"{i},{j}" + r"\right\rangle + "
             else:
-                str_repr += f"({np.round(overlap_val, float_round)})|{i},{j}⟩ + "
+                str_repr += f"{np.round(overlap_val, float_round)}|{i},{j}⟩ + "
     
     # Remove the trailing " + " and close the equation
     if str_repr.endswith(" + "):
@@ -71,7 +72,7 @@ def dressed_state_decomp(top_states, top_values, thresh=0.001, float_round=3, dr
         str_repr += r"$"
     return str_repr
 
-def get_dressed_states_index(top_index, hspace_0, hspace_1):
+def get_dressed_states_index(top_index, hspace_0, hspace_1, n=None):
     """
     Get the dressed states index for each eigenstate.
 
@@ -84,6 +85,9 @@ def get_dressed_states_index(top_index, hspace_0, hspace_1):
         hspace_full (list): List of string indices for dressed states.
     """
     index_array = []
+    if not n is None:
+        n = min(n, len(top_index))
+        top_idx = top_index[:n]
     for i, index in enumerate(top_index):
         j = 0
         while j < len(index):
@@ -143,7 +147,8 @@ def normalize_eigenvector_phases(eigenvectors):
         else:
             normalized_evec = normalized_data.reshape(original_shape)
         
-        normalized_evecs.append(normalized_evec)
+        # Add phase and normalize to unit norm
+        normalized_evecs.append(normalized_evec/np.linalg.norm(normalized_evec))
     
     return normalized_evecs
 
@@ -181,15 +186,15 @@ def save_two_qubit_data(params, folder_save):
         print(f"hamiltonian (transformed vars): {sym.nsimplify(zp.sym_hamiltonian(return_expr=True))}", file=f)
         print("-", file=f)
         print(str(zp), file=f)
-    
+
     # Define subsystems
     system_hierarchy = [[1,3],  [5,7]]  # theta and phi modes for each qubit
     subsystem_trunc_dims = [10, 10]
     zp.configure(system_hierarchy=system_hierarchy,
                 subsystem_trunc_dims=subsystem_trunc_dims)
-    
+
     print("Circuit and parameters set. Beginning calculations...")
-    
+
     # Extract g_theta1theta2 coupling strength
     i_for_inv = []
     for i in range(params["Ztransform_2zeropi"].shape[0]):
@@ -201,12 +206,11 @@ def save_two_qubit_data(params, folder_save):
     g = cTransInv[params["theta_mode1"], params["theta_mode2"]]
 
     # Calculate subsystem eigenvalues/vectors
-    H_zp1 = zp.subsystems[0].hamiltonian()
-    eval1, evecs1 = ssp.linalg.eigsh(H_zp1, k=params["truc1"],  which='SA')
+    eval1, evecs1 = zp.subsystems[0].eigensys(params["truc1"])
     evecs1 = np.array(normalize_eigenvector_phases(evecs1.T))
-    H_zp2 = zp.subsystems[1].hamiltonian()
-    eval2, evecs2 = ssp.linalg.eigsh(H_zp2, k=params["truc2"],  which='SA')
+    eval2, evecs2 = zp.subsystems[1].eigensys(params["truc2"])
     evecs2 = np.array(normalize_eigenvector_phases(evecs2.T))
+    print("Finished calculating subsystem eigensystems.")
 
     # ntheta and nphi operators in single qubit bare basis
     n_theta1 = (evecs1 @ getattr(zp.subsystems[0], f"n{params['theta_mode1']+1}_operator")() @ evecs1.conj().T)
@@ -221,19 +225,23 @@ def save_two_qubit_data(params, folder_save):
     eval1_trunc = eval1[hspace_1]
     eval2_trunc = eval2[hspace_2]
 
-    # Full System Hamiltonian
+    # Chop off small elements for smaller matrix
+    n_theta1_trunc[np.abs(n_theta1_trunc) < 1e-10] = 0
+    n_theta2_trunc[np.abs(n_theta2_trunc) < 1e-10] = 0
     H1 = qt.Qobj(np.diag(eval1_trunc))
     H2 = qt.Qobj(np.diag(eval2_trunc))
     n_theta1_qobj = qt.Qobj(n_theta1_trunc)
     n_theta2_qobj = qt.Qobj(n_theta2_trunc)
+
+    # Full System Hamiltonian
     H_tot = qt.tensor(H1, qt.qeye(len(hspace_2))) + qt.tensor(qt.qeye(len(hspace_1)), H2) + \
-        g * qt.tensor(n_theta1_qobj, qt.qeye(len(hspace_2))) * qt.tensor(qt.qeye(len(hspace_1)),n_theta2_qobj)
+             g * qt.tensor(n_theta1_qobj, n_theta2_qobj)
     evals_tot, evecs_tot = ssp.linalg.eigsh(H_tot.data, k=params["truc_total"],  which='SA')
     evecs_tot = np.array(normalize_eigenvector_phases(evecs_tot.T))
 
     # Construct bare/dressed basis for full system
     hspace_idx_bare = np.array(np.unravel_index(np.arange(len(hspace_1)*len(hspace_2)), (len(hspace_1), len(hspace_2)))).T
-    result = [find_overlap_complex(ket, hspace_idx_bare) for ket in evecs_tot.T]
+    result = [find_overlap_complex(ket, hspace_idx_bare) for ket in evecs_tot]
     top_overlap = [res[1] for res in result]
     top_idx = []
     top_idx_mapped = []
@@ -245,47 +253,66 @@ def save_two_qubit_data(params, folder_save):
             pairs.append(idx_pair)
         top_idx.append(pairs)
         top_idx_mapped.append(mapped_pairs)
-    hspace_full = ut.get_dressed_states_index(top_idx, hspace_1, hspace_2)
+    hspace_full = get_dressed_states_index(top_idx, hspace_1, hspace_2, params["truc_total"])
     
     # Save top overlaps and indices (i.e., dressed state decomposition)
-    with open(summary_file, 'w') as f:
-        print("Dressed states (bottom 10):", file=f)
-        for idx, state in enumerate(hspace_full[:10]):
+    with open(summary_file, 'a') as f:
+        print("Important Dressed states:", file=f)
+        print("-- logical states --", file=f)
+        for state in ["0-0", "2-0", "0-2", "2-2"]:
+            idx = hspace_full.index(state)
             dressed_str = dressed_state_decomp(top_idx_mapped[idx], top_overlap[idx],
-                                              thresh=0.01, float_round=3)
-
-        print("scqubits version:", scq.__version__, file=f)
-        print(f"circuit modes: {zp.var_categories}", file=f)
-        print(f"circuit params: {zp.symbolic_params}", file=f)
-        print("-", file=f)
-        print(f"lagrangian (node vars): {sym.nsimplify(zp.sym_lagrangian(return_expr=True))}", file=f)
-        print("-", file=f)
-        print(f"hamiltonian (transformed vars): {sym.nsimplify(zp.sym_hamiltonian(return_expr=True))}", file=f)
-        print("-", file=f)
-        print(str(zp), file=f)
+                                                thresh=0.001, float_round=3,
+                                                dressed_state_label=state.replace("-",","),
+                                                latex=False)
+            print(dressed_str, file=f)
+        print("-- X gate states --", file=f)
+        for state in ["0-8", "2-8", "8-0", "8-2"]:
+            idx = hspace_full.index(state)
+            dressed_str = dressed_state_decomp(top_idx_mapped[idx], top_overlap[idx],
+                                                thresh=0.001, float_round=3,
+                                                dressed_state_label=state.replace("-",","),
+                                                latex=False)
+            print(dressed_str, file=f)
+        print("-- CZ gate states --", file=f)
+        for state in ["0-5", "2-5", "2-1", "0-1", "5-2", "5-0", "1-2", "1-0"]:
+            idx = hspace_full.index(state)
+            dressed_str = dressed_state_decomp(top_idx_mapped[idx], top_overlap[idx],
+                                                thresh=0.001, float_round=3,
+                                                dressed_state_label=state.replace("-",","),
+                                                latex=False)
+            print(dressed_str, file=f)
+        print("-- CNOT gate states --", file=f)
+        for state in ["8-2", "1-4"]:
+            idx = hspace_full.index(state)
+            dressed_str = dressed_state_decomp(top_idx_mapped[idx], top_overlap[idx],
+                                                thresh=0.001, float_round=3,
+                                                dressed_state_label=state.replace("-",","),
+                                                latex=False)
+            print(dressed_str, file=f)
     
     # Save n_theta1 and n_theta2 operators in full dressed basis
     n_theta1_dressed = evecs_tot @ qt.tensor(n_theta1_qobj, qt.qeye(len(hspace_2))).data @ evecs_tot.conj().T
     n_theta2_dressed = evecs_tot @ qt.tensor(qt.qeye(len(hspace_1)), n_theta2_qobj).data @ evecs_tot.conj().T
 
-    # # Save data
-    # np.savez(str(Path(folder_save, 'two_qubit_data.npz')),
-    #             eval1=eval1, eval2=eval2,
-    #             n_theta1=n_theta1, n_theta2=n_theta2,
-    #             hspace_1=hspace_1, hspace_2=hspace_2,
-    #             g_theta1theta2=g,
-    #             evals_tot=evals_tot,
-    #             evecs_tot=evecs_tot,
-    #             n_theta1=
-    #             n_theta1_dressed=n_theta1_dressed,
-    #             n_theta2_dressed=n_theta2_dressed,
-    #             params=params
-    #             )
+    # Save data
+    np.savez(str(Path(folder_save, 'two_qubit_data.npz')),
+                eval1=eval1, eval2=eval2,
+                evecs1=evecs1, evecs2=evecs2,
+                n_theta1=n_theta1, n_theta2=n_theta2,
+                hspace_1=hspace_1, hspace_2=hspace_2,
+                g_theta1theta2=g,
+                evals_tot=evals_tot, evecs_tot=evecs_tot,
+                hspace_full=hspace_full,
+                n_theta1_dressed=n_theta1_dressed,
+                n_theta2_dressed=n_theta2_dressed,
+                top_idx=top_idx,
+                top_overlap=top_overlap,
+                params=params
+                )
 
 
     
-
-
 def add_2qbt_graph_estimate(params, two_qubit_data):
     """
     Add graph-based truncation estimates to the two_qubit_data dictionary.
@@ -403,8 +430,11 @@ def save_single_qubit_data(params, folder_save):
     
     # Print single qubit data summary
     summary_file = str(Path(folder_save, 'single_qubit_data_summary.txt'))
-    with open(summary_file, 'w') as f:
+    with open(summary_file, 'a') as f:
         print(f"First 10 Eigenvalues (GHz): {evals[:10]}", file=f)
+        print(f"hspace theta size: {len(theta_drive["hspace_charge"])}", file=f)
+        print(f"hspace phi size: {len(phi_drive["hspace_charge"])}", file=f)
+        print(f"hspace mixed size: {len(mixed_drive["hspace_charge"])}", file=f)
         print(f"n_theta matrix elements for bottom 10 states (GHz):\n {np.round(n_theta[:10, :10], 3)}", file=f)
 
 
