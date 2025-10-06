@@ -312,6 +312,32 @@ def save_two_qubit_data(params, folder_save):
                 )
 
 
+def load_two_qubit_data(folder_load, return_full=False):
+    """_summary_
+
+    Args:
+        folder_load (_type_): _description_
+        return_full (bool, optional): _description_. Defaults to False.
+    """
+
+    if return_full:
+        data = np.load(Path(folder_load, 'two_qubit_data.npz'), allow_pickle=True)
+        return data
+    else:
+        data = np.load(Path(folder_load, 'two_qubit_data.npz'), allow_pickle=True)
+        hspace_full = data['hspace_full'].tolist()
+        eket_tot = data['evecs_tot']
+        eval_tot = 2*np.pi*data['evals_tot']
+        n_theta0_dress = 2*np.pi*data['n_theta1_dressed']
+        n_theta1_dress = 2*np.pi*data['n_theta2_dressed']
+        hspace_0 = data['hspace_1'].tolist()
+        hspace_1 = data['hspace_2'].tolist()
+        logi_state = ['0-0', '2-0', '0-2', '2-2']
+        return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
+            n_theta1_dress, hspace_0, hspace_1, logi_state]
+
+
+
     
 def add_2qbt_graph_estimate(params, two_qubit_data):
     """
@@ -378,10 +404,6 @@ def save_single_qubit_data(params, folder_save):
     with open(summary_file, 'w') as f:
         print("Single Qubit Data Summary:", file=f)
         print("scqubits version:", scq.__version__, file=f)
-        print(f"circuit modes: {zero_pi.var_categories}", file=f)
-        print(f"circuit params: {zero_pi.symbolic_params}", file=f)
-        print(f"lagrangian: {zero_pi.sym_lagrangian(return_expr=True)}", file=f)
-        print(f"hamiltonian: {zero_pi.sym_hamiltonian(return_expr=True)}", file=f)
 
     # Compute matrix elements for the theta and phi operators
     n_theta =  zero_pi.matrixelement_table(operator="n_theta_operator", evals_count=params["truc"])
@@ -432,9 +454,9 @@ def save_single_qubit_data(params, folder_save):
     summary_file = str(Path(folder_save, 'single_qubit_data_summary.txt'))
     with open(summary_file, 'a') as f:
         print(f"First 10 Eigenvalues (GHz): {evals[:10]}", file=f)
-        print(f"hspace theta size: {len(theta_drive["hspace_charge"])}", file=f)
-        print(f"hspace phi size: {len(phi_drive["hspace_charge"])}", file=f)
-        print(f"hspace mixed size: {len(mixed_drive["hspace_charge"])}", file=f)
+        print(f"hspace theta size: {len(theta_drive['hspace_charge'])}", file=f)
+        print(f"hspace phi size: {len(phi_drive['hspace_charge'])}", file=f)
+        print(f"hspace mixed size: {len(mixed_drive['hspace_charge'])}", file=f)
         print(f"n_theta matrix elements for bottom 10 states (GHz):\n {np.round(n_theta[:10, :10], 3)}", file=f)
 
 
@@ -545,7 +567,7 @@ if __name__ == "__main__":
     shutil.copy(yml_path, Path(DATA_FOLDER, args.out, '_params.yaml'))
 
     #### Generate Single Qubit Data
-    start_time = time()
+    # start_time = time()
     # print("Generating single qubit data...")
     # save_single_qubit_data(params, folder_save=Path(DATA_FOLDER, args.out))
     # print("Single qubit data saved. Time taken: {:.2f} seconds".format(time() - start_time))
