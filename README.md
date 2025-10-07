@@ -4,8 +4,6 @@ This repository contains code for optimizing and analyzing quantum gates impleme
 
 ## Environment Requirements
 
-<!-- Add your Python environment setup, dependencies, and installation instructions here -->
-
 ### Required Packages
 - QuTip (4.X)
 - SCqubits
@@ -15,9 +13,8 @@ This repository contains code for optimizing and analyzing quantum gates impleme
 - Jupyter
 
 ### Installation
-Clone the repository and make sure you have a suitable environment for running the code. An anaconda environment yaml is included if you would like to create a fresh environment.
+Clone the repository and make sure you have a suitable environment for running the code. An anaconda environment yaml is included if you would like to create a fresh environment. Use the following command to create and activate the zp2q environment.
 
-#### Environment Setup
 ```bash
 conda env create -f env_zp2q.yaml
 conda activate zp2q
@@ -26,11 +23,17 @@ conda activate zp2q
 ## How to Generate Hamiltonians
 
 To generate all the Hamiltonian data, you simply run 
-```python
+```bash
 python ham_data.py
 ```
-from the root of the repository. A new folder will be created in the data directory titled by the current time and date. The directory contains data files, a copy of the circuit parameters yaml used to generate the data, and a summary text file.
-
+from the root of the repository. A new folder will be created in the data directory titled by the current time and date. The directory contains data files, a copy of the circuit parameters yaml used to generate the data, and a summary text file. Alternatively to generate only single or two-qubit hamiltonian data, you can run
+```bash
+python ham_data.py --data-type single
+```
+or
+```bash
+python ham_data.py --data-type two
+```
 Hamiltonian data is saved to .npz files, which can be read directly or using the helper functions
 ```python
 load_single_qubit_data

@@ -38,18 +38,17 @@ theta_mode2: 4  # Theta mode index for qubit 2 (correspnding to column index in 
 phi_mode2: 6 # Phi mode index for qubit 2 (correspnding to column index in Ztransform_2zeropi)
 
 # Coupling Parameters
-Ec0: 100000000000000.0       # Ground capacitive energy (GHz)
+Ec0: 100.0       # Ground capacitive energy (GHz)
 Ecc: 1.0       # Coupling capacitive energy (GHz)
 
 ### Truncation Parameters ###
-truc1: 1000     # Truncation level for eigenstates of each qubit
-truc2: 1000     # Truncation level for eigenstates of each qubit
+truc1: 300     # Truncation level for eigenstates of each qubit
+truc2: 300    # Truncation level for eigenstates of each qubit
 truc_total: 1000  # Overall truncation level for two-qubit system
 
 
 ### Graph Method Parameters ###
 A: 0.1         # Amplitude for graph method
-truc: 1000     # Overall truncation level for two-qubit system
 
 
 # Circuit Configuration

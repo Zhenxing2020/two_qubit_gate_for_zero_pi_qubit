@@ -181,9 +181,9 @@ def save_two_qubit_data(params, folder_save):
         print(f"circuit modes: {zp.var_categories}", file=f)
         print(f"circuit params: {zp.symbolic_params}", file=f)
         print("-", file=f)
-        print(f"lagrangian (node vars): {sym.nsimplify(zp.sym_lagrangian(return_expr=True))}", file=f)
+        print(f"lagrangian (node vars): {zp.sym_lagrangian(return_expr=True)}", file=f)
         print("-", file=f)
-        print(f"hamiltonian (transformed vars): {sym.nsimplify(zp.sym_hamiltonian(return_expr=True))}", file=f)
+        print(f"hamiltonian (transformed vars): {zp.sym_hamiltonian(return_expr=True)}", file=f)
         print("-", file=f)
         print(str(zp), file=f)
 
@@ -205,6 +205,9 @@ def save_two_qubit_data(params, folder_save):
     cTransInv = np.linalg.inv(ut.truncate_2(Z.T @ cMat @ Z, i_for_inv))
     g = cTransInv[params["theta_mode1"], params["theta_mode2"]]
 
+    with open(summary_file, 'a') as f:
+        print(f"Coupling strength g_theta1theta2: {g}", file=f)
+
     # Calculate subsystem eigenvalues/vectors
     eval1, evecs1 = zp.subsystems[0].eigensys(params["truc1"])
     evecs1 = np.array(normalize_eigenvector_phases(evecs1.T))
@@ -220,8 +223,8 @@ def save_two_qubit_data(params, folder_save):
     hspace_1 = trunc_by_thresh([0, 2], n_theta1, params["charge_thresh"])
     hspace_2 = trunc_by_thresh([0, 2], n_theta2, params["charge_thresh"])
     # truncated n_theta and n_phi operators
-    n_theta1_trunc = ut.truncate_2(n_theta1, hspace_1)
-    n_theta2_trunc = ut.truncate_2(n_theta2, hspace_2)
+    n_theta1_trunc = ut.truncate_2(n_theta1, hspace_1).data.todense()
+    n_theta2_trunc = ut.truncate_2(n_theta2, hspace_2).data.todense()
     eval1_trunc = eval1[hspace_1]
     eval2_trunc = eval2[hspace_2]
 
@@ -320,11 +323,10 @@ def load_two_qubit_data(folder_load, return_full=False):
         return_full (bool, optional): _description_. Defaults to False.
     """
 
+    data = np.load(Path(folder_load, 'two_qubit_data.npz'), allow_pickle=True)
     if return_full:
-        data = np.load(Path(folder_load, 'two_qubit_data.npz'), allow_pickle=True)
         return data
     else:
-        data = np.load(Path(folder_load, 'two_qubit_data.npz'), allow_pickle=True)
         hspace_full = data['hspace_full'].tolist()
         eket_tot = data['evecs_tot']
         eval_tot = 2*np.pi*data['evals_tot']
@@ -336,7 +338,15 @@ def load_two_qubit_data(folder_load, return_full=False):
         return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
             n_theta1_dress, hspace_0, hspace_1, logi_state]
 
+def load_1q_data_for_2q(folder_load):
 
+    data = np.load(Path(folder_load, 'two_qubit_data.npz'), allow_pickle=True)
+    eval0 = 2*np.pi*data['eval1']
+    eval1 = 2*np.pi*data['eval2']
+    n_theta0 = 2*np.pi*data['n_theta1']
+    n_theta1 = 2*np.pi*data['n_theta2']
+
+    return eval0,eval1,n_theta0,n_theta1
 
     
 def add_2qbt_graph_estimate(params, two_qubit_data):
@@ -551,8 +561,10 @@ if __name__ == "__main__":
     #### Load parameters from YAML file
     import argparse
     parser = argparse.ArgumentParser(description="Generate and save Hamiltonian data for the Zero-Pi two qubit system.")
-    parser.add_argument('-yaml', type=str, default="params.yaml", help="Path to the YAML parameter file.")
-    parser.add_argument('-out', type=str, default=formatted_time, help="Folder to save the data within paths.DATA_PATH.")
+    parser.add_argument('--yaml', type=str, default="params.yaml", help="Path to the YAML parameter file.")
+    parser.add_argument('--out', type=str, default=formatted_time, help="Folder to save the data within paths.DATA_PATH.")
+    parser.add_argument('--data-type', type=str, choices=['single', 'two', 'both'], default='both', 
+                        help="Type of data to generate: 'single' for single qubit only, 'two' for two qubit only, 'both' for both types (default: both)")
     args = parser.parse_args()  
     yml_path = args.yaml
     params = load_params(yml_path)
@@ -565,17 +577,21 @@ if __name__ == "__main__":
     #### Copy Params YAML to data folder
     import shutil
     shutil.copy(yml_path, Path(DATA_FOLDER, args.out, '_params.yaml'))
+    print("Copied params yaml to data folder.")
+    print("-------- Beginning Data Generation --------")
+    if args.data_type in ['single', 'both']:
+        start_time = time()
+        print("Generating single qubit data...")
+        save_single_qubit_data(params, folder_save=Path(DATA_FOLDER, args.out))
+        print("Single qubit data saved. Time taken: {:.2f} seconds".format(time() - start_time))
 
-    #### Generate Single Qubit Data
-    # start_time = time()
-    # print("Generating single qubit data...")
-    # save_single_qubit_data(params, folder_save=Path(DATA_FOLDER, args.out))
-    # print("Single qubit data saved. Time taken: {:.2f} seconds".format(time() - start_time))
-
-    #### Generate Two Qubit Data
-    start_time = time()
-    print("Generating two qubit data...")
-    save_two_qubit_data(params, folder_save=Path(DATA_FOLDER, args.out))
-    print("Two qubit data saved. Time taken: {:.2f} seconds".format(time() - start_time))
+    #### Generate Data Based on Flag
+    if args.data_type in ['two', 'both']:
+        start_time = time()
+        print("Generating two qubit data...")
+        save_two_qubit_data(params, folder_save=Path(DATA_FOLDER, args.out))
+        print("Two qubit data saved. Time taken: {:.2f} seconds".format(time() - start_time))
 
 
+
+    
