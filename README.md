@@ -2,6 +2,12 @@
 
 This repository contains code for optimizing and analyzing quantum gates implemented on zero-π qubits, including single-qubit X gates and two-qubit gates (CZ, CNOT, and simultaneous X gates).
 
+# To-Add
+
+1. Instructions on how to run each of the 
+
+2. Function in ham_data.py to add graph model to two qubit system after determining the 
+
 ## Environment Requirements
 
 ### Required Packages

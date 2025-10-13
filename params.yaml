@@ -18,30 +18,31 @@ dEJ: 0.0  # Josephson energy asymmetry
 
 ### TWO QUBIT PARAMETERS ###
 # Qubit 1 Parameters
-EJ1: 6.01      # Josephson energy for qubit 1 (GHz)
-ECJ1: 2.28     # Charging energy for Josephson junction 1 (GHz)
-EL1: 0.38      # Inductive energy for qubit 1 (GHz)
-EC1: 0.2       # Capacitive energy for qubit 1 (GHz)
-Φ1: 0.001     # External flux for qubit 1 (in units of Φ0)
+EJ1: 6.013      # Josephson energy for qubit 1 (GHz)
+ECJ1: 9.685     # Charging energy for Josephson junction 1 (GHz)
+EL1: 0.377      # Inductive energy for qubit 1 (GHz)
+EC1: 0.200       # Capacitive energy for qubit 1 (GHz)
+Φ1: 0.0     # External flux for qubit 1 (in units of Φ0)
 ng1: 0.0       # Offset charge for qubit 1
 theta_mode1: 0  # Theta mode index for qubit 1 (correspnding to column index in Ztransform_2zeropi)
 phi_mode1: 2 # Phi mode index for qubit 1 (correspnding to column index in Ztransform_2zeropi)
 
 # Qubit 2 Parameters
-EJ2: 5.41      # Josephson energy for qubit 2 (GHz)
-ECJ2: 2.28     # Charging energy for Josephson junction 2 (GHz)
-EL2: 0.38      # Inductive energy for qubit 2 (GHz)
-EC2: 0.2       # Capacitive energy for qubit 2 (GHz)
-Φ2: 0.001     # External flux for qubit 2 (in units of Φ0)
+EJ2: 5.412      # Josephson energy for qubit 2 (GHz)
+ECJ2: 9.685     # Charging energy for Josephson junction 2 (GHz)
+EL2: 0.377     # Inductive energy for qubit 2 (GHz)
+EC2: 0.200       # Capacitive energy for qubit 2 (GHz)
+Φ2: 0.0     # External flux for qubit 2 (in units of Φ0)
 ng2: 0.0       # Offset charge for qubit 2
 theta_mode2: 4  # Theta mode index for qubit 2 (correspnding to column index in Ztransform_2zeropi)
 phi_mode2: 6 # Phi mode index for qubit 2 (correspnding to column index in Ztransform_2zeropi)
 
 # Coupling Parameters
-Ec0: 100.0       # Ground capacitive energy (GHz)
+Ec0: 1.491       # Ground capacitive energy (GHz)
 Ecc: 1.0       # Coupling capacitive energy (GHz)
 
 ### Truncation Parameters ###
+n_theta_clip: 1.0E-12  # Threshold for clipping n_theta matrix elements to zero
 truc1: 300     # Truncation level for eigenstates of each qubit
 truc2: 300    # Truncation level for eigenstates of each qubit
 truc_total: 1000  # Overall truncation level for two-qubit system

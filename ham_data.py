@@ -197,17 +197,24 @@ def save_two_qubit_data(params, folder_save):
 
     # Extract g_theta1theta2 coupling strength
     i_for_inv = []
+    ith1 = None
+    ith2 = None
     for i in range(params["Ztransform_2zeropi"].shape[0]):
-        if i not in zp.var_categories["sigma"]:
+        if i + 1 in zp.var_categories["periodic"] + zp.var_categories["extended"] + zp.var_categories["free"]:
             i_for_inv.append(i)
+            if i == params["theta_mode1"]:
+                ith1 = len(i_for_inv)-1
+            if i == params["theta_mode2"]:
+                ith2 = len(i_for_inv)-1
     Z = params["Ztransform_2zeropi"]
     cMat = zp.symbolic_circuit._capacitance_matrix(substitute_params=True)
-    cTransInv = np.linalg.inv(ut.truncate_2(Z.T @ cMat @ Z, i_for_inv))
-    g = cTransInv[params["theta_mode1"], params["theta_mode2"]]
+    cTransInv = np.linalg.inv(ut.truncate_2(Z.T @ cMat @ Z, i_for_inv).full())
+    g = cTransInv[ith1, ith2]
 
     with open(summary_file, 'a') as f:
         print(f"Coupling strength g_theta1theta2: {g}", file=f)
 
+    print("Saved coupling strength.")
     # Calculate subsystem eigenvalues/vectors
     eval1, evecs1 = zp.subsystems[0].eigensys(params["truc1"])
     evecs1 = np.array(normalize_eigenvector_phases(evecs1.T))
@@ -223,14 +230,14 @@ def save_two_qubit_data(params, folder_save):
     hspace_1 = trunc_by_thresh([0, 2], n_theta1, params["charge_thresh"])
     hspace_2 = trunc_by_thresh([0, 2], n_theta2, params["charge_thresh"])
     # truncated n_theta and n_phi operators
-    n_theta1_trunc = ut.truncate_2(n_theta1, hspace_1).data.todense()
-    n_theta2_trunc = ut.truncate_2(n_theta2, hspace_2).data.todense()
+    n_theta1_trunc = ut.truncate_2(n_theta1, hspace_1).full()
+    n_theta2_trunc = ut.truncate_2(n_theta2, hspace_2).full()
     eval1_trunc = eval1[hspace_1]
     eval2_trunc = eval2[hspace_2]
 
     # Chop off small elements for smaller matrix
-    n_theta1_trunc[np.abs(n_theta1_trunc) < 1e-10] = 0
-    n_theta2_trunc[np.abs(n_theta2_trunc) < 1e-10] = 0
+    n_theta1_trunc[np.abs(n_theta1_trunc) < params["n_theta_clip"]] = 0
+    n_theta2_trunc[np.abs(n_theta2_trunc) < params["n_theta_clip"]] = 0
     H1 = qt.Qobj(np.diag(eval1_trunc))
     H2 = qt.Qobj(np.diag(eval2_trunc))
     n_theta1_qobj = qt.Qobj(n_theta1_trunc)
@@ -257,6 +264,57 @@ def save_two_qubit_data(params, folder_save):
         top_idx.append(pairs)
         top_idx_mapped.append(mapped_pairs)
     hspace_full = get_dressed_states_index(top_idx, hspace_1, hspace_2, params["truc_total"])
+    
+    # Save transitions of interest
+    with open(summary_file, 'a') as f:
+        eval_zero = evals_tot - evals_tot[0]
+        print("Important Energy Levels:", file=f)
+        print("-- logical states --", file=f)
+        ket00 = "|0,0⟩"
+        for state in ["0-0", "2-0", "0-2", "2-2"]:
+            idx = hspace_full.index(state)
+            i,j=state.split("-")
+            dressed_str = f"|{i},{j}⟩"
+            print(f"{ket00} ↔ {dressed_str}: {np.round(eval_zero[idx], 3)} GHz", file=f)
+        print("-- X gate --", file=f)
+        x_states = [("0-0", "0-8"), ("0-2", "0-8"),
+                       ("2-0", "2-8"), ("2-2", "2-8")]
+        x_states += [(x[0][::-1], x[1][::-1]) for x in x_states]
+        for s1, s2 in x_states:
+            idx1 = hspace_full.index(s1)
+            idx2 = hspace_full.index(s2)
+            i1,j1=s1.split("-")
+            i2,j2=s2.split("-")
+            ket1 = f"|{i1},{j1}⟩"
+            ket2 = f"|{i2},{j2}⟩"
+            try:
+                print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2]), 3)} GHz", file=f)
+            except:
+                breakpoint()
+    
+        print("-- CZ gate --", file=f)
+        for s1, s2 in [("2-2", "2-5"), ("0-2", "0-5"),
+                       ("2-0", "2-1"), ("0-0","0-1"), 
+                       ("2-2","5-2"), ("2-0","5-0"),
+                       ("0-2","1-2"), ("0-0","1-0")]:
+            idx1 = hspace_full.index(s1)
+            idx2 = hspace_full.index(s2)
+            i1,j1=s1.split("-")
+            i2,j2=s2.split("-")
+            ket1 = f"|{i1},{j1}⟩"
+            ket2 = f"|{i2},{j2}⟩"
+            print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2]), 3)} GHz", file=f)
+    
+        print("-- CNOT gate --", file=f)
+        for s1, s2 in [("2-0", "1-4"), ("2-2","8-2"), 
+                       ("0-0","1-4"), ("0-2","8-2")]:
+            idx1 = hspace_full.index(s1)
+            idx2 = hspace_full.index(s2)
+            i1,j1=s1.split("-")
+            i2,j2=s2.split("-")
+            ket1 = f"|{i1},{j1}⟩"
+            ket2 = f"|{i2},{j2}⟩"
+            print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2]), 3)} GHz", file=f)
     
     # Save top overlaps and indices (i.e., dressed state decomposition)
     with open(summary_file, 'a') as f:
@@ -298,6 +356,19 @@ def save_two_qubit_data(params, folder_save):
     n_theta1_dressed = evecs_tot @ qt.tensor(n_theta1_qobj, qt.qeye(len(hspace_2))).data @ evecs_tot.conj().T
     n_theta2_dressed = evecs_tot @ qt.tensor(qt.qeye(len(hspace_1)), n_theta2_qobj).data @ evecs_tot.conj().T
 
+    # Create hspace_charge for each
+    logi_idx = [hspace_full.index(state) for state in ["0-0", "2-0", "0-2", "2-2"]]
+    hspace_n_theta1 = trunc_by_thresh(logi_idx, n_theta1_dressed, params["charge_thresh"])
+    hspace_n_theta2 = trunc_by_thresh(logi_idx, n_theta2_dressed, params["charge_thresh"])
+
+    # Save reduced hspace info
+    with open(summary_file, 'a') as f:
+        print("-- hspace charge info --", file=f)
+        print(f"hspace1 (single qubit) size : {len(hspace_1)}", file=f)
+        print(f"hspace2 (single qubit) size : {len(hspace_2)}", file=f)
+        print(f"hspace_n_theta1 (two qubit) size: {len(hspace_n_theta1)}", file=f)
+        print(f"hspace_n_theta2 (two qubit) size: {len(hspace_n_theta2)}", file=f)
+    
     # Save data
     np.savez(str(Path(folder_save, 'two_qubit_data.npz')),
                 eval1=eval1, eval2=eval2,
@@ -311,6 +382,8 @@ def save_two_qubit_data(params, folder_save):
                 n_theta2_dressed=n_theta2_dressed,
                 top_idx=top_idx,
                 top_overlap=top_overlap,
+                hspace_n_theta1=hspace_n_theta1,
+                hspace_n_theta2=hspace_n_theta2,
                 params=params
                 )
 
@@ -576,7 +649,7 @@ if __name__ == "__main__":
 
     #### Copy Params YAML to data folder
     import shutil
-    shutil.copy(yml_path, Path(DATA_FOLDER, args.out, '_params.yaml'))
+    shutil.copy(yml_path, Path(DATA_FOLDER, args.out, Path(yml_path).name))
     print("Copied params yaml to data folder.")
     print("-------- Beginning Data Generation --------")
     if args.data_type in ['single', 'both']:
