@@ -303,8 +303,13 @@ def save_two_qubit_data(params, folder_save):
     hspace_1_charge = trunc_by_thresh([0, 2], n_theta1, params["charge_thresh"])
     hspace_2_charge = trunc_by_thresh([0, 2], n_theta2, params["charge_thresh"])
 
-    hspace_1 = np.arange(params["truc1"])
-    hspace_2 = np.arange(params["truc2"])
+    if params["trunc_before_tensor"]:
+        hspace_1 = hspace_1_charge
+        hspace_2 = hspace_2_charge
+    else:
+        hspace_1 = np.arange(params["truc1"])
+        hspace_2 = np.arange(params["truc2"])
+
     # n_theta and n_phi operators for coupling
     n_theta1_trunc = ut.truncate_2(n_theta1, hspace_1).full()
     n_theta2_trunc = ut.truncate_2(n_theta2, hspace_2).full()

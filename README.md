@@ -48,6 +48,54 @@ load_single_qubit_data_for_two_qubits
 ```
 in the same file. Note that values in the .npz files follow the scQubits units convention (i.e. $h=1$), as opposed to the qutip convention $\hbar = 1$. So you must multiply by $2 \pi$ for qutip dynamics.
 
+## NPZ file format — saved datasets
+
+General notes
+- Frequencies/energies are saved in the same units used throughout the code (e.g., GHz). They are NOT multiplied by 2π unless loader functions explicitly do so.
+
+Two-qubit file (example: two_qubit_data.npz)
+- eval1 (np.ndarray): eigenvalues of single-qubit 1 (length = params["truc1"]). Units: GHz (no 2π).
+- eval2 (np.ndarray): eigenvalues of single-qubit 2 (length = params["truc2"]). Units: GHz (no 2π).
+- evecs1 (np.ndarray): eigenvectors for qubit 1 (each row is an eigenvector).
+- evecs2 (np.ndarray): eigenvectors for qubit 2 (each row is an eigenvector).
+- n_theta1, n_theta2 (np.ndarray): theta-mode charge operator matrices for each qubit in the bare single-qubit basis (no 2π).
+- hspace_1_charge, hspace_2_charge (array/list): selected charge-basis indices after truncation-by-threshold.
+- g_theta1theta2 (float): extracted coupling coefficient between theta modes. Units consistent with evals.
+- evals_tot (np.ndarray): full-system eigenvalues for the truncated two-qubit Hamiltonian (no 2π).
+- evecs_tot (np.ndarray): corresponding full-system eigenvectors.
+- hspace_full (list): labels for full-system bare basis states (order matches tensor-product basis used).
+- n_theta1_dressed, n_theta2_dressed (np.ndarray): n_theta operators represented in the dressed (full-system eigenbasis).
+- top_idx (list): for each dressed eigenstate, top contributing bare-basis index pairs (i,j).
+- top_overlap (list/array): complex overlaps corresponding to top_idx entries.
+- hspace_n_theta1, hspace_n_theta2 (list/array): reduced indices used for any truncated analysis of n_theta in the dressed subspace.
+- params (dict): parameters dictionary (from params.yaml) used to generate the dataset.
+
+Single-qubit file (example: single_qubit_data.npz)
+- evals (np.ndarray): single-qubit eigenvalues (length = params["truc"]). Units: GHz (no 2π).
+- evecs (np.ndarray): single-qubit eigenvectors (each row is an eigenvector).
+- n_theta (np.ndarray): theta-mode charge operator in the single-qubit eigenbasis (no 2π).
+- n_phi (np.ndarray): phi-mode charge operator in the single-qubit eigenbasis (no 2π).
+- phi_drive (dict), theta_drive (dict), mixed_drive (dict): drive metadata dicts containing:
+  - w_trans_1, w_trans_2: transition frequencies used for graph estimates (same units as evals).
+  - drive_term: operator matrix used as the drive.
+  - hspace_charge: truncated charge indices selected by threshold.
+  - hspace_graph: truncated indices selected by graph-based estimate.
+- params (dict): parameters dictionary (from params.yaml) used to generate the dataset.
+
+Quick usage examples
+- Inspect keys:
+  - import numpy as np
+  - data = np.load("two_qubit_data.npz", allow_pickle=True)
+  - list(data.keys())
+- Load eigenvalues:
+  - evals = data["evals"]
+
+Loader note
+- Helper functions in this repo (load_two_qubit_data, load_single_qubit_data) may multiply eigenvalues or operators by 2π on return. Verify the loader behavior before combining results with external code.
+
+
+## Running Instructions
+
 ### a) Single Qubit X Gate
 
 <!-- Instructions for optimizing and analyzing single-qubit X gate implementations -->

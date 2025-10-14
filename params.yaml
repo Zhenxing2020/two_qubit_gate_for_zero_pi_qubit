@@ -45,6 +45,7 @@ Ecc: 1.0       # Coupling capacitive energy (GHz)
 n_theta_clip: 1.0E-12  # Threshold for clipping n_theta matrix elements to zero
 truc1: 300     # Truncation level for eigenstates of each qubit
 truc2: 300    # Truncation level for eigenstates of each qubit
+trunc_before_tensor: false  # Whether to truncate based on charge_thresh before tensor product
 truc_total: 1000  # Overall truncation level for two-qubit system
 
 
