@@ -2,12 +2,6 @@
 
 This repository contains code for optimizing and analyzing quantum gates implemented on zero-π qubits, including single-qubit X gates and two-qubit gates (CZ, CNOT, and simultaneous X gates).
 
-# To-Add
-
-1. Instructions on how to run each of the 
-
-2. Function in ham_data.py to add graph model to two qubit system after determining the 
-
 ## Environment Requirements
 
 ### Required Packages
@@ -52,7 +46,7 @@ or
 ```python
 load_single_qubit_data_for_two_qubits
 ```
-in the same file.
+in the same file. Note that values in the .npz files follow the scQubits units convention (i.e. $h=1$), as opposed to the qutip convention $\hbar = 1$. So you must multiply by $2 \pi$ for qutip dynamics.
 
 ### a) Single Qubit X Gate
 

@@ -13,7 +13,24 @@ import utils_2Q_gate_zp as ut
 
 
 def find_overlap_complex(eket, hspace_bare, num=10):
-
+    """
+    Find the top contributing bare states to an eigenstate.
+    
+    Parameters
+    ----------
+    eket : qutip.Qobj or array_like
+        Eigenstate vector to analyze (will be flattened if 2D).
+    hspace_bare : list
+        Flat list of bare state labels corresponding to eigenstate components.
+    num : int, optional
+        Number of top contributors to return, by default 10.
+    
+    Returns
+    -------
+    tuple[list, array_like]
+        Top bare state labels and their complex overlap values,
+        ordered by decreasing absolute magnitude.
+    """
     # Flatten the 2D array if needed
     if isinstance(eket, qt.Qobj):
         eket = eket.data
@@ -28,17 +45,27 @@ def find_overlap_complex(eket, hspace_bare, num=10):
 def dressed_state_decomp(top_states, top_values, thresh=0.001, float_round=3, dressed_state_label=None,
                          latex=True):
     """
-    Returns a latex string that shows the given dressed state in terms of the bare eigenstates.
+    Generate a string representation of a dressed state in terms of bare eigenstates.
     
-    Args:
-        sorted_top_indices: List of tuples (i, j) representing bare state indices, sorted by overlap magnitude
-        sorted_top_values: Array of overlap values corresponding to the indices, sorted by magnitude
-        thresh (float): Threshold of overlap (abs value) to be displayed
-        float_round (int): Number of digits to round floats in the string to
-        dressed_state_label (str): Optional label for the dressed state. If None, uses "state"
+    Parameters
+    ----------
+    top_states : list
+        List of tuples representing bare state indices (i, j), ordered by overlap magnitude.
+    top_values : array_like
+        Complex overlap values corresponding to top_states, ordered by magnitude.
+    thresh : float, optional
+        Threshold for overlap magnitude squared to include in output, by default 0.001.
+    float_round : int, optional
+        Number of digits to round coefficients to, by default 3.
+    dressed_state_label : str, optional
+        Label for the dressed state. If None, uses "dressed", by default None.
+    latex : bool, optional
+        Whether to format output as LaTeX, by default True.
     
-    Returns:
-        str: latex string
+    Returns
+    -------
+    str
+        String representation of the dressed state decomposition.
     """
     
     # Start building the LaTeX string
@@ -74,15 +101,24 @@ def dressed_state_decomp(top_states, top_values, thresh=0.001, float_round=3, dr
 
 def get_dressed_states_index(top_index, hspace_0, hspace_1, n=None):
     """
-    Get the dressed states index for each eigenstate.
-
-    Args:
-        top_index (list): List of index pairs for each eigenstate.
-        hspace_0 (list or np.ndarray): Indices for qubit 0.
-        hspace_1 (list or np.ndarray): Indices for qubit 1.
-
-    Returns:
-        hspace_full (list): List of string indices for dressed states.
+    Generate string labels for dressed states based on bare state indices.
+    
+    Parameters
+    ----------
+    top_index : list
+        List of index pairs (tuples) for each eigenstate, representing contributions 
+        from bare states.
+    hspace_0 : list or array_like
+        State labels/indices for the first qubit.
+    hspace_1 : list or array_like  
+        State labels/indices for the second qubit.
+    n : int, optional
+        Maximum number of states to process. If None, processes all states.
+    
+    Returns
+    -------
+    list
+        List of string labels for dressed states in format "state0-state1".
     """
     index_array = []
     if not n is None:
@@ -105,13 +141,22 @@ def get_dressed_states_index(top_index, hspace_0, hspace_1, n=None):
 
 def normalize_eigenvector_phases(eigenvectors):
     """
-    Normalize the phases of a list of eigenvectors to ensure consistent phase convention.
+    Normalize the phases of eigenvectors to ensure consistent phase convention.
     
-    Parameters:
-        eigenvectors (list): List of eigenvectors (can be numpy arrays or qutip Qobj)
+    The phase of each eigenvector is normalized so that the element with the 
+    largest magnitude in the first half of the vector has zero phase (is real 
+    and positive).
     
-    Returns:
-        list: List of phase-normalized eigenvectors in the same format as input
+    Parameters
+    ----------
+    eigenvectors : list
+        List of eigenvectors, can be numpy arrays or qutip Qobj objects.
+    
+    Returns
+    -------
+    list
+        List of phase-normalized eigenvectors with unit norm, in the same 
+        format as the input.
     """
     normalized_evecs = []
     
@@ -128,7 +173,10 @@ def normalize_eigenvector_phases(eigenvectors):
         
         # Find the phase correction based on the chosen method
         # Find element with largest magnitude
-        max_idx = np.argmax(np.abs(data))
+        half = data.size//2
+        if data.size % 2 == 1:
+            half += 1
+        max_idx = np.argmax(np.abs(data)[:half])
         phase_element = data[max_idx]
         
         # Calculate phase correction
@@ -154,6 +202,31 @@ def normalize_eigenvector_phases(eigenvectors):
 
 
 def save_two_qubit_data(params, folder_save):
+    """
+    Generate and save two-qubit quantum system data including 
+    eigenstates, operators, and Hilbert space information.
+
+    This function performs:
+    computes single-qubit subsystems, calculates coupling strength, constructs
+    the full Hamiltonian, finds eigenstates, analyzes dressed state decompositions,
+    and saves all data.
+
+    NOTE: All eigenvalues and operators are saved without the * 2 pi
+
+
+    Parameters
+    ----------
+    params : dict
+        Dictionary containing circuit parameters including YAML template, 
+        transformation matrix, flux values, charge offsets, and analysis thresholds
+    folder_save : str or Path
+        Directory path where output files will be saved
+    
+    Returns
+    -------
+    None
+        Saves two_qubit_data.npz and summary.txt files to folder_save
+    """
 
     # Replace parameters in the YAML template and make Circuit
     yml_with_params = params["zp_yml"]
@@ -189,7 +262,7 @@ def save_two_qubit_data(params, folder_save):
 
     # Define subsystems
     system_hierarchy = [[1,3],  [5,7]]  # theta and phi modes for each qubit
-    subsystem_trunc_dims = [10, 10]
+    subsystem_trunc_dims = [params["truc1"], params["truc2"]]
     zp.configure(system_hierarchy=system_hierarchy,
                 subsystem_trunc_dims=subsystem_trunc_dims)
 
@@ -227,9 +300,12 @@ def save_two_qubit_data(params, folder_save):
     n_theta2 = (evecs2 @ getattr(zp.subsystems[1], f"n{params['theta_mode2']+1}_operator")() @ evecs2.conj().T)
 
     # Reduced models for individual qubits
-    hspace_1 = trunc_by_thresh([0, 2], n_theta1, params["charge_thresh"])
-    hspace_2 = trunc_by_thresh([0, 2], n_theta2, params["charge_thresh"])
-    # truncated n_theta and n_phi operators
+    hspace_1_charge = trunc_by_thresh([0, 2], n_theta1, params["charge_thresh"])
+    hspace_2_charge = trunc_by_thresh([0, 2], n_theta2, params["charge_thresh"])
+
+    hspace_1 = np.arange(params["truc1"])
+    hspace_2 = np.arange(params["truc2"])
+    # n_theta and n_phi operators for coupling
     n_theta1_trunc = ut.truncate_2(n_theta1, hspace_1).full()
     n_theta2_trunc = ut.truncate_2(n_theta2, hspace_2).full()
     eval1_trunc = eval1[hspace_1]
@@ -265,7 +341,7 @@ def save_two_qubit_data(params, folder_save):
         top_idx_mapped.append(mapped_pairs)
     hspace_full = get_dressed_states_index(top_idx, hspace_1, hspace_2, params["truc_total"])
     
-    # Save transitions of interest
+    # Save top overlaps and indices (i.e., dressed state decomposition)
     with open(summary_file, 'a') as f:
         eval_zero = evals_tot - evals_tot[0]
         print("Important Energy Levels:", file=f)
@@ -288,7 +364,7 @@ def save_two_qubit_data(params, folder_save):
             ket1 = f"|{i1},{j1}⟩"
             ket2 = f"|{i2},{j2}⟩"
             try:
-                print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2]), 3)} GHz", file=f)
+                print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2], 3))} GHz", file=f)
             except:
                 breakpoint()
     
@@ -303,7 +379,7 @@ def save_two_qubit_data(params, folder_save):
             i2,j2=s2.split("-")
             ket1 = f"|{i1},{j1}⟩"
             ket2 = f"|{i2},{j2}⟩"
-            print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2]), 3)} GHz", file=f)
+            print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2], 3))} GHz", file=f)
     
         print("-- CNOT gate --", file=f)
         for s1, s2 in [("2-0", "1-4"), ("2-2","8-2"), 
@@ -314,7 +390,7 @@ def save_two_qubit_data(params, folder_save):
             i2,j2=s2.split("-")
             ket1 = f"|{i1},{j1}⟩"
             ket2 = f"|{i2},{j2}⟩"
-            print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2]), 3)} GHz", file=f)
+            print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2], 3))} GHz", file=f)
     
     # Save top overlaps and indices (i.e., dressed state decomposition)
     with open(summary_file, 'a') as f:
@@ -364,8 +440,8 @@ def save_two_qubit_data(params, folder_save):
     # Save reduced hspace info
     with open(summary_file, 'a') as f:
         print("-- hspace charge info --", file=f)
-        print(f"hspace1 (single qubit) size : {len(hspace_1)}", file=f)
-        print(f"hspace2 (single qubit) size : {len(hspace_2)}", file=f)
+        print(f"hspace1_charge (single qubit) size : {len(hspace_1_charge)}", file=f)
+        print(f"hspace2_charge (single qubit) size : {len(hspace_2_charge)}", file=f)
         print(f"hspace_n_theta1 (two qubit) size: {len(hspace_n_theta1)}", file=f)
         print(f"hspace_n_theta2 (two qubit) size: {len(hspace_n_theta2)}", file=f)
     
@@ -374,7 +450,8 @@ def save_two_qubit_data(params, folder_save):
                 eval1=eval1, eval2=eval2,
                 evecs1=evecs1, evecs2=evecs2,
                 n_theta1=n_theta1, n_theta2=n_theta2,
-                hspace_1=hspace_1, hspace_2=hspace_2,
+                hspace_1_charge=hspace_1_charge,
+                hspace_2_charge=hspace_2_charge,
                 g_theta1theta2=g,
                 evals_tot=evals_tot, evecs_tot=evecs_tot,
                 hspace_full=hspace_full,
@@ -389,11 +466,23 @@ def save_two_qubit_data(params, folder_save):
 
 
 def load_two_qubit_data(folder_load, return_full=False):
-    """_summary_
+    """
+    Load two-qubit quantum system data from saved .npz file.
 
-    Args:
-        folder_load (_type_): _description_
-        return_full (bool, optional): _description_. Defaults to False.
+    Parameters
+    ----------
+    folder_load : str or Path
+        Directory path containing the two_qubit_data.npz file
+    return_full : bool, optional
+        If True, returns the full numpy data object. If False, returns 
+        processed data in specific format. Default is False.
+
+    Returns
+    -------
+    numpy.lib.npyio.NpzFile or list
+        If return_full=True: raw numpy data object
+        If return_full=False: list containing [hspace_full, eket_tot, eval_tot, 
+        n_theta0_dress, n_theta1_dress, hspace_0, hspace_1, logi_state] with * 2 pi
     """
 
     data = np.load(Path(folder_load, 'two_qubit_data.npz'), allow_pickle=True)
@@ -412,6 +501,23 @@ def load_two_qubit_data(folder_load, return_full=False):
             n_theta1_dress, hspace_0, hspace_1, logi_state]
 
 def load_1q_data_for_2q(folder_load):
+    """
+    Load single-qubit data from two-qubit system calculations.
+
+    Extracts eigenvalues and charge operators for individual qubits 
+    from the saved two-qubit data file.
+
+    Parameters
+    ----------
+    folder_load : str or Path
+        Directory path containing the two_qubit_data.npz file
+
+    Returns
+    -------
+    tuple
+        (eval0, eval1, n_theta0, n_theta1) - eigenvalues and charge 
+        operators for both qubits, scaled by 2π
+    """
 
     data = np.load(Path(folder_load, 'two_qubit_data.npz'), allow_pickle=True)
     eval0 = 2*np.pi*data['eval1']
@@ -438,22 +544,24 @@ def add_2qbt_graph_estimate(params, two_qubit_data):
 
 def save_single_qubit_data(params, folder_save):
     """
-    Initialize the parameters and operators for the Zero-Pi qubit system.
+    Generate and save single-qubit Zero-Pi quantum system data.
 
-    Parameters:
-        drive_phi (bool): Whether to consider the phi drive term.
-        drive_theta (bool): Whether to consider the theta drive term.
-        truncation (int): The truncation level for the system eigenstates. Default is 10.
-        ncut (int): The number cutoff for charge states. Default is 60.
-        phi_cut (int): The number of points in the phi coordinate grid. Default is 200.
+    Initializes a Zero-Pi qubit system, computes eigenvalues and operators,
+    calculates drive terms and transition frequencies for different drive types
+    (phi, theta, mixed), and saves comprehensive data and summary files.
 
-    Returns:
-        tuple: Contains the following elements:
-            - H0 (qutip.Qobj): The Hamiltonian of the system.
-            - drive_term (qutip.Qobj): The drive term operator.
-            - w_trans_1 (float): Transition frequency between states 0 and 9 or 0 and 7 (based on drive type).
-            - w_trans_2 (float): Transition frequency between states 2 and 9 or 2 and 7 (based on drive type).
-            - hspace_charge (list): List of indices representing the significant Hilbert space for the charge basis.
+    Parameters
+    ----------
+    params : dict
+        Dictionary containing Zero-Pi qubit parameters including energies,
+        grid parameters, truncation levels, and drive amplitudes
+    folder_save : str or Path
+        Directory path where output files will be saved
+
+    Returns
+    -------
+    None
+        Saves single_qubit_data.npz and single_qubit_data_summary.txt files
     """
     # Define system parameters (in GHz)
     EL = params["EL"]  # Inductive energy
@@ -546,14 +654,29 @@ def save_single_qubit_data(params, folder_save):
 def load_single_qubit_data(folder_load, drive_type='theta', return_full=False,
                            mult_by_2pi=True):
     """
-    Load the single qubit data from the specified folder.
+    Load single-qubit Zero-Pi quantum system data from saved files.
 
-    Parameters:
-        folder_load (str): The folder path where the single qubit data is stored.
-        drive_type (str): The type of drive to consider ('phi', 'theta', or 'mixed'). Default is 'theta'.
+    Loads data from single_qubit_data.npz file and extracts specific drive
+    type information or returns complete dataset based on parameters.
 
-    Returns:
-        dict: A dictionary containing the loaded single qubit data.
+    Parameters
+    ----------
+    folder_load : str or Path
+        Directory path containing the single_qubit_data.npz file
+    drive_type : str, optional
+        Type of drive to extract ('phi', 'theta', or 'mixed'). Default is 'theta'
+    return_full : bool, optional
+        If True, returns complete dataset. If False, returns processed data
+        for specified drive type. Default is False
+    mult_by_2pi : bool, optional
+        If True, multiplies frequencies by 2π for angular units. Default is True
+
+    Returns
+    -------
+    dict or tuple
+        If return_full=True: complete single_qubit_data dictionary
+        If return_full=False: tuple containing (H0, drive_term, w_trans_1, 
+        w_trans_2, hspace_charge) for specified drive type
     """
     data = np.load(Path(folder_load, 'single_qubit_data.npz'), allow_pickle=True)
     single_qubit_data = {
@@ -593,13 +716,26 @@ def load_single_qubit_data(folder_load, drive_type='theta', return_full=False,
 
 def load_params(file_path='params.yaml'):
     """
-    Load parameters from the YAML configuration file.
-    
-    Parameters:
-        file_path (str): Path to the YAML parameter file
-        
-    Returns:
-        dict: Dictionary containing all parameters
+    Load and process parameters from YAML configuration file.
+
+    Reads YAML parameter file and converts specific list parameters 
+    to numpy arrays for computational use.
+
+    Parameters
+    ----------
+    file_path : str, optional
+        Path to the YAML parameter file. Default is 'params.yaml'
+
+    Returns
+    -------
+    dict or None
+        Dictionary containing all parameters with processed numpy arrays,
+        or None if file not found or parsing error occurs
+
+    Notes
+    -----
+    Automatically converts 'Ztransform_2zeropi' and 'phi_range' 
+    list parameters to numpy arrays.
     """
     try:
         with open(file_path, 'r') as file:
