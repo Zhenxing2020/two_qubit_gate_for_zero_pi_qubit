@@ -1,0 +1,27 @@
+name: zp2q
+channels: 
+  - conda-forge
+  - defaults
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+dependencies:
+  - ipykernel
+  - ipython
+  - joblib
+  - jupyter
+  - jupyterlab
+  - matplotlib=3.10
+  - numpy=
+  - pandas
+  - pip
+  - python=3.11
+  - qutip=4.7
+  - scipy
+  - scqubits=4.3.1
+  - sympy=1.12
+  - tqdm
+  - networkx
+  - pip:
+      - qutip-qip
+      - brokenaxes
+prefix: /home/eweissler/anaconda3/envs/qutip4
