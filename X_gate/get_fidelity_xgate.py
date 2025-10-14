@@ -63,14 +63,18 @@ def xgate_fidelity_decay_all():
 
     drive_phi, drive_theta, n_full = False, True, 150
     # drive_phi, drive_theta, n_full = True, False, 500 # 50 states →12 workers, (100 states/40 workers, 200/160). 
-    t1 = 170 # μs
-    tg_list = [9] # [1, 5, 9, 13, 17 ] # np.arange(18).tolist() #  ## 18 for theta, 19 for phi     
-    charge_truc = True  # whether to truncate the charge space
-    calculate_ideal, calculate_noise = True, True # True, False # False, True #   whether to calculate noisy fidelity
+    t1 = 3 # μs
+    tg_list = np.arange(18).tolist() # # [1, 5, 9, 13, 17 ] #   ## 18 for theta, 19 for phi     
+    charge_truc = False  # whether to truncate the charge space
+    calculate_ideal, calculate_noise = True, False # True, False # False, True #   whether to calculate noisy fidelity
     num_cpus = 4 # Lower num_cpus <4 can reduce num of workers while >4 won’t change the num.
     apply_decay, apply_dephase = True, True # False, True # True, False #
 
-    max_step_ideal, max_step_noisy = 1e-3, 3e-4 # Set max_step to 0 for parallel execution
+
+    if drive_theta:
+        max_step_ideal, max_step_noisy = 3e-4, 3e-4 
+    else:
+        max_step_ideal, max_step_noisy = 1e-3, 1e-3 
     print("drive_phi=", drive_phi, "; drive_theta =", drive_theta, "; n_full =", n_full, "; charge_truc =", charge_truc)
     print(f"T1 = Tphi = {t1} μs, num_cpus = {num_cpus}")
     print(f"calculate_ideal = {calculate_ideal}, calculate_noise = {calculate_noise}")

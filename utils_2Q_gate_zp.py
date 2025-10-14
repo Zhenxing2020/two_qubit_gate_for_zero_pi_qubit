@@ -15,6 +15,9 @@ import pytz, os
 import networkx as nx
 
 
+XI = qt.tensor(qt.sigmax(), qt.identity(2))   
+
+
 # max_step, nsteps = 1e-3, 1e4
 ### Define circuit and variable transform
  # EC = 0.20012190476190478
@@ -457,6 +460,52 @@ def cnot_phase_correct(U_kraus, mid_state):
         U_aft = qt.Qobj(np.diag([1, np.exp(1j* x3), 1, np.exp(1j* x3)])
                 , dims=[[2, 2], [2, 2]])
         U_final.append(np.exp(-1j* phase[0,0])* U_bef* Uc_prime* U_aft)
+    return U_final
+
+###################################################################
+# XI-gate
+
+
+def XI_fidelity_log(arg_all):
+    [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
+     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, 
+     mid_state, option_ideal, option_noisy] = arg_all
+    pulse_args = {'drive_amp_A': drive_amp_A ,
+                'drive_freq_A': w_0_2 + 2*np.pi*detune_A,
+                'drive_amp_B': drive_amp_B ,
+                'drive_freq_B': w_1_2 + 2*np.pi*detune_B,
+                'gate_time': tg }
+    tlist = np.linspace(0, tg, num=10*int(tg))  # total time
+
+    propagator = get_propagator(H_qbt_drive, tlist, num_cpus, c_op_list, pulse_args, 
+                          logi_idx, option_ideal, option_noisy)
+
+    fidelity = get_fidelity_super_operator(propagator, logi_idx, XI, c_op_list, mid_state)
+    
+    return np.log10(1-fidelity)
+
+def XI_fidelity_log_noise(arg_optimize, *args):
+    [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg_optimize
+    [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, 
+     mid_state, option_ideal, option_noisy] = args
+
+    arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
+     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, 
+     mid_state, option_ideal, option_noisy]
+
+    return XI_fidelity_log(arg_all)
+
+def XI_phase_correct(U_kraus):
+    U_final = [] 
+    for prop in U_kraus:    
+        prop = qt.Qobj(prop, dims=[[2, 2], [2, 2]]) 
+        Uc_prime = swap()* prop* swap() # for |45> state
+        phase = np.angle(Uc_prime)
+        x1 = - phase[0,2]
+        x2 = - phase[3,1]
+        U_bef = qt.Qobj(np.diag([1, np.exp(1j* x1), np.exp(1j* x2), np.exp(1j* (x1+x2))])
+                , dims=[[2, 2], [2, 2]])
+        U_final.append(np.exp(-1j* phase[2,0])* Uc_prime* U_bef)
     return U_final
 
 # def cnot_phase_correct(U_kraus):
@@ -1057,7 +1106,7 @@ def xgate_fidelity_log_noise(args_indep, *args):
         'drive_freq_B': w_trans_2 + 2 * np.pi * detune_B,
         'gate_time': tg,
     }
-    tlist = np.linspace(0, tg, num= 3*int(tg))
+    tlist = np.linspace(0, tg, num= 10*int(tg))
     propagator = get_propagator(H_qbt_drive, tlist, num_cpus, 
                                 c_op_list, pulse_args, logi_idx, option_ideal, option_noisy)
     fidelity = get_fidelity_super_operator(propagator, logi_idx, qt.sigmax(), c_op_list)
@@ -1177,6 +1226,10 @@ def get_fidelity_super_operator(propagator, logi_idx, gate_target, c_op_list, mi
             # print(f'kraus={kraus}')
             propagator = qt.kraus_to_super(cnot_phase_correct(kraus, mid_state=mid_state))         
         super_op_post = qt.to_super(propagator)
+        if gate_target == XI:
+            kraus = qt.to_kraus(qt.to_super(propagator))
+            propagator = qt.kraus_to_super(XI_phase_correct(kraus))         
+        super_op_post = qt.to_super(propagator)        
     else:
         # Noisy system, convert to Kraus operators and then to superoperator
         kraus = qt.to_kraus(propagator)
@@ -1211,7 +1264,6 @@ def get_fidelity_super_operator(propagator, logi_idx, gate_target, c_op_list, mi
 #     argz = [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, n_cpu,
 #             tg, drive_amp_A, drive_amp_B, detune_A, detune_B]
 #     return xgate_fidelity_log(argz)
-
 
 ###################################################################
 # Fast MESolve functions
@@ -1571,233 +1623,6 @@ def build_hamiltonian_2q(cz_run, index_select, eval_tot, eket_tot, drive_term):
     return H_drive_select, eket_tot
 
 
-
-
-def shortest_path_to_core(G, core_states, target_state):
-    """Finds the sortest path to the specified core states
-
-    Args:
-        G (nx.Graph): graph where nodes are states and edges
-                      represent a population transfer rate under
-                      the specified drive
-        core_states (list[int, str]): list of core states, as they are
-                                      labeled in the graph
-        target (int or str): target state
-
-    Returns:
-       target, (shortest path length, shortest path)
-    """
-    shortest_path = ""
-    shortest_path_len = np.inf
-    for source in core_states[:-1]:
-        if nx.has_path(G, source, target_state):
-            path = nx.shortest_path(G, source=source, target=target_state,
-                                    weight="weight")
-            path_len = nx.path_weight(G, path,'weight')
-            # path_len = nx.shortest_path_length(G, source=source, target=target, weight="weight")            
-        if path_len < shortest_path_len:
-            shortest_path_len = path_len
-            shortest_path = ",".join([str(x) for x in path])
-    return shortest_path_len, shortest_path
-
-
-def all_path_to_core(G, core_states, target_state, cutoff=2):
-    """Finds all paths to the specified core states
-    under a specified length
-
-    Args:
-        G (nx.Graph): graph where nodes are states and edges
-                      represent a population transfer rate under
-                      the specified drive
-        core_states (list[int, str]): list of core states, as they are
-                                      labeled in the graph
-        target (int or str): target state
-        cutoff (float): maximum length to consider for paths
-
-    Returns:
-       target, (total length of paths, all paths)
-    """
-    path_tot = []
-    if target_state in core_states:
-        weight_tot = 1
-    else:
-        weight_tot = 0
-        for source in core_states:
-            for path in nx.all_simple_paths(G, source, target_state, cutoff=cutoff):
-                weight_tot += np.exp( - nx.path_weight(G, path,'weight') )
-                path_tot.append(path)
-    return -np.log(weight_tot), path_tot
-
-
-# def trunc_by_thresh(core_states_index, drive_term, thresh=1e-2, total_trunc=None):
-#     """
-#     Returns a list of state indices that are connected to the specified core states
-#     via large entries in the given drive term
-
-#     Args:
-#         core_states_index (list[int]): The indices of the states to begin with
-#                                    (should be the logical states).
-#         drive_term (np.array complex): The operator used to drive a gate.
-#         thresh (float, optional): The threshold above which states count as connected.
-#                                   Defaults to 1e-2.
-#         total_trunc (int, optional): Highest index to consider. If none is given
-#                                      then considers all entries in drive_term
-
-#     Returns:
-#         list[int]: list of state indices
-#     """
-
-#     if total_trunc is None:
-#         total_trunc = drive_term.shape[1]
-
-#     hspace_index = [s for s in core_states_index]
-#     # Add every state that is connected by entries above thresh
-#     # to the core states in the drive term
-#     # By adding to hspace_index as you're looping through it,
-#     # we consider as many degrees of connection as we need
-#     for s in hspace_index:
-#         for i, s2 in enumerate(np.arange(total_trunc)):
-#             if np.abs(drive_term[s, i]) > thresh and i not in hspace_index:
-#                 hspace_index.append(i)
-#     return sorted(hspace_index)
-
-
-def pop_rate(A, n_ij, delta):
-    """Calculates the maximum population that could transfer
-    between two states if it were considered as a two state system
-
-    Args:
-        A (float): drive amplitude
-        n_ij (complex): entry i,j of the operator used to drive
-        delta (float): detuning from drive transition
-    Returns:
-        float: max population that could transfer (between 0-1)
-    """
-    return (abs(A*n_ij)**2) / (abs(A*n_ij)**2 + delta**2)
-    # return (np.abs(A*n_ij)**2) / (np.abs(A*n_ij)**2 + delta**2)
-
-
-def make_rate_graph(drive_term, evals, wd, A, labels = None, normalization=True):
-    """
-    Makes a graph that represents the population transfer rate
-    of a system under the presence of the specified monotone drive
-
-    Args:
-        drive_term (np.array[complex]): The operator used to drive a gate.
-        evals (list[float]): eigenvalues of the system
-        wd (float): drive frequency
-        A (float): drive amplitude
-        labels (list[str], optional): labels to use for each state. Uses
-                                      the index of the state if none is given
-
-    Returns:
-        nx.Graph: Graph representing the system
-    """
-
-    if labels is None:
-        labels = np.arange(drive_term.shape[0])
-
-    G = nx.DiGraph()
-    max_n_ij = np.max(np.abs(drive_term.data))
-    for i, s_i in enumerate(labels):
-        for j, s_j in enumerate(labels):
-            if i < j:
-                n_ij = np.abs(drive_term[i, j])
-                if normalization:
-                    n_ij *= n_ij/max_n_ij
-                delta = abs(wd - (evals[j] - evals[i]))
-                population_rate = pop_rate(A, n_ij, delta)
-                if population_rate > 0:
-                    G.add_edge(s_i, s_j, weight=-np.log(population_rate))
-    return G
-
-
-def make_leakage_df(core_states, drive_term, evals, wd, A, labels=None,
-                    path_func=shortest_path_to_core, G=None):
-    """
-    Makes a dataframe where each row is a state rated by how much
-    leakage is expected
-
-    Args:
-        core_states (list[int]): The indices of the states to begin with
-                                   (should be the logical states).
-        drive_term (np.array[complex]): The operator used to drive a gate.
-        evals (list[float]): eigenvalues of the system
-        wd (float or list of float): drive frequency(s)
-        A (float or list of float): drive amplitude(s)
-        labels (list[str], optional): labels to use for each state. Uses
-                                      the index of the state if none is given
-        path_func (func): function that takes in (G, core_states, s) and returns
-                          a distance from s to core_states. Either shortest_path_to_core
-                          or all_path_to_core
-        G (nx.Graph): pre-computed rate-graph. Makes one if none is given.
-
-    Returns:
-        dataframe
-    """
-    if labels is None:
-        labels = np.arange(drive_term.shape[0])
-
-    df = []
-    if G is None:
-        G = make_rate_graph(drive_term, evals, wd, A, labels = labels)
-
-    for target_state in labels:
-        shortest_path_len, shortest_path = path_func(G, core_states, target_state)
-        entry = {}
-        entry["i"] = target_state
-        entry["path"] = shortest_path
-        entry["path_len"] = np.exp(-shortest_path_len)
-        df.append(entry)
-
-    return pd.DataFrame(df).sort_values(by="path_len", ascending=False)
-
-
-def trunc_by_graph_estimate(n, core_states, drive_term, evals, wd, A, labels=None,
-                            path_func=shortest_path_to_core):
-    """
-    Returns indices/state labels for a truncated model, keeping the n most important states
-    according to the graph search estimate.
-
-    You can give multiple drive pulses by making wd and A lists. In this case it
-    will combine the dataframes, keeping the maximum entry for each state.
-
-    Args:
-        n (int): number of states to include in the reduced model
-        core_states (list[int]): The indices of the states to begin with
-                                   (should be the logical states).
-        drive_term (np.array[complex]): The operator used to drive a gate.
-        evals (list[float]): eigenvalues of the system
-        wd (float or list of float): drive frequency(s)
-        A (float or list of float): drive amplitude(s)
-        labels (list[str], optional): labels to use for each state. Uses
-                                      the index of the state if none is given
-        path_func (func): function that takes in (G, core_states, s) and returns
-                          a distance from s to core_states. Either shortest_path_to_core
-                          or all_path_to_core
-        G (nx.graph or list of nx.graph): precomputed rate graphs, must match len of A,wd
-
-    Returns:
-        list of state indices/labels
-    """
-
-    if isinstance(wd, float):
-        wd = [wd]
-    if isinstance(A, float):
-        A = [A]
-
-    df_list = []
-    for i in range(len(wd)):
-        df = make_leakage_df(core_states, drive_term, evals, wd[i], A[i], 
-                             G=None, labels=labels, path_func=path_func)
-        df_list.append(df)
-    df = pd.concat(
-                    df_list
-                    ).sort_values(
-                                    "path_len", ascending=False
-                                    ).drop_duplicates("i", keep="first")
-    return list(df["i"].values[:n])
-
 def compare_two_lists(list1, list2):
     only_in_list1 = [item for item in list1 if item not in list2]
     only_in_list2 = [item for item in list2 if item not in list1]
@@ -1828,7 +1653,7 @@ def max_index_2d_array(arr, arr_name=None):
           +f'maximum = {np.round(abs(arr[row, col]), 8)}, '
           +f'row={row}, column={col}')
 
-def get_qutip_options(max_step_ideal, max_step_noisy, num_cpus=1):
+def get_qutip_options(max_step_ideal, max_step_noisy, num_cpus=1, print_flag=False):
     """
     Get the qutip options 
     """
@@ -1837,9 +1662,9 @@ def get_qutip_options(max_step_ideal, max_step_noisy, num_cpus=1):
 
     option_ideal =qt.Options(max_step=max_step_ideal, nsteps=nsteps_ideal, num_cpus=num_cpus)  
     option_noisy =qt.Options(max_step=max_step_noisy, nsteps=nsteps_noisy, num_cpus=num_cpus) 
-
-    print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
-    print(f'Noisy: max_step = {option_noisy.max_step}, nsteps = {option_noisy.nsteps}')
+    if print_flag:
+        print(f'Ideal: max_step = {option_ideal.max_step}, nsteps = {option_ideal.nsteps}')
+        print(f'Noisy: max_step = {option_noisy.max_step}, nsteps = {option_noisy.nsteps}')
     return option_ideal, option_noisy
 
 def get_dressed_states_index(top_index, hspace_0, hspace_1):
@@ -1921,7 +1746,7 @@ def load_drive_params_xgate(drive_theta):
         np.ndarray: Parameters array. different rows mean different gate time. 
         columns mean 'tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
     """
-    folder = 'data_xgate_theta_3ncut.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
+    folder = 'data_xgate_theta_3ncut_mstep_3e4.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
     f_xgate = pd.read_csv('data/' + folder)
     return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
 
@@ -1940,13 +1765,13 @@ def load_1q_data_for_2q(truc1, folder = '../../data/3ncut_two_zeropi/truc1=500/'
     n_theta1 = truncate_2(n_theta1, hspace_1)
     return eval0,eval1,n_theta0,n_theta1
 
-def load_qubit_data_2q(truc1=300, truc_full = 2000, charge_pick=True):
+def load_qubit_data_2q(truc1=300, truc_full = 2000, charge_pick=True,**kwargs):
     """
     Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
     The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
     """    
      # If charge_pick = True, n_full=2000, else 1000
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick={charge_pick}/'
+    folder = kwargs.get("folder", f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2=2000_pick={charge_pick}/')
     logi_state = ['0-0', '0-2', '2-0', '2-2']
     if charge_pick:
         hspace_0 = pd.read_csv(folder+ 'hspace_0.txt').to_numpy().flatten()
@@ -2611,6 +2436,133 @@ truc_model['cnot_short_500'] = [
 '2-64', '1-73', '0-66', '2-70', '1-70', '1-76', '1-77', '1-66', '1-64', '0-90' ,
 ]
 
+truc_model['cnot_82'] = [
+'0-0', '0-1', '1-0', '0-2', '2-0', '0-4', '4-0', '1-1', '0-5', '2-1' ,
+'5-0', '1-2', '0-8', '2-2', '8-0', '1-4', '4-1', '2-4', '9-0', '1-5' ,
+'5-1', '4-2', '0-12', '2-5', '1-8', '12-0', '5-2', '8-1', '4-4', '13-0' ,
+'15-0', '2-8', '1-9', '9-1', '8-2', '5-4', '4-5', '0-18', '2-9', '0-21' ,
+'18-0', '9-2', '12-1', '5-5', '0-24', '4-8', '1-13', '20-0', '8-4', '22-0' ,
+
+'2-12', '13-1', '24-0', '0-25', '15-1', '5-8', '4-9', '12-2', '9-4', '8-5' ,
+'25-0', '13-2', '26-0', '1-18', '15-2', '5-9', '4-12', '0-30', '18-1', '12-4' ,
+'9-5', '1-21', '8-8', '20-1', '4-13', '22-1', '4-16', '30-0', '13-4', '5-12' ,
+'15-4', '24-1', '33-0', '18-2', '34-0', '2-21', '8-9', '35-0', '1-25', '9-8' ,
+'12-5', '37-0', '20-2', '5-16', '22-2', '13-5', '25-1', '26-1', '24-2', '15-5' ,
+
+'2-25', '39-0', '8-12', '2-26', '9-9', '18-4', '28-1', '12-8', '41-0', '0-45' ,
+'4-21', '13-8', '25-2', '20-4', '22-4', '4-24', '26-2', '5-18', '15-8', '30-1' ,
+'9-12', '44-0', '12-9', '28-2', '45-0', '33-1', '18-5', '2-30', '46-0', '34-1' ,
+'13-9', '9-13', '9-16', '20-5', '22-5', '50-0', '30-2', '25-4', '15-9', '8-18' ,
+'24-5', '12-12', '33-2', '18-8', '34-2', '35-2', '13-12', '41-1', '37-2', '22-8' ,
+
+'56-0', '25-5', '26-5', '30-4', '18-9', '39-2', '13-16', '59-0', '33-4', '28-5' ,
+'41-2', '35-4', '20-9', '22-9', '25-8', '65-0', '26-8', '24-9', '30-5', '12-18' ,
+'44-2', '33-5', '45-2', '34-5', '35-5', '46-2', '12-20', '69-0', '37-5', '26-9' ,
+'50-2', '51-2', '39-5', '54-2', '41-5', '56-2', '58-2', '34-9', '18-20', '59-2' ,
+'44-5', '45-5', '60-2', '41-8', '46-5', '64-2', '65-2', '33-12', '50-5', '51-5' ,
+]
+
+truc_model['cnot_80'] = [
+'0-0', '0-2', '2-0', '2-2', '8-0', '8-2', '12-0', '8-1', '1-2', '1-0' ,
+'1-8', '5-2', '5-0', '1-4', '22-0', '20-1', '8-8', '30-0', '34-0', '2-1' ,
+'4-4', '13-0', '9-0', '0-1', '2-5', '9-5', '0-5', '5-1', '4-5', '15-1' ,
+'15-0', '15-2', '9-1', '26-1', '18-1', '24-0', '25-0', '13-4', '4-1', '12-4' ,
+'2-4', '5-4', '9-4', '1-21', '37-0', '5-8', '0-13', '20-2', '24-4', '18-2' ,
+
+'20-0', '18-0', '5-9', '41-2', '0-21', '1-13', '4-13', '4-12', '1-9', '22-4' ,
+'4-9', '81-0', '8-16', '0-8', '2-8', '15-9', '20-5', '8-9', '0-36', '26-0' ,
+'35-4', '12-2', '28-0', '8-5', '12-5', '4-8', '1-20', '12-1', '5-21', '60-0' ,
+'8-4', '45-1', '0-35', '26-2', '9-12', '15-8', '4-2', '64-0', '44-0', '37-1' ,
+'13-2', '50-1', '2-13', '13-5', '0-20', '1-1', '70-0', '45-0', '35-0', '22-2' ,
+
+'30-4', '35-2', '4-24', '45-2', '9-2', '13-1', '1-5', '30-2', '0-18', '9-8' ,
+'5-5', '34-2', '26-4', '75-0', '41-0', '25-2', '39-0', '4-0', '25-4', '0-9' ,
+'58-0', '13-9', '33-0', '5-18', '24-2', '24-5', '2-21', '18-5', '39-2', '20-4' ,
+'35-1', '35-5', '33-2', '51-0', '50-0', '46-0', '37-4', '0-30', '34-5', '50-2' ,
+'56-0', '4-21', '28-4', '46-4', '34-4', '54-0', '44-4', '12-9', '1-25', '59-0' ,
+
+'26-8', '41-5', '41-1', '33-8', '39-1', '56-2', '28-1', '26-5', '22-1', '65-0' ,
+'33-1', '18-9', '25-1', '34-1', '12-8', '66-0', '5-12', '15-5', '44-1', '24-9' ,
+'28-5', '15-18', '30-1', '59-1', '13-8', '9-28', '60-1', '56-1', '2-12', '58-1' ,
+'24-1', '41-4', '0-24', '15-16', '74-0', '1-12', '1-26', '69-0', '0-16', '2-44' ,
+'1-33', '34-8', '46-1', '1-16', '18-4', '9-9', '25-5', '2-16', '15-4', '18-8' ,
+]
+
+truc_model['cnot_14'] = [
+'0-0', '0-2', '2-0', '1-4', '2-2', '12-0', '8-1', '1-2', '1-0', '5-2' ,
+'5-0', '4-4', '30-0', '22-0', '2-1', '9-0', '0-1', '34-0', '2-5', '26-0' ,
+'4-2', '1-1', '0-5', '1-8', '8-2', '15-0', '5-1', '4-8', '13-0', '9-2' ,
+'12-1', '5-5', '20-0', '8-4', '4-0', '8-0', '13-2', '35-0', '1-13', '33-0' ,
+'12-2', '18-0', '1-5', '24-0', '8-8', '15-2', '25-0', '2-4', '0-13', '25-2' ,
+
+'4-5', '0-21', '4-9', '45-0', '18-1', '13-4', '22-1', '50-0', '5-4', '24-4' ,
+'56-0', '8-5', '9-1', '37-0', '24-1', '20-2', '9-4', '34-1', '74-0', '12-4' ,
+'4-1', '13-1', '18-2', '9-5', '5-8', '81-0', '22-4', '41-0', '22-2', '30-1' ,
+'59-0', '26-4', '1-21', '65-0', '8-16', '39-0', '25-1', '15-4', '26-2', '34-4' ,
+'24-2', '69-0', '0-4', '4-12', '20-4', '26-1', '44-0', '64-0', '1-12', '8-9' ,
+
+'51-1', '12-8', '77-0', '5-12', '5-9', '12-5', '34-2', '13-8', '70-0', '45-1' ,
+'30-2', '9-12', '41-4', '45-2', '15-1', '15-8', '37-2', '15-5', '35-2', '2-8' ,
+'0-8', '60-1', '18-4', '28-1', '30-4', '1-9', '4-13', '37-1', '2-9', '28-0' ,
+'13-5', '75-0', '33-2', '0-12', '41-2', '58-0', '33-4', '39-2', '37-4', '18-5' ,
+'4-24', '8-13', '34-5', '50-2', '33-5', '20-1', '46-0', '0-9', '9-8', '12-9' ,
+
+'22-8', '46-4', '33-1', '44-4', '20-5', '1-16', '8-12', '4-21', '24-8', '58-1' ,
+'2-12', '41-5', '35-4', '34-8', '56-1', '5-18', '56-2', '35-5', '9-9', '2-13' ,
+'26-5', '51-0', '33-8', '0-20', '54-0', '51-2', '46-2', '4-16', '35-1', '18-9' ,
+'28-4', '15-9', '25-4', '26-8', '2-21', '59-1', '46-1', '9-28', '12-16', '13-9' ,
+'28-5', '2-26', '44-2', '44-1', '28-2', '0-18', '15-12', '79-0', '66-0', '45-4' ,
+]
+
+truc_model['cnot_41'] = [
+'0-0', '0-2', '2-0', '4-1', '2-2', '34-0', '4-4', '8-1', '1-2', '1-0' ,
+'5-2', '5-0', '22-0', '13-0', '4-5', '15-1', '26-1', '2-1', '20-1', '0-1' ,
+'1-4', '8-2', '2-5', '0-5', '8-0', '12-0', '9-0', '12-4', '15-0', '15-2' ,
+'0-18', '24-0', '18-1', '8-8', '37-0', '56-0', '18-2', '1-8', '2-4', '5-8' ,
+'20-2', '4-13', '18-0', '24-4', '20-0', '0-21', '5-4', '9-5', '1-21', '1-13' ,
+
+'9-1', '13-4', '33-1', '0-20', '1-18', '8-9', '25-0', '26-0', '0-13', '12-5' ,
+'4-8', '12-1', '4-9', '9-4', '25-2', '5-9', '34-4', '22-4', '8-4', '34-1' ,
+'5-1', '8-16', '45-1', '15-13', '0-8', '50-1', '1-9', '2-8', '24-2', '26-2' ,
+'5-5', '9-12', '4-12', '81-0', '45-0', '13-5', '2-12', '35-0', '39-1', '9-8' ,
+'15-8', '64-0', '13-2', '13-1', '46-1', '35-2', '74-0', '45-2', '35-1', '2-21' ,
+
+'59-0', '41-1', '4-2', '41-0', '60-0', '1-26', '39-0', '44-0', '1-1', '65-0' ,
+'8-5', '34-2', '20-4', '41-2', '39-2', '37-4', '28-0', '70-0', '44-1', '4-24' ,
+'33-2', '33-0', '22-1', '1-25', '2-18', '50-0', '58-0', '28-4', '60-1', '34-5' ,
+'50-2', '46-4', '5-18', '12-2', '9-2', '5-12', '1-5', '2-13', '0-24', '35-4' ,
+'30-4', '4-0', '41-5', '54-0', '44-4', '69-0', '75-0', '46-0', '56-2', '28-1' ,
+
+'25-1', '1-16', '18-9', '26-4', '12-9', '77-0', '30-1', '33-4', '1-12', '28-5' ,
+'0-36', '33-8', '4-16', '34-8', '2-9', '9-20', '22-2', '41-4', '30-0', '26-8' ,
+'51-1', '1-20', '59-1', '0-9', '18-5', '24-1', '9-28', '18-8', '20-12', '15-4' ,
+'25-5', '0-16', '30-2', '24-9', '37-1', '13-12', '2-44', '26-5', '2-16', '45-4' ,
+'66-0', '15-16', '1-24', '0-39', '9-9', '24-5', '20-5', '22-5', '5-13', '15-5' ,
+]
+
+
+truc_model['cnot_45'] = [
+'0-0', '0-2', '2-0', '4-5', '2-2', '8-5', '1-2', '1-0', '5-2', '5-0' ,
+'12-2', '22-2', '2-1', '34-2', '12-5', '0-1', '13-2', '9-2', '2-5', '4-2' ,
+'0-5', '26-5', '15-5', '56-2', '9-4', '1-1', '9-0', '5-5', '20-2', '22-5' ,
+'13-0', '20-5', '26-2', '4-0', '5-1', '8-2', '9-8', '1-4', '15-2', '9-5' ,
+'12-0', '1-5', '18-5', '15-0', '8-0', '34-5', '24-2', '8-9', '12-12', '9-9' ,
+'45-2', '35-2', '4-9', '13-5', '4-1', '13-9', '18-2', '25-2', '1-18', '18-4' ,
+'25-5', '30-2', '1-8', '33-2', '25-0', '37-2', '20-0', '5-16', '4-4', '2-4' ,
+'18-1', '8-1', '18-0', '50-2', '1-13', '9-16', '12-9', '5-9', '9-12', '15-4' ,
+'33-5', '30-5', '8-18', '0-21', '26-9', '5-12', '24-5', '5-8', '26-0', '22-0' ,
+'25-4', '46-0', '13-4', '5-4', '20-9', '46-2', '15-1', '9-1', '2-9', '2-13' ,
+'26-8', '13-8', '0-4', '0-30', '24-0', '4-12', '37-5', '1-25', '15-9', '8-12' ,
+'2-30', '24-9', '2-25', '18-9', '45-0', '4-8', '8-4', '12-1', '26-12', '39-2' ,
+'15-8', '30-0', '8-24', '22-4', '35-0', '13-16', '39-4', '22-8', '41-2', '12-8' ,
+'12-18', '34-0', '2-21', '37-0', '0-39', '39-5', '18-12', '0-8', '2-26', '1-16' ,
+'9-18', '41-0', '15-12', '30-4', '4-18', '39-0', '35-5', '2-8', '30-1', '18-8' ,
+'33-0', '1-9', '20-4', '5-30', '35-4', '2-34', '0-25', '4-13', '50-0', '0-12' ,
+'8-16', '1-21', '44-2', '13-1', '25-1', '8-8', '28-1', '30-8', '33-4', '20-1' ,
+'24-8', '20-12', '0-9', '28-5', '22-1', '28-2', '25-8', '0-20', '2-12', '59-0' ,
+'41-5', '0-24', '39-1', '65-0', '56-0', '24-16', '20-8', '45-4', '22-9', '24-4' ,
+'4-16', '66-0', '12-16', '1-20', '0-18', '4-24', '51-2', '58-0', '5-13', '34-1' ,
+]
 
 
 

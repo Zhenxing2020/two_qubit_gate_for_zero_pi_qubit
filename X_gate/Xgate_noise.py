@@ -247,7 +247,7 @@ if __name__ == '__main__':
     print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
 
     # drive_phi, drive_theta, n_full = True, False, 500
-    drive_phi, drive_theta, n_full = False, True, 100 # 50 states →12 workers, (100 states/40 workers, 200/160). 
+    drive_phi, drive_theta, n_full = False, True, 500 # 50 states →12 workers, (100 states/40 workers, 200/160). 
     t1 = 170 # μs
     # tg_list = [8]
     tg_list = [1, 5, 9, 13, 17] # np.arange(18).tolist() #  [17] # 

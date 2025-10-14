@@ -27,12 +27,12 @@ def fidelity_sweep():
     fidelity_full = []
     arg_truc = [H_drive_part, W_0_2, W_1_2, num_cpus, c_op_list, 
                 logi_idx_part, mid_state, option_ideal, option_noisy]
-    for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
-    # for jdx, tg in tqdm(enumerate(tg_vec)):
+    # for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
+    for jdx, tg in tqdm(enumerate(tg_vec)):
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
         bounds = (tg_bounds, A1_bound, A2_bound, detune1_bound, detune2_bound)
         res = sp.optimize.differential_evolution(
-            func=ut.cnot_fidelity_log_noise,
+            func=ut.XI_fidelity_log_noise,
             bounds=bounds,
             args=arg_truc,
             disp=True,
@@ -43,14 +43,14 @@ def fidelity_sweep():
             mutation=mutation,
             recombination=recombination,
             tol=tol,
-            x0=x0_vec[jdx],
+            # x0=x0_vec[jdx],
             polish=False, # 'True' will make the for-loop break
             )
         fidelity.append(res.fun)
         drive_param.append(res.x.tolist())
         print(res, '\n')
-        # print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
-        print('\ntg = ', np.array((x0_vec[:,0])[:jdx+1]).tolist())
+        print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
+        # print('\ntg = ', np.array((x0_vec[:,0])[:jdx+1]).tolist())
         print(f'\nlog of gate error (truc={len_part}) = ')
         for i in range(0, len(fidelity), 4):
             print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
@@ -63,7 +63,7 @@ def fidelity_sweep():
         arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
                     H_drive_False, W_0_2, W_1_2, num_cpus, c_op_list, 
                     logi_idx_False, mid_state, option_ideal, option_noisy]
-        fidelity_full.append(ut.cnot_fidelity_log(arg_all))
+        fidelity_full.append(ut.XI_fidelity_log(arg_all))
 
         print(f'\nlog of gate error (truc={H_drive_False[0].shape[0]},True) = ')
         for i in range(0, len(fidelity_full), 4):
@@ -102,30 +102,19 @@ if __name__ == '__main__':
 
     A1_bound, A2_bound, detune1_bound, detune2_bound = [
         ## tg=50
-        # (0.039, 0.95), (0.024, 0.95), (-0.028, -0.001), (-0.028, -0.001) # x0, good
-        # (0.4, 0.95), (0.09, 0.55), (-0.01, 0.0001), (-0.01, 0.0001) # no x0, bad
-        # (0.09, 0.9), (0.04, 0.4), (-0.1, -0.0001), (-0.1, -0.0001) # no x0, increase A1,A2 range, large  
-        # (0.4, 0.95), (0.01, 0.55), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A1, v1
-        (0.15, 0.45), (0.01, 0.55), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A1, v2
-        # (0.4, 0.95), (0.01, 0.55), (-0.5, 0.5), (-0.5, 0.5) # no x0, only limit A1, larger detune
-        # (0.01, 0.95), (0.25, 0.46), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A2
-        # (0.01, 0.95), (0.25, 0.46), (-0.5, 0.2), (-0.5, 0.2) # no x0, only limit A2, larger detune
-        # (0.09, 0.9), (0.04, 0.4), (-0.1, -0.0001), (-0.1, -0.0001) # no x0, increase A1,A2 range, small  
-        
-        ## tg=100, 150
-        # (0.2, 0.95), (0.01, 0.55), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A1
-        # (0.01, 0.9), (0.05, 0.55), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A1, narrower range
+        (0.001, 0.5), (0.001, 0.5), (-0.5, 0.5), (-0.5, 0.5) # x0, good
+
         ]
     tg_bound = (-0.001, 0.001) #(-1e-10, 1e-10) #
 
-    # tg_vec = [2, 3] #np.arange(350, 401, 10)
-    # tg_vec = [50, 100, 150, 200] #np.arange(350, 401, 10)
-    x0_vec = np.array([
-[50.009075, 0.432514, 0.042229, -0.181457, -0.236707] ,
+    tg_vec = np.arange(10, 101, 10)
+    # tg_vec = np.arange(20, 101, 10)
+#     x0_vec = np.array([
+# [50.009075, 0.432514, 0.042229, -0.181457, -0.236707] ,
 # [50.008813,0.090273,0.046546,-0.027498,-0.025767] ,
 # [100.006167,0.053076,0.029316,-0.01188,-0.01157],
 # [149.996866,0.039078,0.024359,-0.009107,-0.008681],
-    ])
+    # ])
 
     max_step_ideal, max_step_noisy = 1e-3, 1e-3 # Set max_step to 0 for parallel execution
     option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy) 
@@ -133,28 +122,13 @@ if __name__ == '__main__':
     workers, popsize = 100, 10
     recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
     logi_state = ['0-0', '0-2', '2-0', '2-2']
-
     mid_state = '8-2'
 
     if mid_state in ['8-2', '4-5' ]:
         idx_0 = hspace_full.index('0-2')
         idx_1 = hspace_full.index('2-2')
-    elif mid_state in ['1-4', '8-0', '4-1']:
-        idx_0 = hspace_full.index('0-0')
-        idx_1 = hspace_full.index('2-0')
-
-    if mid_state in ['8-2']:        
-        hspace_part = hspace_full[:200] # ut.truc_model['cnot_short_1000'][:200]
-        # hspace_part = ut.truc_model['cnot_short_1000'][:200]
-        # hspace_part = ut.truc_model['cnot_82']
-    elif mid_state in [ '4-5']:        
-        hspace_part = ut.truc_model['cnot_45']
-    elif mid_state in [ '4-1']:        
-        hspace_part = ut.truc_model['cnot_41']
-    elif mid_state in [ '1-4']:        
-        hspace_part = ut.truc_model['cnot_14']  ### 1-4 which is indeed 8-0
-    elif mid_state in [ '8-0']:        
-        hspace_part = ut.truc_model['cnot_80']  ### 8-0 which is indeed 1-4
+      
+    hspace_part = hspace_full[:200] # ut.truc_model['cnot_short_1000'][:200]
 
     idx_2 = hspace_full.index(mid_state)
     W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
