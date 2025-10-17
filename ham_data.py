@@ -260,14 +260,7 @@ def save_two_qubit_data(params, folder_save):
         print("-", file=f)
         print(str(zp), file=f)
 
-    # Define subsystems
-    system_hierarchy = [[1,3],  [5,7]]  # theta and phi modes for each qubit
-    subsystem_trunc_dims = [params["truc1"], params["truc2"]]
-    zp.configure(system_hierarchy=system_hierarchy,
-                subsystem_trunc_dims=subsystem_trunc_dims)
-
-    print("Circuit and parameters set. Beginning calculations...")
-
+    
     # Extract g_theta1theta2 coupling strength
     i_for_inv = []
     ith1 = None
@@ -286,8 +279,16 @@ def save_two_qubit_data(params, folder_save):
 
     with open(summary_file, 'a') as f:
         print(f"Coupling strength g_theta1theta2: {g}", file=f)
-
     print("Saved coupling strength.")
+
+    # Define subsystems
+    system_hierarchy = [[1,3],  [5,7]]  # theta and phi modes for each qubit
+    subsystem_trunc_dims = [params["truc1"], params["truc2"]]
+    zp.configure(system_hierarchy=system_hierarchy,
+                subsystem_trunc_dims=subsystem_trunc_dims)
+
+    print("Circuit and parameters set. Beginning calculations...")
+
     # Calculate subsystem eigenvalues/vectors
     eval1, evecs1 = zp.subsystems[0].eigensys(params["truc1"])
     evecs1 = np.array(normalize_eigenvector_phases(evecs1.T))
@@ -330,9 +331,11 @@ def save_two_qubit_data(params, folder_save):
     evals_tot, evecs_tot = ssp.linalg.eigsh(H_tot.data, k=params["truc_total"],  which='SA')
     evecs_tot = np.array(normalize_eigenvector_phases(evecs_tot.T))
 
+    print("Finished calculating full system eigensystem.")
+
     # Construct bare/dressed basis for full system
     hspace_idx_bare = np.array(np.unravel_index(np.arange(len(hspace_1)*len(hspace_2)), (len(hspace_1), len(hspace_2)))).T
-    result = [find_overlap_complex(ket, hspace_idx_bare) for ket in evecs_tot]
+    result = [find_overlap_complex(ket, hspace_idx_bare, num=30) for ket in evecs_tot]
     top_overlap = [res[1] for res in result]
     top_idx = []
     top_idx_mapped = []
@@ -345,6 +348,11 @@ def save_two_qubit_data(params, folder_save):
         top_idx.append(pairs)
         top_idx_mapped.append(mapped_pairs)
     hspace_full = get_dressed_states_index(top_idx, hspace_1, hspace_2, params["truc_total"])
+
+    # Apply any manual label swaps
+    if "manual_label_swap" in params:
+        swap_dict = params["manual_label_swap"]
+        hspace_full = [swap_dict.get(label, label) for label in hspace_full]
     
     # Save top overlaps and indices (i.e., dressed state decomposition)
     with open(summary_file, 'a') as f:
@@ -387,8 +395,8 @@ def save_two_qubit_data(params, folder_save):
             print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2], 3))} GHz", file=f)
     
         print("-- CNOT gate --", file=f)
-        for s1, s2 in [("2-0", "1-4"), ("2-2","8-2"), 
-                       ("0-0","1-4"), ("0-2","8-2")]:
+        for s1, s2 in [("2-0", "1-4"), ("2-2","8-2"), ("2-0", "8-0"), 
+                       ("0-0","1-4"), ("0-2","8-2"), ("0-0","8-0")]:
             idx1 = hspace_full.index(s1)
             idx2 = hspace_full.index(s2)
             i1,j1=s1.split("-")
@@ -425,7 +433,7 @@ def save_two_qubit_data(params, folder_save):
                                                 latex=False)
             print(dressed_str, file=f)
         print("-- CNOT gate states --", file=f)
-        for state in ["8-2", "1-4"]:
+        for state in ["8-2", "1-4", "8-0"]:
             idx = hspace_full.index(state)
             dressed_str = dressed_state_decomp(top_idx_mapped[idx], top_overlap[idx],
                                                 thresh=0.001, float_round=3,
@@ -719,7 +727,7 @@ def load_single_qubit_data(folder_load, drive_type='theta', return_full=False,
                 drive["hspace_charge"])
 
 
-def load_params(file_path='params.yaml'):
+def load_params(file_path='params.yaml', convert_lists=True):
     """
     Load and process parameters from YAML configuration file.
 
@@ -744,13 +752,14 @@ def load_params(file_path='params.yaml'):
     """
     try:
         with open(file_path, 'r') as file:
-            params = yaml.safe_load(file)
+            params = yaml.load(file, Loader=yaml.FullLoader)
         
-        # Convert the transform_2zeropi list to numpy array
-        params['Ztransform_2zeropi'] = np.array(params['Ztransform_2zeropi'])
-            
-        # Convert phi_range list to numpy array if it exists
-        params['phi_range'] = np.array(params['phi_range'])
+        if convert_lists:
+            # Convert the transform_2zeropi list to numpy array
+            params['Ztransform_2zeropi'] = np.array(params['Ztransform_2zeropi'])
+                
+            # Convert phi_range list to numpy array if it exists
+            params['phi_range'] = np.array(params['phi_range'])
             
         return params
         
