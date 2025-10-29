@@ -13,7 +13,8 @@ import numpy as np
 import qutip as qt
 from joblib import Parallel, delayed
 settings.OVERLAP_THRESHOLD = 0.3
-
+from pathlib import Path
+import ham_data as hd
 
 if __name__ == '__main__':
     print(os.path.basename(__file__)) # Print the name of the current Python file
@@ -21,11 +22,11 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = [100] # np.arange(50, 201, 25) #
+    n_truc_list = np.arange(500, 2001, 500) #
     cz_run = True # True  # whether to use CZ gate or CNOT gate
     
     # 300_2000_True; 300_2000_False
-    truc_one_qubit, truc_full, charge_pick = 300, 2000, True 
+    # truc_one_qubit, truc_full, charge_pick = 300, 1000, True 
 
     # 'cz_short_500_detune0', 'cz_short_500_detune1', 'hand_pick',
     use_truc_model, truc_model_name = False, 'cz_short_500_detune1'
@@ -41,14 +42,20 @@ if __name__ == '__main__':
     max_step_ideal, max_step_noisy = 1e-3, 1e-3 # Set max_step to 0 for parallel execution
     num_cpus, n_job = 16, len(tg_list) # Number of CPUs and jobs for parallel processing
 
+    # [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
+    #     n_theta1_dress, hspace_0, hspace_1, logi_state
+    #     ] = ut.load_qubit_data_2q(truc_one_qubit, truc_full, charge_pick)
+
+    folder_load = '../../data/_truc_3000'
     [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
-        n_theta1_dress, hspace_0, hspace_1, logi_state
-        ] = ut.load_qubit_data_2q(truc_one_qubit, truc_full, charge_pick)
+        n_theta1_dress, hspace_0, hspace_1, logi_state] = hd.load_two_qubit_data(folder_load, return_full=False)
+
     dim_0 = len(hspace_0)
     dim_1 = len(hspace_1) 
 
     # Load pulse parameters from CSV
     params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] 
+    option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy) 
 
     if cz_run: # CZ
         drive_term = n_theta1_dress
@@ -67,11 +74,10 @@ if __name__ == '__main__':
         print('\nmid_state = ', mid_state)
     print(f"calculate_ideal = {calculate_ideal}, calculate_noise = {calculate_noise}")
     print(f'apply_decay={apply_decay}, apply_dephase={apply_dephase}')
-    option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy) 
     print(f'filter_ratio = {filter_ratio}, decay_enlarge = {decay_enlarge}')     
     print(f'use_truc_model = {use_truc_model}, truc_model_name = {truc_model_name}')
     print(f"t1_tphi_other = {t1_tphi_other}")
-    print(f"truc_one_qubit = {truc_one_qubit}, truc_full={truc_full}, charge_pick={charge_pick}")
+    # print(f"truc_one_qubit = {truc_one_qubit}, truc_full={truc_full}, charge_pick={charge_pick}")
     print('num_cpus=', num_cpus, ', n_job=', n_job)
     ut.print_data(f'params', params.tolist(), num_each_row=1)    
 
@@ -84,6 +90,7 @@ if __name__ == '__main__':
                 hspace_select = ut.truc_model[truc_model_name][:n_truc]
         else:
             hspace_select = hspace_full[:n_truc]
+
         index_select = [hspace_full.index(i) for i in hspace_select]
         H_drive_select, eket_truc = ut.build_hamiltonian_2q(cz_run, index_select, eval_tot, 
                                                             eket_tot, drive_term)

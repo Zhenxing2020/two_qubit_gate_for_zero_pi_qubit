@@ -7,6 +7,9 @@ import sympy as sym
 import yaml
 from pathlib import Path
 
+import sys
+sys.path.append('../')
+
 from paths import DATA_FOLDER, RESULTS_FOLDER
 from truncation_estimate import trunc_by_thresh, trunc_by_graph_estimate
 import utils_2Q_gate_zp as ut
@@ -507,8 +510,8 @@ def load_two_qubit_data(folder_load, return_full=False):
         eval_tot = 2*np.pi*data['evals_tot']
         n_theta0_dress = 2*np.pi*data['n_theta1_dressed']
         n_theta1_dress = 2*np.pi*data['n_theta2_dressed']
-        hspace_0 = data['hspace_1'].tolist()
-        hspace_1 = data['hspace_2'].tolist()
+        hspace_0 = data['hspace_1_charge'].tolist()
+        hspace_1 = data['hspace_2_charge'].tolist()
         logi_state = ['0-0', '2-0', '0-2', '2-2']
         return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
             n_theta1_dress, hspace_0, hspace_1, logi_state]
