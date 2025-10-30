@@ -95,14 +95,15 @@ class CZFidelityOptimizer:
             'popsize': 10,
             'recombination': 0.7,
             'tol': 0.01,
-            'mutation': (0.5, 1.0),
+            'mutation': (0.5, 1.5),
             
             # Data loading
             'folder_load': '../../data/_truc_3000',
             'cz_run': True,
             
             # Gate time selection
-            'gate_time_indices': [0, 1, 2],  # Select specific gate times
+            'gate_time_indices': np.arange(31)[1::3].tolist(),
+            # [0, 1, 2],  # Select specific gate times
         }
     
     def _setup_optimization_params(self):
