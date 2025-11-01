@@ -102,7 +102,7 @@ class CZFidelityOptimizer:
             'cz_run': True,
             
             # Gate time selection
-            'gate_time_indices': np.arange(31)[1::3].tolist(),
+            'gate_time_indices': np.arange(31)[2::3].tolist(),
             # [0, 1, 2],  # Select specific gate times
         }
     
