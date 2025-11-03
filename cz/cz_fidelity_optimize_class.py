@@ -90,6 +90,10 @@ class CZFidelityOptimizer:
             'detune_bound': (-0.1, 0.1),
             'tg_bound': (-0.01, 0.01),
             
+            # Optimization bounds
+            # 'amp_bound': (0.032457, 0.0438),
+            # 'detune_bound': (0.024913, 0.075696),
+
             # Differential evolution parameters
             'workers': 50,
             'popsize': 10,
@@ -102,8 +106,13 @@ class CZFidelityOptimizer:
             'cz_run': True,
             
             # Gate time selection
-            'gate_time_indices': np.arange(31)[2::3].tolist(),
+            'gate_time_indices': np.arange(181)[5::6].tolist(),
             # [0, 1, 2],  # Select specific gate times
+
+            'params_initial': np.array([
+                # [32.042591, 0.032458, 0.024914],
+                [38.048132, 0.032458, 0.024914]
+            ]),
         }
     
     def _setup_optimization_params(self):
@@ -131,6 +140,7 @@ class CZFidelityOptimizer:
         self.folder_load = self.config['folder_load']
         self.cz_run = self.config['cz_run']
         self.gate_time_indices = self.config['gate_time_indices']
+        self.params_initial = self.config['params_initial']
     
     def _load_system_data(self):
         """
@@ -165,6 +175,7 @@ class CZFidelityOptimizer:
         
         # Load initial drive parameters
         self.x0_vec = ut.load_drive_params_2q(self.cz_run)[self.gate_time_indices, :]
+        # self.x0_vec = self.params_initial
         
         print(f"Loaded system data with {len(self.hspace_full)} total states")
         print(f"Using {len(self.hspace_select)} states for optimization")
@@ -334,6 +345,9 @@ class CZFidelityOptimizer:
         print(f"\nSystem parameters:")
         print(f"  - Transition frequency W_20_50: {np.round(self.W_20_50, 3)}")
         print(f"  - Number of gate times to optimize: {len(self.x0_vec)}")
+        print('params:')
+        for i in self.x0_vec:
+            print(i.tolist(), ',')
         print(f"  - Hilbert space size (optimization): {len(self.hspace_select)}")
         print(f"  - Hilbert space size (total): {len(self.hspace_full)}")
         
@@ -367,14 +381,6 @@ def main():
     print(f"Workers: {optimizer.workers}, Population size: {optimizer.popsize}")
     print(f"Recombination: {optimizer.recombination}, Tolerance: {optimizer.tol}")
     print(f"Mutation: {optimizer.mutation}")
-    
-    print(f"\nOptimized fidelities (log gate errors):")
-    for i, fidelity in enumerate(fidelity_results):
-        print(f"Gate time {i}: {fidelity:.8f}")
-    
-    print(f"\nOptimized drive parameters:")
-    for i, params in enumerate(drive_param_results):
-        print(f"Gate time {i}: {params}")
     
     ut.print_time()
     print("Optimization completed successfully!")

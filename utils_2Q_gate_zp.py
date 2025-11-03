@@ -1795,7 +1795,8 @@ def load_drive_params_2q(cz_run):
     Load two-qubit-gate drive parameters from a CSV file.
     """
     if cz_run:
-        folder = '../figure/data/data_cz_3ncut_truc1=300_select.txt'
+        folder = '../figure/data/data_cz_3ncut_truc1=300.txt'
+        # folder = '../figure/data/data_cz_3ncut_truc1=300_select.txt'
         params = pd.read_csv(folder)[['tg', 'drive_amp', 'detune']].to_numpy()
     else:
         folder = '../cnot/data/data_cnot_fidelity_3ncut.txt'

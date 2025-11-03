@@ -98,17 +98,19 @@ if __name__ == '__main__':
     use_truc_model, truc_model_name = False, 'cz_short_500_detune1'
     max_step_ideal, max_step_noisy = 1e-3, 1e-3 # Set max_step to 0 for parallel execution
 
-    # amp_bound, detune_bound, tg_bound = [(0.0085, 0.0106), (0.013, 0.0175), (-0.01, 0.01)] # tg141-157
-    # amp_bound, detune_bound, tg_bound = [(0.008, 0.0092), (0.013, 0.0155), (-0.01, 0.01)] # tg160-171
-    # amp_bound, detune_bound, tg_bound = [(0.007, 0.0088), (0.0128, 0.0142), (-0.01, 0.01)] # tg173-185
-    # amp_bound, detune_bound, tg_bound = [(0.007, 0.008), (0.012, 0.0132), (-0.01, 0.01)] # tg186-195
-    amp_bound, detune_bound, tg_bound = [(0., 0.1), (-0.1, 0.1), (-0.01, 0.01)] # tg195-201
+    # amp_bound, detune_bound, tg_bound = [(0., 0.1), (-0.1, 0.1), (-0.01, 0.01)] # 
+    amp_bound, detune_bound, tg_bound = [(0.032457, 0.0438), (0.024913, 0.075696), (-0.01, 0.01)] # 
     # tg_list =  [0, 1, 2] # np.arange(31) # Select the first row for testing
 
     cz_run = True
-    x0_vec = ut.load_drive_params_2q(cz_run) [[0,1,2],:] #[0::3,]  # [tg_list, ]  # [1::4,]
+    # x0_vec = ut.load_drive_params_2q(cz_run) [[0,1,2],:] #[0::3,]  # [tg_list, ]  # [1::4,]
+    x0_vec =  np.array([
+        # [32.042591, 0.032458, 0.024914],
+        [38.048132, 0.032458, 0.024914]
+        ]) #[0::3,]  # [tg_list, ]  # [1::4,]
+    
     workers, popsize = 50, 10
-    recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
+    recombination, tol, mutation = [0.7, 0.01, (0.5, 1.5)]
 
     folder_load = '../../data/_truc_3000'
     [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
