@@ -1,0 +1,53 @@
+Starting cz_fidelity_optimize.py
+
+Current China Time: 2025-11-10 21:25:41.350063+08:00
+Loading system data...
+Loaded system data with 3000 total states
+Using 200 states for optimization
+Transition frequency W_20_50 = 15.992
+Building Hamiltonians...
+Hamiltonians built successfully
+
+============================================================
+CZ FIDELITY OPTIMIZER CONFIGURATION
+============================================================
+Start time: 2025-11-10 13:25:44 UTC
+
+Truncation parameters:
+  - Large truncation: 1000
+  - Optimization truncation: 200
+
+Optimization bounds:
+  - Amplitude bounds: (0.01, 0.1)
+  - Detuning bounds: (0.03, 0.1)
+  - Gate time bounds: (-0.01, 0.01)
+
+Differential evolution parameters:
+  - Workers: 50
+  - Population size: 10
+  - Recombination: 0.7
+  - Tolerance: 0.01
+  - Mutation: (0.5, 1)
+
+System parameters:
+  - Transition frequency W_20_50: 15.992
+  - Number of gate times to optimize: 10
+  - Hilbert space size (optimization): 200
+  - Hilbert space size (total): 3000
+drive params:
+[40.033972, 0.034527, 0.022645] ,
+[41.089405, 0.033895, 0.023143] ,
+[42.029143, 0.033306, 0.023711] ,
+[43.075622, 0.032677, 0.024355] ,
+[44.031495, 0.031706, 0.024911] ,
+[45.056036, 0.030992, 0.025292] ,
+[46.043275, 0.030143, 0.025703] ,
+[47.036431, 0.029524, 0.026051] ,
+[48.020593, 0.028752, 0.026391] ,
+[49.082797, 0.027772, 0.0268] ,
+============================================================
+Starting fidelity optimization sweep...
+Optimizing gate times: 0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387Optimizing gate time 0 (tg_initial = 40.033972)
+
+Current China Time: 2025-11-10 21:25:44.179396+08:00

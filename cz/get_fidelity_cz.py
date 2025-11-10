@@ -38,7 +38,8 @@ if __name__ == '__main__':
     filter_ratio = 0.3
 
     t1_tphi_other = 3 # μs
-    tg_list = np.arange(31) # [2, 9, 16, 23, 30] # Select the first row for testing
+    tg_list = np.arange(105, 180)[0::3]
+    # np.arange(181)[0::6] # [2, 9, 16, 23, 30] # Select the first row for testing
     max_step_ideal, max_step_noisy = 1e-3, 1e-3 # Set max_step to 0 for parallel execution
     num_cpus, n_job = 16, len(tg_list) # Number of CPUs and jobs for parallel processing
 
@@ -54,7 +55,8 @@ if __name__ == '__main__':
     dim_1 = len(hspace_1) 
 
     # Load pulse parameters from CSV
-    params = ut.load_drive_params_2q(cz_run)[tg_list, ]  # [1::4,] 
+    folder = 'data/npz/cz_pulse_detune_-0.05_-0.1.txt'
+    params = ut.load_drive_params_2q(cz_run, folder=folder)[tg_list, ]  # [1::4,] 
     option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy) 
 
     if cz_run: # CZ

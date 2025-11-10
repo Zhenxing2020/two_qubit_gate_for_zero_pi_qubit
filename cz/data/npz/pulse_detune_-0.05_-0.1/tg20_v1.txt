@@ -1,0 +1,3783 @@
+Starting cz_fidelity_optimize_gpt_v2.py
+
+Current China Time: 2025-11-06 09:33:04.727433+08:00
+Loading system data...
+Loaded system data with 3000 total states
+Using 200 states for optimization
+Transition frequency W_20_50 = 15.992
+Building Hamiltonians...
+Hamiltonians built successfully
+
+============================================================
+CZ FIDELITY OPTIMIZER CONFIGURATION
+============================================================
+Start time: 2025-11-06 01:33:07 UTC
+
+Truncation parameters:
+  - Large truncation: 1000
+  - Optimization truncation: 200
+
+Optimization bounds:
+  - Amplitude bounds: (0.0, 0.1)
+  - Detuning bounds: (-0.1, -0.05)
+  - Gate time bounds: (-0.01, 0.01)
+
+Differential evolution parameters:
+  - Workers: 50
+  - Population size: 10
+  - Recombination: 0.7
+  - Tolerance: 0.01
+  - Mutation: (0.5, 1.5)
+
+System parameters:
+  - Transition frequency W_20_50: 15.992
+  - Number of gate times to optimize: 26
+  - Hilbert space size (optimization): 200
+  - Hilbert space size (total): 3000
+drive params:
+[21.056006, 0.045761, 0.0277] ,
+[25.077785, 0.03859, 0.034731] ,
+[29.098714, 0.013834, 0.005579] ,
+[33.0965, 0.035655, 0.017116] ,
+[36.930871, 0.034879, 0.021496] ,
+[41.089405, 0.033895, 0.023143] ,
+[45.056036, 0.030992, 0.025292] ,
+[49.082797, 0.027772, 0.0268] ,
+[53.082337, 0.024949, 0.027433] ,
+[57.035365, 0.022302, 0.025874] ,
+[61.055416, 0.021332, 0.018602] ,
+[65.040581, 0.019272, 0.016253] ,
+[69.036209, 0.017884, 0.015849] ,
+[73.042499, 0.01662, 0.015112] ,
+[77.105768, 0.02304, 0.026145] ,
+[81.088054, 0.021316, 0.025908] ,
+[85.030697, 0.01984, 0.025783] ,
+[88.916301, 0.01858, 0.025673] ,
+[93.009387, 0.017406, 0.025439] ,
+[96.923943, 0.01645, 0.024969] ,
+[100.959499, 0.015548, 0.024051] ,
+[105.050187, 0.014787, 0.022288] ,
+[109.093345, 0.01415, 0.021199] ,
+[113.086114, 0.013562, 0.02055] ,
+[117.030361, 0.01303, 0.020139] ,
+[121.011384, 0.012529, 0.019632] ,
+============================================================
+Starting fidelity optimization sweep...
+Optimizing gate times: 0it [00:00, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387Optimizing gate time 0 (tg_initial = 21.056006)
+
+Current China Time: 2025-11-06 09:33:07.928065+08:00
+Optimizing gate times: 1it [01:14, 74.69s/it]differential_evolution step 1: f(x)= -0.430527
+Best Solution: [21.05935829, 0.07429127, -0.08772002]
+Convergence: 0.0311
+----------------------------
+differential_evolution step 2: f(x)= -0.430527
+Best Solution: [21.05935829, 0.07429127, -0.08772002]
+Convergence: 0.0452
+----------------------------
+differential_evolution step 3: f(x)= -0.443626
+Best Solution: [21.0527516, 0.07538951, -0.08085115]
+Convergence: 0.0422
+----------------------------
+differential_evolution step 4: f(x)= -0.443626
+Best Solution: [21.0527516, 0.07538951, -0.08085115]
+Convergence: 0.0446
+----------------------------
+differential_evolution step 5: f(x)= -0.443626
+Best Solution: [21.0527516, 0.07538951, -0.08085115]
+Convergence: 0.0542
+----------------------------
+differential_evolution step 6: f(x)= -0.444086
+Best Solution: [21.0643176, 0.07492112, -0.08138891]
+Convergence: 0.0556
+----------------------------
+differential_evolution step 7: f(x)= -0.444086
+Best Solution: [21.0643176, 0.07492112, -0.08138891]
+Convergence: 0.0616
+----------------------------
+differential_evolution step 8: f(x)= -0.444086
+Best Solution: [21.0643176, 0.07492112, -0.08138891]
+Convergence: 0.0664
+----------------------------
+differential_evolution step 9: f(x)= -0.444086
+Best Solution: [21.0643176, 0.07492112, -0.08138891]
+Convergence: 0.0744
+----------------------------
+differential_evolution step 10: f(x)= -0.44419
+Best Solution: [21.06589986, 0.07492112, -0.08138891]
+Convergence: 0.0827
+----------------------------
+differential_evolution step 11: f(x)= -0.445041
+Best Solution: [21.0497141, 0.07523887, -0.08483144]
+Convergence: 0.1484
+----------------------------
+differential_evolution step 12: f(x)= -0.445578
+Best Solution: [21.05942492, 0.07523887, -0.08483144]
+Convergence: 0.1707
+----------------------------
+differential_evolution step 13: f(x)= -0.445578
+Best Solution: [21.05942492, 0.07523887, -0.08483144]
+Convergence: 0.2399
+----------------------------
+differential_evolution step 14: f(x)= -0.445835
+Best Solution: [21.04609385, 0.07552406, -0.08329558]
+Convergence: 0.2629
+----------------------------
+differential_evolution step 15: f(x)= -0.445835
+Best Solution: [21.04609385, 0.07552406, -0.08329558]
+Convergence: 0.2717
+----------------------------
+differential_evolution step 16: f(x)= -0.446108
+Best Solution: [21.04644565, 0.07515088, -0.0832177]
+Convergence: 0.7774
+----------------------------
+differential_evolution step 17: f(x)= -0.446108
+Best Solution: [21.04644565, 0.07515088, -0.0832177]
+Convergence: 1.4174
+----------------------------
+
+Current China Time: 2025-11-06 09:34:22.620171+08:00
+Optimization completed for gate time 0
+Optimized fidelity: -0.44610764
+Optimized parameters: [21.04644565  0.07515088 -0.0832177 ]
+
+--- Results after 1 optimizations ---
+F_200 = np.array([
+-0.44610764 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+])
+Optimizing gate time 1 (tg_initial = 25.077785)
+
+Current China Time: 2025-11-06 09:34:22.620907+08:00
+Optimizing gate times: 2it [03:03, 94.88s/it]differential_evolution step 1: f(x)= -0.603114
+Best Solution: [25.07227917, 0.06156609, -0.08208809]
+Convergence: 0.0291
+----------------------------
+differential_evolution step 2: f(x)= -0.603114
+Best Solution: [25.07227917, 0.06156609, -0.08208809]
+Convergence: 0.0308
+----------------------------
+differential_evolution step 3: f(x)= -0.603114
+Best Solution: [25.07227917, 0.06156609, -0.08208809]
+Convergence: 0.034
+----------------------------
+differential_evolution step 4: f(x)= -0.603114
+Best Solution: [25.07227917, 0.06156609, -0.08208809]
+Convergence: 0.033
+----------------------------
+differential_evolution step 5: f(x)= -0.603114
+Best Solution: [25.07227917, 0.06156609, -0.08208809]
+Convergence: 0.0376
+----------------------------
+differential_evolution step 6: f(x)= -0.603114
+Best Solution: [25.07227917, 0.06156609, -0.08208809]
+Convergence: 0.0392
+----------------------------
+differential_evolution step 7: f(x)= -0.603114
+Best Solution: [25.07227917, 0.06156609, -0.08208809]
+Convergence: 0.0565
+----------------------------
+differential_evolution step 8: f(x)= -0.603114
+Best Solution: [25.07227917, 0.06156609, -0.08208809]
+Convergence: 0.0636
+----------------------------
+differential_evolution step 9: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 0.0795
+----------------------------
+differential_evolution step 10: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 0.0866
+----------------------------
+differential_evolution step 11: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 0.0863
+----------------------------
+differential_evolution step 12: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 0.1626
+----------------------------
+differential_evolution step 13: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 0.1736
+----------------------------
+differential_evolution step 14: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 0.2489
+----------------------------
+differential_evolution step 15: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 0.3408
+----------------------------
+differential_evolution step 16: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 0.4394
+----------------------------
+differential_evolution step 17: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 0.6604
+----------------------------
+differential_evolution step 18: f(x)= -0.604375
+Best Solution: [25.0760185, 0.06131439, -0.0822213]
+Convergence: 1.0037
+----------------------------
+
+Current China Time: 2025-11-06 09:36:11.629684+08:00
+Optimization completed for gate time 1
+Optimized fidelity: -0.60437459
+Optimized parameters: [25.0760185   0.06131439 -0.0822213 ]
+
+--- Results after 2 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+])
+Optimizing gate time 2 (tg_initial = 29.098714)
+
+Current China Time: 2025-11-06 09:36:11.630559+08:00
+Optimizing gate times: 3it [05:45, 125.53s/it]differential_evolution step 1: f(x)= -0.543639
+Best Solution: [29.10712628, 0.01894779, -0.08140693]
+Convergence: 0.0364
+----------------------------
+differential_evolution step 2: f(x)= -0.543639
+Best Solution: [29.10712628, 0.01894779, -0.08140693]
+Convergence: 0.036
+----------------------------
+differential_evolution step 3: f(x)= -0.543639
+Best Solution: [29.10712628, 0.01894779, -0.08140693]
+Convergence: 0.0377
+----------------------------
+differential_evolution step 4: f(x)= -0.543639
+Best Solution: [29.10712628, 0.01894779, -0.08140693]
+Convergence: 0.0374
+----------------------------
+differential_evolution step 5: f(x)= -0.543639
+Best Solution: [29.10712628, 0.01894779, -0.08140693]
+Convergence: 0.041
+----------------------------
+differential_evolution step 6: f(x)= -0.543639
+Best Solution: [29.10712628, 0.01894779, -0.08140693]
+Convergence: 0.0464
+----------------------------
+differential_evolution step 7: f(x)= -0.543639
+Best Solution: [29.10712628, 0.01894779, -0.08140693]
+Convergence: 0.0476
+----------------------------
+differential_evolution step 8: f(x)= -0.543639
+Best Solution: [29.10712628, 0.01894779, -0.08140693]
+Convergence: 0.0484
+----------------------------
+differential_evolution step 9: f(x)= -0.545074
+Best Solution: [29.10855327, 0.01791748, -0.07692541]
+Convergence: 0.0532
+----------------------------
+differential_evolution step 10: f(x)= -0.546654
+Best Solution: [29.10242504, 0.01894779, -0.07758245]
+Convergence: 0.0573
+----------------------------
+differential_evolution step 11: f(x)= -0.546654
+Best Solution: [29.10242504, 0.01894779, -0.07758245]
+Convergence: 0.0567
+----------------------------
+differential_evolution step 12: f(x)= -0.546654
+Best Solution: [29.10242504, 0.01894779, -0.07758245]
+Convergence: 0.0644
+----------------------------
+differential_evolution step 13: f(x)= -0.547849
+Best Solution: [29.0990687, 0.01826784, -0.07688606]
+Convergence: 0.0723
+----------------------------
+differential_evolution step 14: f(x)= -0.547849
+Best Solution: [29.0990687, 0.01826784, -0.07688606]
+Convergence: 0.085
+----------------------------
+differential_evolution step 15: f(x)= -0.547849
+Best Solution: [29.0990687, 0.01826784, -0.07688606]
+Convergence: 0.0915
+----------------------------
+differential_evolution step 16: f(x)= -0.547849
+Best Solution: [29.0990687, 0.01826784, -0.07688606]
+Convergence: 0.2287
+----------------------------
+differential_evolution step 17: f(x)= -0.549821
+Best Solution: [29.09370869, 0.01898827, -0.07901452]
+Convergence: 0.2649
+----------------------------
+differential_evolution step 18: f(x)= -0.550173
+Best Solution: [29.09641224, 0.01890669, -0.07919777]
+Convergence: 0.4346
+----------------------------
+differential_evolution step 19: f(x)= -0.550173
+Best Solution: [29.09641224, 0.01890669, -0.07919777]
+Convergence: 0.4639
+----------------------------
+differential_evolution step 20: f(x)= -0.550173
+Best Solution: [29.09641224, 0.01890669, -0.07919777]
+Convergence: 0.4584
+----------------------------
+differential_evolution step 21: f(x)= -0.550173
+Best Solution: [29.09641224, 0.01890669, -0.07919777]
+Convergence: 0.5117
+----------------------------
+differential_evolution step 22: f(x)= -0.550173
+Best Solution: [29.09641224, 0.01890669, -0.07919777]
+Convergence: 0.5102
+----------------------------
+differential_evolution step 23: f(x)= -0.550173
+Best Solution: [29.09641224, 0.01890669, -0.07919777]
+Convergence: 1.857
+----------------------------
+
+Current China Time: 2025-11-06 09:38:53.639293+08:00
+Optimization completed for gate time 2
+Optimized fidelity: -0.55017256
+Optimized parameters: [ 2.90964122e+01  1.89066892e-02 -7.91977710e-02]
+
+--- Results after 3 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+])
+Optimizing gate time 3 (tg_initial = 33.096500)
+
+Current China Time: 2025-11-06 09:38:53.640279+08:00
+Optimizing gate times: 4it [08:38, 144.35s/it]differential_evolution step 1: f(x)= -0.605392
+Best Solution: [33.0969934, 0.01697827, -0.07270204]
+Convergence: 0.0309
+----------------------------
+differential_evolution step 2: f(x)= -0.605392
+Best Solution: [33.0969934, 0.01697827, -0.07270204]
+Convergence: 0.0303
+----------------------------
+differential_evolution step 3: f(x)= -0.605392
+Best Solution: [33.0969934, 0.01697827, -0.07270204]
+Convergence: 0.0325
+----------------------------
+differential_evolution step 4: f(x)= -0.60632
+Best Solution: [33.09735784, 0.01646709, -0.07286568]
+Convergence: 0.0353
+----------------------------
+differential_evolution step 5: f(x)= -0.60632
+Best Solution: [33.09735784, 0.01646709, -0.07286568]
+Convergence: 0.0361
+----------------------------
+differential_evolution step 6: f(x)= -0.60632
+Best Solution: [33.09735784, 0.01646709, -0.07286568]
+Convergence: 0.0386
+----------------------------
+differential_evolution step 7: f(x)= -0.60632
+Best Solution: [33.09735784, 0.01646709, -0.07286568]
+Convergence: 0.0508
+----------------------------
+differential_evolution step 8: f(x)= -0.60632
+Best Solution: [33.09735784, 0.01646709, -0.07286568]
+Convergence: 0.0526
+----------------------------
+differential_evolution step 9: f(x)= -0.60833
+Best Solution: [33.08830695, 0.01648023, -0.07324874]
+Convergence: 0.0553
+----------------------------
+differential_evolution step 10: f(x)= -0.60833
+Best Solution: [33.08830695, 0.01648023, -0.07324874]
+Convergence: 0.0582
+----------------------------
+differential_evolution step 11: f(x)= -0.60833
+Best Solution: [33.08830695, 0.01648023, -0.07324874]
+Convergence: 0.0609
+----------------------------
+differential_evolution step 12: f(x)= -0.60833
+Best Solution: [33.08830695, 0.01648023, -0.07324874]
+Convergence: 0.0667
+----------------------------
+differential_evolution step 13: f(x)= -0.618996
+Best Solution: [33.09853432, 0.01674819, -0.07485995]
+Convergence: 0.0855
+----------------------------
+differential_evolution step 14: f(x)= -0.618996
+Best Solution: [33.09853432, 0.01674819, -0.07485995]
+Convergence: 0.0917
+----------------------------
+differential_evolution step 15: f(x)= -0.630264
+Best Solution: [33.09293904, 0.01744079, -0.07653623]
+Convergence: 0.0907
+----------------------------
+differential_evolution step 16: f(x)= -0.630264
+Best Solution: [33.09293904, 0.01744079, -0.07653623]
+Convergence: 0.0943
+----------------------------
+differential_evolution step 17: f(x)= -0.630264
+Best Solution: [33.09293904, 0.01744079, -0.07653623]
+Convergence: 0.0933
+----------------------------
+differential_evolution step 18: f(x)= -0.632784
+Best Solution: [33.09084138, 0.01768009, -0.07851997]
+Convergence: 0.314
+----------------------------
+differential_evolution step 19: f(x)= -0.632784
+Best Solution: [33.09084138, 0.01768009, -0.07851997]
+Convergence: 0.3855
+----------------------------
+differential_evolution step 20: f(x)= -0.632784
+Best Solution: [33.09084138, 0.01768009, -0.07851997]
+Convergence: 0.7645
+----------------------------
+differential_evolution step 21: f(x)= -0.632784
+Best Solution: [33.09084138, 0.01768009, -0.07851997]
+Convergence: 1.1012
+----------------------------
+
+Current China Time: 2025-11-06 09:41:46.832646+08:00
+Optimization completed for gate time 3
+Optimized fidelity: -0.63278350
+Optimized parameters: [ 3.30908414e+01  1.76800927e-02 -7.85199707e-02]
+
+--- Results after 4 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+])
+Optimizing gate time 4 (tg_initial = 36.930871)
+
+Current China Time: 2025-11-06 09:41:46.833343+08:00
+Optimizing gate times: 5it [11:36, 156.20s/it]differential_evolution step 1: f(x)= -0.680286
+Best Solution: [36.92769542, 0.04939418, -0.06251191]
+Convergence: 0.0202
+----------------------------
+differential_evolution step 2: f(x)= -0.68029
+Best Solution: [36.9214221, 0.04939418, -0.06251191]
+Convergence: 0.0217
+----------------------------
+differential_evolution step 3: f(x)= -0.68029
+Best Solution: [36.9214221, 0.04939418, -0.06251191]
+Convergence: 0.0285
+----------------------------
+differential_evolution step 4: f(x)= -0.68029
+Best Solution: [36.9214221, 0.04939418, -0.06251191]
+Convergence: 0.0312
+----------------------------
+differential_evolution step 5: f(x)= -0.68029
+Best Solution: [36.9214221, 0.04939418, -0.06251191]
+Convergence: 0.0338
+----------------------------
+differential_evolution step 6: f(x)= -0.68029
+Best Solution: [36.9214221, 0.04939418, -0.06251191]
+Convergence: 0.0385
+----------------------------
+differential_evolution step 7: f(x)= -0.713882
+Best Solution: [36.92438801, 0.01757928, -0.07838544]
+Convergence: 0.043
+----------------------------
+differential_evolution step 8: f(x)= -0.717602
+Best Solution: [36.9312471, 0.01734079, -0.08051742]
+Convergence: 0.045
+----------------------------
+differential_evolution step 9: f(x)= -0.717602
+Best Solution: [36.9312471, 0.01734079, -0.08051742]
+Convergence: 0.0463
+----------------------------
+differential_evolution step 10: f(x)= -0.718316
+Best Solution: [36.94081068, 0.01677325, -0.07746861]
+Convergence: 0.0534
+----------------------------
+differential_evolution step 11: f(x)= -0.718316
+Best Solution: [36.94081068, 0.01677325, -0.07746861]
+Convergence: 0.0623
+----------------------------
+differential_evolution step 12: f(x)= -0.718316
+Best Solution: [36.94081068, 0.01677325, -0.07746861]
+Convergence: 0.1007
+----------------------------
+differential_evolution step 13: f(x)= -0.719675
+Best Solution: [36.93166033, 0.01692047, -0.07817785]
+Convergence: 0.1006
+----------------------------
+differential_evolution step 14: f(x)= -0.719675
+Best Solution: [36.93166033, 0.01692047, -0.07817785]
+Convergence: 0.1098
+----------------------------
+differential_evolution step 15: f(x)= -0.719675
+Best Solution: [36.93166033, 0.01692047, -0.07817785]
+Convergence: 0.1239
+----------------------------
+differential_evolution step 16: f(x)= -0.719675
+Best Solution: [36.93166033, 0.01692047, -0.07817785]
+Convergence: 0.1675
+----------------------------
+differential_evolution step 17: f(x)= -0.720289
+Best Solution: [36.92404785, 0.01712249, -0.07803507]
+Convergence: 0.3269
+----------------------------
+differential_evolution step 18: f(x)= -0.720406
+Best Solution: [36.92404785, 0.01726971, -0.07873632]
+Convergence: 0.6693
+----------------------------
+differential_evolution step 19: f(x)= -0.720406
+Best Solution: [36.92404785, 0.01726971, -0.07873632]
+Convergence: 0.6739
+----------------------------
+differential_evolution step 20: f(x)= -0.720632
+Best Solution: [36.93272882, 0.01723692, -0.07925886]
+Convergence: 1.8961
+----------------------------
+
+Current China Time: 2025-11-06 09:44:44.042512+08:00
+Optimization completed for gate time 4
+Optimized fidelity: -0.72063159
+Optimized parameters: [ 3.69327288e+01  1.72369173e-02 -7.92588573e-02]
+
+--- Results after 5 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+])
+Optimizing gate time 5 (tg_initial = 41.089405)
+
+Current China Time: 2025-11-06 09:44:44.043503+08:00
+Optimizing gate times: 6it [15:05, 174.33s/it]differential_evolution step 1: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0189
+----------------------------
+differential_evolution step 2: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0223
+----------------------------
+differential_evolution step 3: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0254
+----------------------------
+differential_evolution step 4: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0278
+----------------------------
+differential_evolution step 5: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0289
+----------------------------
+differential_evolution step 6: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0332
+----------------------------
+differential_evolution step 7: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0332
+----------------------------
+differential_evolution step 8: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0382
+----------------------------
+differential_evolution step 9: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0376
+----------------------------
+differential_evolution step 10: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0459
+----------------------------
+differential_evolution step 11: f(x)= -0.817838
+Best Solution: [41.0989474, 0.01600414, -0.0784426]
+Convergence: 0.0598
+----------------------------
+differential_evolution step 12: f(x)= -0.830571
+Best Solution: [41.08717893, 0.01686806, -0.0784426]
+Convergence: 0.0687
+----------------------------
+differential_evolution step 13: f(x)= -0.832249
+Best Solution: [41.0978397, 0.01658421, -0.08016896]
+Convergence: 0.1013
+----------------------------
+differential_evolution step 14: f(x)= -0.834279
+Best Solution: [41.09830228, 0.01676353, -0.0786857]
+Convergence: 0.1138
+----------------------------
+differential_evolution step 15: f(x)= -0.835369
+Best Solution: [41.0967074, 0.01673339, -0.07978857]
+Convergence: 0.2303
+----------------------------
+differential_evolution step 16: f(x)= -0.835369
+Best Solution: [41.0967074, 0.01673339, -0.07978857]
+Convergence: 0.3676
+----------------------------
+differential_evolution step 17: f(x)= -0.835468
+Best Solution: [41.09589326, 0.01676353, -0.0796653]
+Convergence: 0.365
+----------------------------
+differential_evolution step 18: f(x)= -0.835468
+Best Solution: [41.09589326, 0.01676353, -0.0796653]
+Convergence: 0.4178
+----------------------------
+differential_evolution step 19: f(x)= -0.835468
+Best Solution: [41.09589326, 0.01676353, -0.0796653]
+Convergence: 0.5856
+----------------------------
+differential_evolution step 20: f(x)= -0.835468
+Best Solution: [41.09589326, 0.01676353, -0.0796653]
+Convergence: 0.9599
+----------------------------
+differential_evolution step 21: f(x)= -0.835468
+Best Solution: [41.09589326, 0.01676353, -0.0796653]
+Convergence: 3.2383
+----------------------------
+
+Current China Time: 2025-11-06 09:48:13.573671+08:00
+Optimization completed for gate time 5
+Optimized fidelity: -0.83546834
+Optimized parameters: [ 4.10958933e+01  1.67635251e-02 -7.96652954e-02]
+
+--- Results after 6 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+])
+Optimizing gate time 6 (tg_initial = 45.056036)
+
+Current China Time: 2025-11-06 09:48:13.574623+08:00
+Optimizing gate times: 7it [18:35, 185.88s/it]differential_evolution step 1: f(x)= -0.86274
+Best Solution: [45.06488024, 0.0166506, -0.07784924]
+Convergence: 0.022
+----------------------------
+differential_evolution step 2: f(x)= -0.86274
+Best Solution: [45.06488024, 0.0166506, -0.07784924]
+Convergence: 0.0223
+----------------------------
+differential_evolution step 3: f(x)= -0.86274
+Best Solution: [45.06488024, 0.0166506, -0.07784924]
+Convergence: 0.0237
+----------------------------
+differential_evolution step 4: f(x)= -0.889405
+Best Solution: [45.05694825, 0.01579656, -0.07476755]
+Convergence: 0.0237
+----------------------------
+differential_evolution step 5: f(x)= -0.889405
+Best Solution: [45.05694825, 0.01579656, -0.07476755]
+Convergence: 0.0233
+----------------------------
+differential_evolution step 6: f(x)= -0.893052
+Best Solution: [45.06340387, 0.01586123, -0.07539647]
+Convergence: 0.0254
+----------------------------
+differential_evolution step 7: f(x)= -0.893052
+Best Solution: [45.06340387, 0.01586123, -0.07539647]
+Convergence: 0.0258
+----------------------------
+differential_evolution step 8: f(x)= -0.893052
+Best Solution: [45.06340387, 0.01586123, -0.07539647]
+Convergence: 0.0282
+----------------------------
+differential_evolution step 9: f(x)= -0.893052
+Best Solution: [45.06340387, 0.01586123, -0.07539647]
+Convergence: 0.0319
+----------------------------
+differential_evolution step 10: f(x)= -0.894741
+Best Solution: [45.0479899, 0.01589851, -0.07575911]
+Convergence: 0.0355
+----------------------------
+differential_evolution step 11: f(x)= -0.90135
+Best Solution: [45.05765343, 0.01589851, -0.07954742]
+Convergence: 0.0408
+----------------------------
+differential_evolution step 12: f(x)= -0.904864
+Best Solution: [45.06354933, 0.01597217, -0.07805707]
+Convergence: 0.0467
+----------------------------
+differential_evolution step 13: f(x)= -0.904864
+Best Solution: [45.06354933, 0.01597217, -0.07805707]
+Convergence: 0.061
+----------------------------
+differential_evolution step 14: f(x)= -0.904864
+Best Solution: [45.06354933, 0.01597217, -0.07805707]
+Convergence: 0.2837
+----------------------------
+differential_evolution step 15: f(x)= -0.904864
+Best Solution: [45.06354933, 0.01597217, -0.07805707]
+Convergence: 0.3313
+----------------------------
+differential_evolution step 16: f(x)= -0.904864
+Best Solution: [45.06354933, 0.01597217, -0.07805707]
+Convergence: 0.407
+----------------------------
+differential_evolution step 17: f(x)= -0.904864
+Best Solution: [45.06354933, 0.01597217, -0.07805707]
+Convergence: 0.5536
+----------------------------
+differential_evolution step 18: f(x)= -0.904864
+Best Solution: [45.06354933, 0.01597217, -0.07805707]
+Convergence: 0.6121
+----------------------------
+differential_evolution step 19: f(x)= -0.904864
+Best Solution: [45.06354933, 0.01597217, -0.07805707]
+Convergence: 0.7397
+----------------------------
+differential_evolution step 20: f(x)= -0.904864
+Best Solution: [45.06354933, 0.01597217, -0.07805707]
+Convergence: 0.992
+----------------------------
+differential_evolution step 21: f(x)= -0.905
+Best Solution: [45.05804603, 0.01593617, -0.07805048]
+Convergence: 1.2607
+----------------------------
+
+Current China Time: 2025-11-06 09:51:43.220815+08:00
+Optimization completed for gate time 6
+Optimized fidelity: -0.90500006
+Optimized parameters: [ 4.50580460e+01  1.59361717e-02 -7.80504824e-02]
+
+--- Results after 7 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+])
+Optimizing gate time 7 (tg_initial = 49.082797)
+
+Current China Time: 2025-11-06 09:51:43.221936+08:00
+Optimizing gate times: 8it [22:39, 204.37s/it]differential_evolution step 1: f(x)= -0.765956
+Best Solution: [49.08145792, 0.01427437, -0.08209561]
+Convergence: 0.0243
+----------------------------
+differential_evolution step 2: f(x)= -0.766012
+Best Solution: [49.08489628, 0.01427437, -0.08209561]
+Convergence: 0.0268
+----------------------------
+differential_evolution step 3: f(x)= -0.914021
+Best Solution: [49.08101385, 0.01427437, -0.07036969]
+Convergence: 0.0291
+----------------------------
+differential_evolution step 4: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0267
+----------------------------
+differential_evolution step 5: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0268
+----------------------------
+differential_evolution step 6: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0267
+----------------------------
+differential_evolution step 7: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0283
+----------------------------
+differential_evolution step 8: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0299
+----------------------------
+differential_evolution step 9: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0322
+----------------------------
+differential_evolution step 10: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0335
+----------------------------
+differential_evolution step 11: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.034
+----------------------------
+differential_evolution step 12: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0378
+----------------------------
+differential_evolution step 13: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0401
+----------------------------
+differential_evolution step 14: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0454
+----------------------------
+differential_evolution step 15: f(x)= -0.934764
+Best Solution: [49.07506946, 0.01478672, -0.07331959]
+Convergence: 0.0668
+----------------------------
+differential_evolution step 16: f(x)= -0.935255
+Best Solution: [49.07756034, 0.01483469, -0.07376589]
+Convergence: 0.0859
+----------------------------
+differential_evolution step 17: f(x)= -0.936606
+Best Solution: [49.08165662, 0.01499492, -0.07376589]
+Convergence: 0.2627
+----------------------------
+differential_evolution step 18: f(x)= -0.936606
+Best Solution: [49.08165662, 0.01499492, -0.07376589]
+Convergence: 0.262
+----------------------------
+differential_evolution step 19: f(x)= -0.936664
+Best Solution: [49.08624595, 0.01499492, -0.07376589]
+Convergence: 0.2633
+----------------------------
+differential_evolution step 20: f(x)= -0.936664
+Best Solution: [49.08624595, 0.01499492, -0.07376589]
+Convergence: 0.6927
+----------------------------
+differential_evolution step 21: f(x)= -0.936995
+Best Solution: [49.08724483, 0.01499016, -0.07418008]
+Convergence: 0.8066
+----------------------------
+differential_evolution step 22: f(x)= -0.937063
+Best Solution: [49.09237629, 0.01501765, -0.07440374]
+Convergence: 1.3414
+----------------------------
+
+Current China Time: 2025-11-06 09:55:47.199802+08:00
+Optimization completed for gate time 7
+Optimized fidelity: -0.93706315
+Optimized parameters: [ 4.90923763e+01  1.50176491e-02 -7.44037415e-02]
+
+--- Results after 8 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+])
+Optimizing gate time 8 (tg_initial = 53.082337)
+
+Current China Time: 2025-11-06 09:55:47.201026+08:00
+Optimizing gate times: 9it [26:27, 211.85s/it]differential_evolution step 1: f(x)= -0.920591
+Best Solution: [53.07497609, 0.01573016, -0.079091]
+Convergence: 0.0197
+----------------------------
+differential_evolution step 2: f(x)= -0.920591
+Best Solution: [53.07497609, 0.01573016, -0.079091]
+Convergence: 0.0222
+----------------------------
+differential_evolution step 3: f(x)= -0.920591
+Best Solution: [53.07497609, 0.01573016, -0.079091]
+Convergence: 0.0234
+----------------------------
+differential_evolution step 4: f(x)= -0.929259
+Best Solution: [53.07497609, 0.01573016, -0.08202098]
+Convergence: 0.0272
+----------------------------
+differential_evolution step 5: f(x)= -0.929259
+Best Solution: [53.07497609, 0.01573016, -0.08202098]
+Convergence: 0.0283
+----------------------------
+differential_evolution step 6: f(x)= -0.931783
+Best Solution: [53.08406379, 0.01549028, -0.0762433]
+Convergence: 0.0292
+----------------------------
+differential_evolution step 7: f(x)= -0.948076
+Best Solution: [53.08218484, 0.01527652, -0.07443457]
+Convergence: 0.0328
+----------------------------
+differential_evolution step 8: f(x)= -0.997953
+Best Solution: [53.07773419, 0.01452963, -0.07094209]
+Convergence: 0.0367
+----------------------------
+differential_evolution step 9: f(x)= -0.997953
+Best Solution: [53.07773419, 0.01452963, -0.07094209]
+Convergence: 0.0419
+----------------------------
+differential_evolution step 10: f(x)= -0.997953
+Best Solution: [53.07773419, 0.01452963, -0.07094209]
+Convergence: 0.0476
+----------------------------
+differential_evolution step 11: f(x)= -0.997953
+Best Solution: [53.07773419, 0.01452963, -0.07094209]
+Convergence: 0.0514
+----------------------------
+differential_evolution step 12: f(x)= -1.00524
+Best Solution: [53.07632574, 0.01419446, -0.07097493]
+Convergence: 0.0841
+----------------------------
+differential_evolution step 13: f(x)= -1.00524
+Best Solution: [53.07632574, 0.01419446, -0.07097493]
+Convergence: 0.106
+----------------------------
+differential_evolution step 14: f(x)= -1.00524
+Best Solution: [53.07632574, 0.01419446, -0.07097493]
+Convergence: 0.2189
+----------------------------
+differential_evolution step 15: f(x)= -1.00524
+Best Solution: [53.07632574, 0.01419446, -0.07097493]
+Convergence: 0.3196
+----------------------------
+differential_evolution step 16: f(x)= -1.00524
+Best Solution: [53.07632574, 0.01419446, -0.07097493]
+Convergence: 0.4688
+----------------------------
+differential_evolution step 17: f(x)= -1.00603
+Best Solution: [53.08919785, 0.01422488, -0.07100385]
+Convergence: 0.5847
+----------------------------
+differential_evolution step 18: f(x)= -1.00619
+Best Solution: [53.08830862, 0.01428193, -0.07143755]
+Convergence: 0.7941
+----------------------------
+differential_evolution step 19: f(x)= -1.00619
+Best Solution: [53.08830862, 0.01428193, -0.07143755]
+Convergence: 1.0003
+----------------------------
+
+Current China Time: 2025-11-06 09:59:35.476577+08:00
+Optimization completed for gate time 8
+Optimized fidelity: -1.00618864
+Optimized parameters: [ 5.30883086e+01  1.42819289e-02 -7.14375489e-02]
+
+--- Results after 9 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+])
+Optimizing gate time 9 (tg_initial = 57.035365)
+
+Current China Time: 2025-11-06 09:59:35.477656+08:00
+Optimizing gate times: 10it [32:02, 249.79s/it]differential_evolution step 1: f(x)= -0.664655
+Best Solution: [57.03687975, 0.01628717, -0.07365264]
+Convergence: 0.0271
+----------------------------
+differential_evolution step 2: f(x)= -0.675794
+Best Solution: [57.03584539, 0.01300429, -0.08560859]
+Convergence: 0.0271
+----------------------------
+differential_evolution step 3: f(x)= -0.675794
+Best Solution: [57.03584539, 0.01300429, -0.08560859]
+Convergence: 0.0311
+----------------------------
+differential_evolution step 4: f(x)= -0.675794
+Best Solution: [57.03584539, 0.01300429, -0.08560859]
+Convergence: 0.0325
+----------------------------
+differential_evolution step 5: f(x)= -0.848602
+Best Solution: [57.04074802, 0.01690795, -0.08877759]
+Convergence: 0.0327
+----------------------------
+differential_evolution step 6: f(x)= -0.848602
+Best Solution: [57.04074802, 0.01690795, -0.08877759]
+Convergence: 0.034
+----------------------------
+differential_evolution step 7: f(x)= -0.958523
+Best Solution: [57.03878192, 0.01313221, -0.06472276]
+Convergence: 0.0356
+----------------------------
+differential_evolution step 8: f(x)= -0.958523
+Best Solution: [57.03878192, 0.01313221, -0.06472276]
+Convergence: 0.0397
+----------------------------
+differential_evolution step 9: f(x)= -0.96236
+Best Solution: [57.03560798, 0.01541513, -0.08595744]
+Convergence: 0.0427
+----------------------------
+differential_evolution step 10: f(x)= -0.96236
+Best Solution: [57.03560798, 0.01541513, -0.08595744]
+Convergence: 0.0447
+----------------------------
+differential_evolution step 11: f(x)= -0.96236
+Best Solution: [57.03560798, 0.01541513, -0.08595744]
+Convergence: 0.0429
+----------------------------
+differential_evolution step 12: f(x)= -1.01559
+Best Solution: [57.04155215, 0.01461825, -0.07686009]
+Convergence: 0.0444
+----------------------------
+differential_evolution step 13: f(x)= -1.07841
+Best Solution: [57.04104584, 0.01390952, -0.06928955]
+Convergence: 0.0495
+----------------------------
+differential_evolution step 14: f(x)= -1.07841
+Best Solution: [57.04104584, 0.01390952, -0.06928955]
+Convergence: 0.0597
+----------------------------
+differential_evolution step 15: f(x)= -1.07978
+Best Solution: [57.03679296, 0.01356485, -0.06897865]
+Convergence: 0.0664
+----------------------------
+differential_evolution step 16: f(x)= -1.08288
+Best Solution: [57.03097041, 0.01390101, -0.06966618]
+Convergence: 0.0876
+----------------------------
+differential_evolution step 17: f(x)= -1.08288
+Best Solution: [57.03097041, 0.01390101, -0.06966618]
+Convergence: 0.1053
+----------------------------
+differential_evolution step 18: f(x)= -1.08288
+Best Solution: [57.03097041, 0.01390101, -0.06966618]
+Convergence: 0.1306
+----------------------------
+differential_evolution step 19: f(x)= -1.08296
+Best Solution: [57.0359293, 0.01390101, -0.06966618]
+Convergence: 0.1507
+----------------------------
+differential_evolution step 20: f(x)= -1.08511
+Best Solution: [57.03502356, 0.01391812, -0.07018972]
+Convergence: 0.1526
+----------------------------
+differential_evolution step 21: f(x)= -1.08511
+Best Solution: [57.03502356, 0.01391812, -0.07018972]
+Convergence: 0.1624
+----------------------------
+differential_evolution step 22: f(x)= -1.08511
+Best Solution: [57.03502356, 0.01391812, -0.07018972]
+Convergence: 0.1685
+----------------------------
+differential_evolution step 23: f(x)= -1.08511
+Best Solution: [57.03502356, 0.01391812, -0.07018972]
+Convergence: 0.1783
+----------------------------
+differential_evolution step 24: f(x)= -1.08547
+Best Solution: [57.03562534, 0.01390984, -0.07045581]
+Convergence: 0.2906
+----------------------------
+differential_evolution step 25: f(x)= -1.08547
+Best Solution: [57.03562534, 0.01390984, -0.07045581]
+Convergence: 0.5892
+----------------------------
+differential_evolution step 26: f(x)= -1.08618
+Best Solution: [57.03432699, 0.0137999, -0.06999821]
+Convergence: 1.0823
+----------------------------
+
+Current China Time: 2025-11-06 10:05:10.228036+08:00
+Optimization completed for gate time 9
+Optimized fidelity: -1.08618500
+Optimized parameters: [ 5.70343270e+01  1.37998990e-02 -6.99982145e-02]
+
+--- Results after 10 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+])
+Optimizing gate time 10 (tg_initial = 61.055416)
+
+Current China Time: 2025-11-06 10:05:10.228959+08:00
+Optimizing gate times: 11it [36:30, 255.54s/it]differential_evolution step 1: f(x)= -0.912899
+Best Solution: [61.05564921, 0.015598, -0.08407486]
+Convergence: 0.0206
+----------------------------
+differential_evolution step 2: f(x)= -0.912899
+Best Solution: [61.05564921, 0.015598, -0.08407486]
+Convergence: 0.0239
+----------------------------
+differential_evolution step 3: f(x)= -0.997352
+Best Solution: [61.04880634, 0.01535702, -0.08647011]
+Convergence: 0.0222
+----------------------------
+differential_evolution step 4: f(x)= -0.997352
+Best Solution: [61.04880634, 0.01535702, -0.08647011]
+Convergence: 0.0237
+----------------------------
+differential_evolution step 5: f(x)= -1.08063
+Best Solution: [61.05541047, 0.01258307, -0.06567419]
+Convergence: 0.0243
+----------------------------
+differential_evolution step 6: f(x)= -1.11283
+Best Solution: [61.05080961, 0.01393761, -0.07027389]
+Convergence: 0.025
+----------------------------
+differential_evolution step 7: f(x)= -1.11283
+Best Solution: [61.05080961, 0.01393761, -0.07027389]
+Convergence: 0.0281
+----------------------------
+differential_evolution step 8: f(x)= -1.11283
+Best Solution: [61.05080961, 0.01393761, -0.07027389]
+Convergence: 0.0311
+----------------------------
+differential_evolution step 9: f(x)= -1.11283
+Best Solution: [61.05080961, 0.01393761, -0.07027389]
+Convergence: 0.0352
+----------------------------
+differential_evolution step 10: f(x)= -1.11283
+Best Solution: [61.05080961, 0.01393761, -0.07027389]
+Convergence: 0.0409
+----------------------------
+differential_evolution step 11: f(x)= -1.12979
+Best Solution: [61.06523646, 0.01296946, -0.06859001]
+Convergence: 0.0423
+----------------------------
+differential_evolution step 12: f(x)= -1.12979
+Best Solution: [61.06523646, 0.01296946, -0.06859001]
+Convergence: 0.0478
+----------------------------
+differential_evolution step 13: f(x)= -1.12979
+Best Solution: [61.06523646, 0.01296946, -0.06859001]
+Convergence: 0.0813
+----------------------------
+differential_evolution step 14: f(x)= -1.1311
+Best Solution: [61.06367261, 0.01374029, -0.06920641]
+Convergence: 0.1463
+----------------------------
+differential_evolution step 15: f(x)= -1.14895
+Best Solution: [61.04765516, 0.01312717, -0.06775542]
+Convergence: 0.2319
+----------------------------
+differential_evolution step 16: f(x)= -1.15624
+Best Solution: [61.05455927, 0.01343645, -0.06935295]
+Convergence: 0.2738
+----------------------------
+differential_evolution step 17: f(x)= -1.15624
+Best Solution: [61.05455927, 0.01343645, -0.06935295]
+Convergence: 0.3381
+----------------------------
+differential_evolution step 18: f(x)= -1.15712
+Best Solution: [61.04703576, 0.01333439, -0.06885096]
+Convergence: 0.5005
+----------------------------
+differential_evolution step 19: f(x)= -1.15712
+Best Solution: [61.04703576, 0.01333439, -0.06885096]
+Convergence: 1.0113
+----------------------------
+
+Current China Time: 2025-11-06 10:09:38.801128+08:00
+Optimization completed for gate time 10
+Optimized fidelity: -1.15711806
+Optimized parameters: [ 6.10470358e+01  1.33343927e-02 -6.88509557e-02]
+
+--- Results after 11 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+])
+Optimizing gate time 11 (tg_initial = 65.040581)
+
+Current China Time: 2025-11-06 10:09:38.802289+08:00
+Optimizing gate times: 12it [42:04, 279.37s/it]differential_evolution step 1: f(x)= -0.790179
+Best Solution: [65.04119496, 0.01270291, -0.08570849]
+Convergence: 0.022
+----------------------------
+differential_evolution step 2: f(x)= -1.02167
+Best Solution: [65.03361419, 0.01270291, -0.07261938]
+Convergence: 0.0216
+----------------------------
+differential_evolution step 3: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.0232
+----------------------------
+differential_evolution step 4: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.0275
+----------------------------
+differential_evolution step 5: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.0275
+----------------------------
+differential_evolution step 6: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.027
+----------------------------
+differential_evolution step 7: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.0265
+----------------------------
+differential_evolution step 8: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.0284
+----------------------------
+differential_evolution step 9: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.0294
+----------------------------
+differential_evolution step 10: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.035
+----------------------------
+differential_evolution step 11: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.0525
+----------------------------
+differential_evolution step 12: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.0668
+----------------------------
+differential_evolution step 13: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.078
+----------------------------
+differential_evolution step 14: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.081
+----------------------------
+differential_evolution step 15: f(x)= -1.22828
+Best Solution: [65.0330218, 0.01270291, -0.06664814]
+Convergence: 0.0887
+----------------------------
+differential_evolution step 16: f(x)= -1.24332
+Best Solution: [65.03246409, 0.01297999, -0.06820682]
+Convergence: 0.1079
+----------------------------
+differential_evolution step 17: f(x)= -1.24359
+Best Solution: [65.03194662, 0.01295376, -0.06801884]
+Convergence: 0.1444
+----------------------------
+differential_evolution step 18: f(x)= -1.24359
+Best Solution: [65.03194662, 0.01295376, -0.06801884]
+Convergence: 0.1813
+----------------------------
+differential_evolution step 19: f(x)= -1.24359
+Best Solution: [65.03194662, 0.01295376, -0.06801884]
+Convergence: 0.2237
+----------------------------
+differential_evolution step 20: f(x)= -1.24359
+Best Solution: [65.03194662, 0.01295376, -0.06801884]
+Convergence: 0.4617
+----------------------------
+differential_evolution step 21: f(x)= -1.2437
+Best Solution: [65.04914118, 0.01297999, -0.06820682]
+Convergence: 0.5302
+----------------------------
+differential_evolution step 22: f(x)= -1.2437
+Best Solution: [65.04914118, 0.01297999, -0.06820682]
+Convergence: 0.5979
+----------------------------
+differential_evolution step 23: f(x)= -1.24372
+Best Solution: [65.04182114, 0.01296856, -0.06812489]
+Convergence: 1.8885
+----------------------------
+
+Current China Time: 2025-11-06 10:15:12.680913+08:00
+Optimization completed for gate time 11
+Optimized fidelity: -1.24371748
+Optimized parameters: [ 6.50418211e+01  1.29685565e-02 -6.81248907e-02]
+
+--- Results after 12 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+])
+Optimizing gate time 12 (tg_initial = 69.036209)
+
+Current China Time: 2025-11-06 10:15:12.681832+08:00
+Optimizing gate times: 13it [48:37, 313.78s/it]differential_evolution step 1: f(x)= -0.956472
+Best Solution: [69.0398894, 0.0143618, -0.0835027]
+Convergence: 0.022
+----------------------------
+differential_evolution step 2: f(x)= -0.956472
+Best Solution: [69.0398894, 0.0143618, -0.0835027]
+Convergence: 0.0255
+----------------------------
+differential_evolution step 3: f(x)= -0.956472
+Best Solution: [69.0398894, 0.0143618, -0.0835027]
+Convergence: 0.0298
+----------------------------
+differential_evolution step 4: f(x)= -1.1656
+Best Solution: [69.03938371, 0.01355429, -0.07279743]
+Convergence: 0.0278
+----------------------------
+differential_evolution step 5: f(x)= -1.28812
+Best Solution: [69.03411866, 0.01258387, -0.06892408]
+Convergence: 0.0276
+----------------------------
+differential_evolution step 6: f(x)= -1.28812
+Best Solution: [69.03411866, 0.01258387, -0.06892408]
+Convergence: 0.0287
+----------------------------
+differential_evolution step 7: f(x)= -1.28812
+Best Solution: [69.03411866, 0.01258387, -0.06892408]
+Convergence: 0.0299
+----------------------------
+differential_evolution step 8: f(x)= -1.28812
+Best Solution: [69.03411866, 0.01258387, -0.06892408]
+Convergence: 0.0299
+----------------------------
+differential_evolution step 9: f(x)= -1.28812
+Best Solution: [69.03411866, 0.01258387, -0.06892408]
+Convergence: 0.0331
+----------------------------
+differential_evolution step 10: f(x)= -1.30362
+Best Solution: [69.0327191, 0.01286279, -0.06928671]
+Convergence: 0.0351
+----------------------------
+differential_evolution step 11: f(x)= -1.30362
+Best Solution: [69.0327191, 0.01286279, -0.06928671]
+Convergence: 0.0378
+----------------------------
+differential_evolution step 12: f(x)= -1.30362
+Best Solution: [69.0327191, 0.01286279, -0.06928671]
+Convergence: 0.0416
+----------------------------
+differential_evolution step 13: f(x)= -1.30362
+Best Solution: [69.0327191, 0.01286279, -0.06928671]
+Convergence: 0.0474
+----------------------------
+differential_evolution step 14: f(x)= -1.30362
+Best Solution: [69.0327191, 0.01286279, -0.06928671]
+Convergence: 0.0537
+----------------------------
+differential_evolution step 15: f(x)= -1.31606
+Best Solution: [69.03456515, 0.01273502, -0.06698708]
+Convergence: 0.064
+----------------------------
+differential_evolution step 16: f(x)= -1.31606
+Best Solution: [69.03456515, 0.01273502, -0.06698708]
+Convergence: 0.0717
+----------------------------
+differential_evolution step 17: f(x)= -1.31606
+Best Solution: [69.03456515, 0.01273502, -0.06698708]
+Convergence: 0.0743
+----------------------------
+differential_evolution step 18: f(x)= -1.32583
+Best Solution: [69.03274445, 0.01273449, -0.06748504]
+Convergence: 0.0847
+----------------------------
+differential_evolution step 19: f(x)= -1.32583
+Best Solution: [69.03274445, 0.01273449, -0.06748504]
+Convergence: 0.128
+----------------------------
+differential_evolution step 20: f(x)= -1.32583
+Best Solution: [69.03274445, 0.01273449, -0.06748504]
+Convergence: 0.1263
+----------------------------
+differential_evolution step 21: f(x)= -1.32583
+Best Solution: [69.03274445, 0.01273449, -0.06748504]
+Convergence: 0.149
+----------------------------
+differential_evolution step 22: f(x)= -1.32583
+Best Solution: [69.03274445, 0.01273449, -0.06748504]
+Convergence: 0.2011
+----------------------------
+differential_evolution step 23: f(x)= -1.32962
+Best Solution: [69.04332599, 0.01259446, -0.06712036]
+Convergence: 0.3361
+----------------------------
+differential_evolution step 24: f(x)= -1.32962
+Best Solution: [69.04332599, 0.01259446, -0.06712036]
+Convergence: 0.6159
+----------------------------
+differential_evolution step 25: f(x)= -1.32962
+Best Solution: [69.04332599, 0.01259446, -0.06712036]
+Convergence: 0.8265
+----------------------------
+differential_evolution step 26: f(x)= -1.33015
+Best Solution: [69.04230745, 0.01263379, -0.06748389]
+Convergence: 1.683
+----------------------------
+
+Current China Time: 2025-11-06 10:21:45.628632+08:00
+Optimization completed for gate time 12
+Optimized fidelity: -1.33014706
+Optimized parameters: [ 6.90423075e+01  1.26337921e-02 -6.74838890e-02]
+
+--- Results after 13 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+])
+Optimizing gate time 13 (tg_initial = 73.042499)
+
+Current China Time: 2025-11-06 10:21:45.629842+08:00
+Optimizing gate times: 14it [54:56, 333.48s/it]differential_evolution step 1: f(x)= -1.16393
+Best Solution: [73.04381488, 0.01339831, -0.07170992]
+Convergence: 0.0174
+----------------------------
+differential_evolution step 2: f(x)= -1.16393
+Best Solution: [73.04381488, 0.01339831, -0.07170992]
+Convergence: 0.0214
+----------------------------
+differential_evolution step 3: f(x)= -1.16393
+Best Solution: [73.04381488, 0.01339831, -0.07170992]
+Convergence: 0.0229
+----------------------------
+differential_evolution step 4: f(x)= -1.16393
+Best Solution: [73.04381488, 0.01339831, -0.07170992]
+Convergence: 0.0293
+----------------------------
+differential_evolution step 5: f(x)= -1.16393
+Best Solution: [73.04381488, 0.01339831, -0.07170992]
+Convergence: 0.0305
+----------------------------
+differential_evolution step 6: f(x)= -1.24419
+Best Solution: [73.03938753, 0.01144711, -0.06458624]
+Convergence: 0.033
+----------------------------
+differential_evolution step 7: f(x)= -1.24419
+Best Solution: [73.03938753, 0.01144711, -0.06458624]
+Convergence: 0.0358
+----------------------------
+differential_evolution step 8: f(x)= -1.2898
+Best Solution: [73.04565875, 0.0126738, -0.07082096]
+Convergence: 0.0414
+----------------------------
+differential_evolution step 9: f(x)= -1.2898
+Best Solution: [73.04565875, 0.0126738, -0.07082096]
+Convergence: 0.0451
+----------------------------
+differential_evolution step 10: f(x)= -1.37889
+Best Solution: [73.03681769, 0.01212594, -0.06527858]
+Convergence: 0.0489
+----------------------------
+differential_evolution step 11: f(x)= -1.37889
+Best Solution: [73.03681769, 0.01212594, -0.06527858]
+Convergence: 0.0566
+----------------------------
+differential_evolution step 12: f(x)= -1.39017
+Best Solution: [73.03568616, 0.01205079, -0.06560585]
+Convergence: 0.0626
+----------------------------
+differential_evolution step 13: f(x)= -1.39017
+Best Solution: [73.03568616, 0.01205079, -0.06560585]
+Convergence: 0.067
+----------------------------
+differential_evolution step 14: f(x)= -1.39017
+Best Solution: [73.03568616, 0.01205079, -0.06560585]
+Convergence: 0.0718
+----------------------------
+differential_evolution step 15: f(x)= -1.39017
+Best Solution: [73.03568616, 0.01205079, -0.06560585]
+Convergence: 0.0956
+----------------------------
+differential_evolution step 16: f(x)= -1.39017
+Best Solution: [73.03568616, 0.01205079, -0.06560585]
+Convergence: 0.1018
+----------------------------
+differential_evolution step 17: f(x)= -1.39017
+Best Solution: [73.03568616, 0.01205079, -0.06560585]
+Convergence: 0.1028
+----------------------------
+differential_evolution step 18: f(x)= -1.39607
+Best Solution: [73.03843321, 0.01220146, -0.06701908]
+Convergence: 0.1589
+----------------------------
+differential_evolution step 19: f(x)= -1.39607
+Best Solution: [73.03843321, 0.01220146, -0.06701908]
+Convergence: 0.2454
+----------------------------
+differential_evolution step 20: f(x)= -1.3963
+Best Solution: [73.04442689, 0.01209712, -0.06580765]
+Convergence: 0.3405
+----------------------------
+differential_evolution step 21: f(x)= -1.40534
+Best Solution: [73.04407947, 0.01226865, -0.06691447]
+Convergence: 0.4455
+----------------------------
+differential_evolution step 22: f(x)= -1.4068
+Best Solution: [73.04242307, 0.01229964, -0.06660125]
+Convergence: 0.7367
+----------------------------
+differential_evolution step 23: f(x)= -1.4068
+Best Solution: [73.04242307, 0.01229964, -0.06660125]
+Convergence: 1.382
+----------------------------
+
+Current China Time: 2025-11-06 10:28:04.636103+08:00
+Optimization completed for gate time 13
+Optimized fidelity: -1.40679716
+Optimized parameters: [ 7.30424231e+01  1.22996431e-02 -6.66012471e-02]
+
+--- Results after 14 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+])
+Optimizing gate time 14 (tg_initial = 77.105768)
+
+Current China Time: 2025-11-06 10:28:04.638499+08:00
+Optimizing gate times: 15it [1:03:06, 380.73s/it]differential_evolution step 1: f(x)= -1.36301
+Best Solution: [77.09629748, 0.01149636, -0.06595639]
+Convergence: 0.0163
+----------------------------
+differential_evolution step 2: f(x)= -1.36301
+Best Solution: [77.09629748, 0.01149636, -0.06595639]
+Convergence: 0.0175
+----------------------------
+differential_evolution step 3: f(x)= -1.36301
+Best Solution: [77.09629748, 0.01149636, -0.06595639]
+Convergence: 0.0213
+----------------------------
+differential_evolution step 4: f(x)= -1.36301
+Best Solution: [77.09629748, 0.01149636, -0.06595639]
+Convergence: 0.0217
+----------------------------
+differential_evolution step 5: f(x)= -1.36301
+Best Solution: [77.09629748, 0.01149636, -0.06595639]
+Convergence: 0.0246
+----------------------------
+differential_evolution step 6: f(x)= -1.36301
+Best Solution: [77.09629748, 0.01149636, -0.06595639]
+Convergence: 0.0256
+----------------------------
+differential_evolution step 7: f(x)= -1.49041
+Best Solution: [77.09948408, 0.01189788, -0.0663897]
+Convergence: 0.0237
+----------------------------
+differential_evolution step 8: f(x)= -1.49041
+Best Solution: [77.09948408, 0.01189788, -0.0663897]
+Convergence: 0.0243
+----------------------------
+differential_evolution step 9: f(x)= -1.49041
+Best Solution: [77.09948408, 0.01189788, -0.0663897]
+Convergence: 0.0257
+----------------------------
+differential_evolution step 10: f(x)= -1.49041
+Best Solution: [77.09948408, 0.01189788, -0.0663897]
+Convergence: 0.0268
+----------------------------
+differential_evolution step 11: f(x)= -1.49041
+Best Solution: [77.09948408, 0.01189788, -0.0663897]
+Convergence: 0.0279
+----------------------------
+differential_evolution step 12: f(x)= -1.49041
+Best Solution: [77.09948408, 0.01189788, -0.0663897]
+Convergence: 0.031
+----------------------------
+differential_evolution step 13: f(x)= -1.49041
+Best Solution: [77.09948408, 0.01189788, -0.0663897]
+Convergence: 0.0365
+----------------------------
+differential_evolution step 14: f(x)= -1.49041
+Best Solution: [77.09948408, 0.01189788, -0.0663897]
+Convergence: 0.0399
+----------------------------
+differential_evolution step 15: f(x)= -1.49716
+Best Solution: [77.0965618, 0.01181848, -0.06558355]
+Convergence: 0.0419
+----------------------------
+differential_evolution step 16: f(x)= -1.49716
+Best Solution: [77.0965618, 0.01181848, -0.06558355]
+Convergence: 0.0482
+----------------------------
+differential_evolution step 17: f(x)= -1.49716
+Best Solution: [77.0965618, 0.01181848, -0.06558355]
+Convergence: 0.0521
+----------------------------
+differential_evolution step 18: f(x)= -1.50254
+Best Solution: [77.10248521, 0.0120671, -0.06639033]
+Convergence: 0.0642
+----------------------------
+differential_evolution step 19: f(x)= -1.50254
+Best Solution: [77.10248521, 0.0120671, -0.06639033]
+Convergence: 0.0671
+----------------------------
+differential_evolution step 20: f(x)= -1.50254
+Best Solution: [77.10248521, 0.0120671, -0.06639033]
+Convergence: 0.0717
+----------------------------
+differential_evolution step 21: f(x)= -1.50254
+Best Solution: [77.10248521, 0.0120671, -0.06639033]
+Convergence: 0.0916
+----------------------------
+differential_evolution step 22: f(x)= -1.50254
+Best Solution: [77.10248521, 0.0120671, -0.06639033]
+Convergence: 0.1126
+----------------------------
+differential_evolution step 23: f(x)= -1.50254
+Best Solution: [77.10248521, 0.0120671, -0.06639033]
+Convergence: 0.1463
+----------------------------
+differential_evolution step 24: f(x)= -1.50364
+Best Solution: [77.10078895, 0.01203297, -0.06639033]
+Convergence: 0.1817
+----------------------------
+differential_evolution step 25: f(x)= -1.50538
+Best Solution: [77.09863695, 0.01200697, -0.06613871]
+Convergence: 0.2855
+----------------------------
+differential_evolution step 26: f(x)= -1.50538
+Best Solution: [77.09863695, 0.01200697, -0.06613871]
+Convergence: 0.5768
+----------------------------
+differential_evolution step 27: f(x)= -1.50552
+Best Solution: [77.09646783, 0.01197872, -0.06596399]
+Convergence: 0.7649
+----------------------------
+differential_evolution step 28: f(x)= -1.50576
+Best Solution: [77.09659351, 0.01197545, -0.06600478]
+Convergence: 0.908
+----------------------------
+differential_evolution step 29: f(x)= -1.50576
+Best Solution: [77.09659351, 0.01197545, -0.06600478]
+Convergence: 1.0752
+----------------------------
+
+Current China Time: 2025-11-06 10:36:14.877047+08:00
+Optimization completed for gate time 14
+Optimized fidelity: -1.50575570
+Optimized parameters: [ 7.70965935e+01  1.19754510e-02 -6.60047826e-02]
+
+--- Results after 15 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+])
+Optimizing gate time 15 (tg_initial = 81.088054)
+
+Current China Time: 2025-11-06 10:36:14.878291+08:00
+Optimizing gate times: 16it [1:10:54, 406.72s/it]differential_evolution step 1: f(x)= -1.24006
+Best Solution: [81.0821323, 0.01084994, -0.06111789]
+Convergence: 0.0187
+----------------------------
+differential_evolution step 2: f(x)= -1.24006
+Best Solution: [81.0821323, 0.01084994, -0.06111789]
+Convergence: 0.0212
+----------------------------
+differential_evolution step 3: f(x)= -1.24006
+Best Solution: [81.0821323, 0.01084994, -0.06111789]
+Convergence: 0.0245
+----------------------------
+differential_evolution step 4: f(x)= -1.24006
+Best Solution: [81.0821323, 0.01084994, -0.06111789]
+Convergence: 0.0301
+----------------------------
+differential_evolution step 5: f(x)= -1.39747
+Best Solution: [81.0819275, 0.01159028, -0.06769399]
+Convergence: 0.0255
+----------------------------
+differential_evolution step 6: f(x)= -1.39747
+Best Solution: [81.0819275, 0.01159028, -0.06769399]
+Convergence: 0.0273
+----------------------------
+differential_evolution step 7: f(x)= -1.39747
+Best Solution: [81.0819275, 0.01159028, -0.06769399]
+Convergence: 0.029
+----------------------------
+differential_evolution step 8: f(x)= -1.39747
+Best Solution: [81.0819275, 0.01159028, -0.06769399]
+Convergence: 0.0292
+----------------------------
+differential_evolution step 9: f(x)= -1.48678
+Best Solution: [81.08766633, 0.01119964, -0.06445519]
+Convergence: 0.0303
+----------------------------
+differential_evolution step 10: f(x)= -1.48678
+Best Solution: [81.08766633, 0.01119964, -0.06445519]
+Convergence: 0.0297
+----------------------------
+differential_evolution step 11: f(x)= -1.49817
+Best Solution: [81.08372707, 0.01201239, -0.06812597]
+Convergence: 0.0364
+----------------------------
+differential_evolution step 12: f(x)= -1.49821
+Best Solution: [81.08605953, 0.01201239, -0.06812597]
+Convergence: 0.0403
+----------------------------
+differential_evolution step 13: f(x)= -1.53448
+Best Solution: [81.09257905, 0.01201376, -0.06752921]
+Convergence: 0.0455
+----------------------------
+differential_evolution step 14: f(x)= -1.56873
+Best Solution: [81.09399233, 0.01149775, -0.06431868]
+Convergence: 0.0525
+----------------------------
+differential_evolution step 15: f(x)= -1.56873
+Best Solution: [81.09399233, 0.01149775, -0.06431868]
+Convergence: 0.0594
+----------------------------
+differential_evolution step 16: f(x)= -1.57514
+Best Solution: [81.08905562, 0.01182866, -0.06668161]
+Convergence: 0.0661
+----------------------------
+differential_evolution step 17: f(x)= -1.59343
+Best Solution: [81.08429439, 0.01174955, -0.06613317]
+Convergence: 0.0935
+----------------------------
+differential_evolution step 18: f(x)= -1.59624
+Best Solution: [81.08284094, 0.01174535, -0.06537419]
+Convergence: 0.1022
+----------------------------
+differential_evolution step 19: f(x)= -1.59624
+Best Solution: [81.08284094, 0.01174535, -0.06537419]
+Convergence: 0.1543
+----------------------------
+differential_evolution step 20: f(x)= -1.59624
+Best Solution: [81.08284094, 0.01174535, -0.06537419]
+Convergence: 0.1798
+----------------------------
+differential_evolution step 21: f(x)= -1.59807
+Best Solution: [81.08389262, 0.01170377, -0.06525356]
+Convergence: 0.2697
+----------------------------
+differential_evolution step 22: f(x)= -1.59872
+Best Solution: [81.08917753, 0.01179158, -0.06586232]
+Convergence: 0.3856
+----------------------------
+differential_evolution step 23: f(x)= -1.59872
+Best Solution: [81.08917753, 0.01179158, -0.06586232]
+Convergence: 0.4372
+----------------------------
+differential_evolution step 24: f(x)= -1.59872
+Best Solution: [81.08917753, 0.01179158, -0.06586232]
+Convergence: 0.5221
+----------------------------
+differential_evolution step 25: f(x)= -1.60281
+Best Solution: [81.08877965, 0.01167317, -0.06548362]
+Convergence: 0.8007
+----------------------------
+differential_evolution step 26: f(x)= -1.60281
+Best Solution: [81.08877965, 0.01167317, -0.06548362]
+Convergence: 1.0446
+----------------------------
+
+Current China Time: 2025-11-06 10:44:01.932852+08:00
+Optimization completed for gate time 15
+Optimized fidelity: -1.60280718
+Optimized parameters: [ 8.10887797e+01  1.16731722e-02 -6.54836218e-02]
+
+--- Results after 16 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+])
+Optimizing gate time 16 (tg_initial = 85.030697)
+
+Current China Time: 2025-11-06 10:44:01.934193+08:00
+Optimizing gate times: 17it [1:20:26, 456.71s/it]differential_evolution step 1: f(x)= -1.28014
+Best Solution: [85.02648483, 0.0124706, -0.07209839]
+Convergence: 0.0202
+----------------------------
+differential_evolution step 2: f(x)= -1.28014
+Best Solution: [85.02648483, 0.0124706, -0.07209839]
+Convergence: 0.0229
+----------------------------
+differential_evolution step 3: f(x)= -1.28014
+Best Solution: [85.02648483, 0.0124706, -0.07209839]
+Convergence: 0.0223
+----------------------------
+differential_evolution step 4: f(x)= -1.28014
+Best Solution: [85.02648483, 0.0124706, -0.07209839]
+Convergence: 0.0217
+----------------------------
+differential_evolution step 5: f(x)= -1.28014
+Best Solution: [85.02648483, 0.0124706, -0.07209839]
+Convergence: 0.023
+----------------------------
+differential_evolution step 6: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0206
+----------------------------
+differential_evolution step 7: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0218
+----------------------------
+differential_evolution step 8: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0239
+----------------------------
+differential_evolution step 9: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0242
+----------------------------
+differential_evolution step 10: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0258
+----------------------------
+differential_evolution step 11: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0284
+----------------------------
+differential_evolution step 12: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0323
+----------------------------
+differential_evolution step 13: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0366
+----------------------------
+differential_evolution step 14: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.044
+----------------------------
+differential_evolution step 15: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0444
+----------------------------
+differential_evolution step 16: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0445
+----------------------------
+differential_evolution step 17: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0446
+----------------------------
+differential_evolution step 18: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0471
+----------------------------
+differential_evolution step 19: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.051
+----------------------------
+differential_evolution step 20: f(x)= -1.65133
+Best Solution: [85.02928979, 0.01121378, -0.06463849]
+Convergence: 0.0547
+----------------------------
+differential_evolution step 21: f(x)= -1.66756
+Best Solution: [85.02211496, 0.01133996, -0.06425724]
+Convergence: 0.0703
+----------------------------
+differential_evolution step 22: f(x)= -1.66756
+Best Solution: [85.02211496, 0.01133996, -0.06425724]
+Convergence: 0.0943
+----------------------------
+differential_evolution step 23: f(x)= -1.66756
+Best Solution: [85.02211496, 0.01133996, -0.06425724]
+Convergence: 0.0938
+----------------------------
+differential_evolution step 24: f(x)= -1.6807
+Best Solution: [85.02143383, 0.01153064, -0.06560194]
+Convergence: 0.0955
+----------------------------
+differential_evolution step 25: f(x)= -1.6807
+Best Solution: [85.02143383, 0.01153064, -0.06560194]
+Convergence: 0.1473
+----------------------------
+differential_evolution step 26: f(x)= -1.6807
+Best Solution: [85.02143383, 0.01153064, -0.06560194]
+Convergence: 0.2188
+----------------------------
+differential_evolution step 27: f(x)= -1.6807
+Best Solution: [85.02143383, 0.01153064, -0.06560194]
+Convergence: 0.2982
+----------------------------
+differential_evolution step 28: f(x)= -1.68828
+Best Solution: [85.02209274, 0.01143472, -0.06508077]
+Convergence: 0.4335
+----------------------------
+differential_evolution step 29: f(x)= -1.68828
+Best Solution: [85.02209274, 0.01143472, -0.06508077]
+Convergence: 0.4794
+----------------------------
+differential_evolution step 30: f(x)= -1.68828
+Best Solution: [85.02209274, 0.01143472, -0.06508077]
+Convergence: 0.7528
+----------------------------
+differential_evolution step 31: f(x)= -1.68828
+Best Solution: [85.02209274, 0.01143472, -0.06508077]
+Convergence: 1.0112
+----------------------------
+
+Current China Time: 2025-11-06 10:53:34.919884+08:00
+Optimization completed for gate time 16
+Optimized fidelity: -1.68828345
+Optimized parameters: [ 8.50220927e+01  1.14347245e-02 -6.50807694e-02]
+
+--- Results after 17 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+])
+Optimizing gate time 17 (tg_initial = 88.916301)
+
+Current China Time: 2025-11-06 10:53:34.921141+08:00
+Optimizing gate times: 18it [1:30:22, 498.39s/it]differential_evolution step 1: f(x)= -1.13064
+Best Solution: [88.92130748, 0.01189179, -0.06365782]
+Convergence: 0.0182
+----------------------------
+differential_evolution step 2: f(x)= -1.13064
+Best Solution: [88.92130748, 0.01189179, -0.06365782]
+Convergence: 0.0204
+----------------------------
+differential_evolution step 3: f(x)= -1.13064
+Best Solution: [88.92130748, 0.01189179, -0.06365782]
+Convergence: 0.0233
+----------------------------
+differential_evolution step 4: f(x)= -1.13064
+Best Solution: [88.92130748, 0.01189179, -0.06365782]
+Convergence: 0.0266
+----------------------------
+differential_evolution step 5: f(x)= -1.49746
+Best Solution: [88.92077401, 0.01132322, -0.06310814]
+Convergence: 0.0285
+----------------------------
+differential_evolution step 6: f(x)= -1.49746
+Best Solution: [88.92077401, 0.01132322, -0.06310814]
+Convergence: 0.0292
+----------------------------
+differential_evolution step 7: f(x)= -1.65798
+Best Solution: [88.9101533, 0.01133559, -0.06650556]
+Convergence: 0.0285
+----------------------------
+differential_evolution step 8: f(x)= -1.65798
+Best Solution: [88.9101533, 0.01133559, -0.06650556]
+Convergence: 0.0289
+----------------------------
+differential_evolution step 9: f(x)= -1.65798
+Best Solution: [88.9101533, 0.01133559, -0.06650556]
+Convergence: 0.0331
+----------------------------
+differential_evolution step 10: f(x)= -1.67722
+Best Solution: [88.91048247, 0.01135029, -0.06407259]
+Convergence: 0.0373
+----------------------------
+differential_evolution step 11: f(x)= -1.67722
+Best Solution: [88.91048247, 0.01135029, -0.06407259]
+Convergence: 0.0402
+----------------------------
+differential_evolution step 12: f(x)= -1.74303
+Best Solution: [88.91048247, 0.01135029, -0.06452546]
+Convergence: 0.0397
+----------------------------
+differential_evolution step 13: f(x)= -1.74303
+Best Solution: [88.91048247, 0.01135029, -0.06452546]
+Convergence: 0.0399
+----------------------------
+differential_evolution step 14: f(x)= -1.75179
+Best Solution: [88.92184361, 0.01098289, -0.06361016]
+Convergence: 0.0438
+----------------------------
+differential_evolution step 15: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.0591
+----------------------------
+differential_evolution step 16: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.0654
+----------------------------
+differential_evolution step 17: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.0788
+----------------------------
+differential_evolution step 18: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.1113
+----------------------------
+differential_evolution step 19: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.1373
+----------------------------
+differential_evolution step 20: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.1569
+----------------------------
+differential_evolution step 21: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.162
+----------------------------
+differential_evolution step 22: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.1616
+----------------------------
+differential_evolution step 23: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.2275
+----------------------------
+differential_evolution step 24: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.2798
+----------------------------
+differential_evolution step 25: f(x)= -1.79132
+Best Solution: [88.91695447, 0.01120627, -0.06448206]
+Convergence: 0.3962
+----------------------------
+differential_evolution step 26: f(x)= -1.79345
+Best Solution: [88.91064571, 0.01121759, -0.06468229]
+Convergence: 0.404
+----------------------------
+differential_evolution step 27: f(x)= -1.79345
+Best Solution: [88.91064571, 0.01121759, -0.06468229]
+Convergence: 0.6557
+----------------------------
+differential_evolution step 28: f(x)= -1.79345
+Best Solution: [88.91064571, 0.01121759, -0.06468229]
+Convergence: 0.6853
+----------------------------
+differential_evolution step 29: f(x)= -1.79345
+Best Solution: [88.91064571, 0.01121759, -0.06468229]
+Convergence: 0.9434
+----------------------------
+differential_evolution step 30: f(x)= -1.79345
+Best Solution: [88.91064571, 0.01121759, -0.06468229]
+Convergence: 2.1642
+----------------------------
+
+Current China Time: 2025-11-06 11:03:30.336721+08:00
+Optimization completed for gate time 17
+Optimized fidelity: -1.79344761
+Optimized parameters: [ 8.89106457e+01  1.12175892e-02 -6.46822866e-02]
+
+--- Results after 18 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345, -1.79344761 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+[88.910646, 0.011218, -0.064682] ,
+])
+Optimizing gate time 18 (tg_initial = 93.009387)
+
+Current China Time: 2025-11-06 11:03:30.337891+08:00
+Optimizing gate times: 19it [1:40:32, 531.89s/it]differential_evolution step 1: f(x)= -1.09858
+Best Solution: [93.00298713, 0.01143022, -0.08668151]
+Convergence: 0.0176
+----------------------------
+differential_evolution step 2: f(x)= -1.09858
+Best Solution: [93.00298713, 0.01143022, -0.08668151]
+Convergence: 0.021
+----------------------------
+differential_evolution step 3: f(x)= -1.4969
+Best Solution: [93.00056035, 0.01230677, -0.08805689]
+Convergence: 0.0216
+----------------------------
+differential_evolution step 4: f(x)= -1.4969
+Best Solution: [93.00056035, 0.01230677, -0.08805689]
+Convergence: 0.027
+----------------------------
+differential_evolution step 5: f(x)= -1.4969
+Best Solution: [93.00056035, 0.01230677, -0.08805689]
+Convergence: 0.029
+----------------------------
+differential_evolution step 6: f(x)= -1.4969
+Best Solution: [93.00056035, 0.01230677, -0.08805689]
+Convergence: 0.0317
+----------------------------
+differential_evolution step 7: f(x)= -1.4969
+Best Solution: [93.00056035, 0.01230677, -0.08805689]
+Convergence: 0.0352
+----------------------------
+differential_evolution step 8: f(x)= -1.53062
+Best Solution: [93.00754301, 0.01245213, -0.08808703]
+Convergence: 0.033
+----------------------------
+differential_evolution step 9: f(x)= -1.53062
+Best Solution: [93.00754301, 0.01245213, -0.08808703]
+Convergence: 0.0341
+----------------------------
+differential_evolution step 10: f(x)= -1.60959
+Best Solution: [92.9999933, 0.01325108, -0.09008077]
+Convergence: 0.033
+----------------------------
+differential_evolution step 11: f(x)= -1.60959
+Best Solution: [92.9999933, 0.01325108, -0.09008077]
+Convergence: 0.0341
+----------------------------
+differential_evolution step 12: f(x)= -1.60959
+Best Solution: [92.9999933, 0.01325108, -0.09008077]
+Convergence: 0.0342
+----------------------------
+differential_evolution step 13: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.0318
+----------------------------
+differential_evolution step 14: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.032
+----------------------------
+differential_evolution step 15: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.0357
+----------------------------
+differential_evolution step 16: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.0389
+----------------------------
+differential_evolution step 17: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.0467
+----------------------------
+differential_evolution step 18: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.0606
+----------------------------
+differential_evolution step 19: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.0638
+----------------------------
+differential_evolution step 20: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.0663
+----------------------------
+differential_evolution step 21: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.1113
+----------------------------
+differential_evolution step 22: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.1801
+----------------------------
+differential_evolution step 23: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.2196
+----------------------------
+differential_evolution step 24: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.3019
+----------------------------
+differential_evolution step 25: f(x)= -1.67476
+Best Solution: [93.01134891, 0.01285216, -0.08947114]
+Convergence: 0.4958
+----------------------------
+differential_evolution step 26: f(x)= -1.67518
+Best Solution: [93.01758517, 0.01285175, -0.08946161]
+Convergence: 0.4925
+----------------------------
+differential_evolution step 27: f(x)= -1.67518
+Best Solution: [93.01758517, 0.01285175, -0.08946161]
+Convergence: 0.7919
+----------------------------
+differential_evolution step 28: f(x)= -1.67518
+Best Solution: [93.01758517, 0.01285175, -0.08946161]
+Convergence: 0.906
+----------------------------
+differential_evolution step 29: f(x)= -1.67518
+Best Solution: [93.01758517, 0.01285175, -0.08946161]
+Convergence: 0.9921
+----------------------------
+differential_evolution step 30: f(x)= -1.67518
+Best Solution: [93.01758517, 0.01285175, -0.08946161]
+Convergence: 1.1421
+----------------------------
+
+Current China Time: 2025-11-06 11:13:40.274723+08:00
+Optimization completed for gate time 18
+Optimized fidelity: -1.67517597
+Optimized parameters: [ 9.30175852e+01  1.28517512e-02 -8.94616119e-02]
+
+--- Results after 19 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345, -1.79344761, -1.67517597 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+[88.910646, 0.011218, -0.064682] ,
+[93.017585, 0.012852, -0.089462] ,
+])
+Optimizing gate time 19 (tg_initial = 96.923943)
+
+Current China Time: 2025-11-06 11:13:40.276072+08:00
+Optimizing gate times: 20it [1:54:28, 623.25s/it]differential_evolution step 1: f(x)= -1.11763
+Best Solution: [96.92973054, 0.01648771, -0.05759361]
+Convergence: 0.0163
+----------------------------
+differential_evolution step 2: f(x)= -1.11763
+Best Solution: [96.92973054, 0.01648771, -0.05759361]
+Convergence: 0.0196
+----------------------------
+differential_evolution step 3: f(x)= -1.70299
+Best Solution: [96.92642192, 0.01223054, -0.08914154]
+Convergence: 0.018
+----------------------------
+differential_evolution step 4: f(x)= -1.70299
+Best Solution: [96.92642192, 0.01223054, -0.08914154]
+Convergence: 0.0193
+----------------------------
+differential_evolution step 5: f(x)= -1.76979
+Best Solution: [96.91969018, 0.01031781, -0.06280034]
+Convergence: 0.0187
+----------------------------
+differential_evolution step 6: f(x)= -1.76979
+Best Solution: [96.91969018, 0.01031781, -0.06280034]
+Convergence: 0.019
+----------------------------
+differential_evolution step 7: f(x)= -1.76979
+Best Solution: [96.91969018, 0.01031781, -0.06280034]
+Convergence: 0.0209
+----------------------------
+differential_evolution step 8: f(x)= -1.76979
+Best Solution: [96.91969018, 0.01031781, -0.06280034]
+Convergence: 0.0211
+----------------------------
+differential_evolution step 9: f(x)= -1.76979
+Best Solution: [96.91969018, 0.01031781, -0.06280034]
+Convergence: 0.022
+----------------------------
+differential_evolution step 10: f(x)= -1.76979
+Best Solution: [96.91969018, 0.01031781, -0.06280034]
+Convergence: 0.0239
+----------------------------
+differential_evolution step 11: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.0253
+----------------------------
+differential_evolution step 12: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.0258
+----------------------------
+differential_evolution step 13: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.0272
+----------------------------
+differential_evolution step 14: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.0267
+----------------------------
+differential_evolution step 15: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.0283
+----------------------------
+differential_evolution step 16: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.031
+----------------------------
+differential_evolution step 17: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.0334
+----------------------------
+differential_evolution step 18: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.0347
+----------------------------
+differential_evolution step 19: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.035
+----------------------------
+differential_evolution step 20: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.0365
+----------------------------
+differential_evolution step 21: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.0375
+----------------------------
+differential_evolution step 22: f(x)= -1.80123
+Best Solution: [96.92642192, 0.01245012, -0.08914154]
+Convergence: 0.038
+----------------------------
+differential_evolution step 23: f(x)= -1.80157
+Best Solution: [96.9337219, 0.01245012, -0.08914154]
+Convergence: 0.0353
+----------------------------
+differential_evolution step 24: f(x)= -1.80157
+Best Solution: [96.9337219, 0.01245012, -0.08914154]
+Convergence: 0.037
+----------------------------
+differential_evolution step 25: f(x)= -1.8077
+Best Solution: [96.91656113, 0.01260237, -0.08954058]
+Convergence: 0.0442
+----------------------------
+differential_evolution step 26: f(x)= -1.8077
+Best Solution: [96.91656113, 0.01260237, -0.08954058]
+Convergence: 0.0477
+----------------------------
+differential_evolution step 27: f(x)= -1.8077
+Best Solution: [96.91656113, 0.01260237, -0.08954058]
+Convergence: 0.0545
+----------------------------
+differential_evolution step 28: f(x)= -1.8077
+Best Solution: [96.91656113, 0.01260237, -0.08954058]
+Convergence: 0.0599
+----------------------------
+differential_evolution step 29: f(x)= -1.8077
+Best Solution: [96.91656113, 0.01260237, -0.08954058]
+Convergence: 0.0833
+----------------------------
+differential_evolution step 30: f(x)= -1.8077
+Best Solution: [96.91656113, 0.01260237, -0.08954058]
+Convergence: 0.0879
+----------------------------
+differential_evolution step 31: f(x)= -1.81527
+Best Solution: [96.92703449, 0.0126539, -0.08930232]
+Convergence: 0.0886
+----------------------------
+differential_evolution step 32: f(x)= -1.81789
+Best Solution: [96.92335195, 0.01257516, -0.08922436]
+Convergence: 0.1296
+----------------------------
+differential_evolution step 33: f(x)= -1.81789
+Best Solution: [96.92335195, 0.01257516, -0.08922436]
+Convergence: 0.15
+----------------------------
+differential_evolution step 34: f(x)= -1.81789
+Best Solution: [96.92335195, 0.01257516, -0.08922436]
+Convergence: 0.2124
+----------------------------
+differential_evolution step 35: f(x)= -1.81789
+Best Solution: [96.92335195, 0.01257516, -0.08922436]
+Convergence: 0.224
+----------------------------
+differential_evolution step 36: f(x)= -1.81931
+Best Solution: [96.930062, 0.01259042, -0.08931868]
+Convergence: 0.2561
+----------------------------
+differential_evolution step 37: f(x)= -1.81931
+Best Solution: [96.930062, 0.01259042, -0.08931868]
+Convergence: 0.4417
+----------------------------
+differential_evolution step 38: f(x)= -1.81931
+Best Solution: [96.930062, 0.01259042, -0.08931868]
+Convergence: 0.7506
+----------------------------
+differential_evolution step 39: f(x)= -1.81931
+Best Solution: [96.930062, 0.01259042, -0.08931868]
+Convergence: 0.9901
+----------------------------
+differential_evolution step 40: f(x)= -1.81931
+Best Solution: [96.930062, 0.01259042, -0.08931868]
+Convergence: 1.062
+----------------------------
+
+Current China Time: 2025-11-06 11:27:36.432304+08:00
+Optimization completed for gate time 19
+Optimized fidelity: -1.81930535
+Optimized parameters: [ 9.69300620e+01  1.25904215e-02 -8.93186785e-02]
+
+--- Results after 20 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345, -1.79344761, -1.67517597, -1.81930535 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+[88.910646, 0.011218, -0.064682] ,
+[93.017585, 0.012852, -0.089462] ,
+[96.930062, 0.01259, -0.089319] ,
+])
+Optimizing gate time 20 (tg_initial = 100.959499)
+
+Current China Time: 2025-11-06 11:27:36.433885+08:00
+Optimizing gate times: 21it [2:09:28, 706.25s/it]differential_evolution step 1: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0167
+----------------------------
+differential_evolution step 2: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0186
+----------------------------
+differential_evolution step 3: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0211
+----------------------------
+differential_evolution step 4: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0227
+----------------------------
+differential_evolution step 5: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0218
+----------------------------
+differential_evolution step 6: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0219
+----------------------------
+differential_evolution step 7: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0235
+----------------------------
+differential_evolution step 8: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0254
+----------------------------
+differential_evolution step 9: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0265
+----------------------------
+differential_evolution step 10: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0282
+----------------------------
+differential_evolution step 11: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0292
+----------------------------
+differential_evolution step 12: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.034
+----------------------------
+differential_evolution step 13: f(x)= -1.77356
+Best Solution: [100.95025942, 0.01194171, -0.08853428]
+Convergence: 0.0351
+----------------------------
+differential_evolution step 14: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0329
+----------------------------
+differential_evolution step 15: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0338
+----------------------------
+differential_evolution step 16: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0342
+----------------------------
+differential_evolution step 17: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0359
+----------------------------
+differential_evolution step 18: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.04
+----------------------------
+differential_evolution step 19: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0441
+----------------------------
+differential_evolution step 20: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0457
+----------------------------
+differential_evolution step 21: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0521
+----------------------------
+differential_evolution step 22: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0543
+----------------------------
+differential_evolution step 23: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0532
+----------------------------
+differential_evolution step 24: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0554
+----------------------------
+differential_evolution step 25: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0785
+----------------------------
+differential_evolution step 26: f(x)= -1.87087
+Best Solution: [100.96667665, 0.01221385, -0.08931065]
+Convergence: 0.0923
+----------------------------
+differential_evolution step 27: f(x)= -1.87484
+Best Solution: [100.96197808, 0.01220288, -0.08878039]
+Convergence: 0.1208
+----------------------------
+differential_evolution step 28: f(x)= -1.9591
+Best Solution: [100.96571033, 0.010778, -0.0635959]
+Convergence: 0.1454
+----------------------------
+differential_evolution step 29: f(x)= -2.10999
+Best Solution: [100.96565419, 0.01049959, -0.06308171]
+Convergence: 0.1073
+----------------------------
+differential_evolution step 30: f(x)= -2.11789
+Best Solution: [100.95387046, 0.01054743, -0.06326493]
+Convergence: 0.1063
+----------------------------
+differential_evolution step 31: f(x)= -2.12466
+Best Solution: [100.95244333, 0.01055133, -0.06336094]
+Convergence: 0.1092
+----------------------------
+differential_evolution step 32: f(x)= -2.12466
+Best Solution: [100.95244333, 0.01055133, -0.06336094]
+Convergence: 0.1081
+----------------------------
+differential_evolution step 33: f(x)= -2.12816
+Best Solution: [100.94995036, 0.01055438, -0.06348394]
+Convergence: 0.107
+----------------------------
+differential_evolution step 34: f(x)= -2.12816
+Best Solution: [100.94995036, 0.01055438, -0.06348394]
+Convergence: 0.1574
+----------------------------
+differential_evolution step 35: f(x)= -2.12816
+Best Solution: [100.94995036, 0.01055438, -0.06348394]
+Convergence: 0.166
+----------------------------
+differential_evolution step 36: f(x)= -2.12837
+Best Solution: [100.95230076, 0.01060321, -0.06369684]
+Convergence: 0.1844
+----------------------------
+differential_evolution step 37: f(x)= -2.12863
+Best Solution: [100.95026272, 0.01056087, -0.06351223]
+Convergence: 0.2078
+----------------------------
+differential_evolution step 38: f(x)= -2.12863
+Best Solution: [100.95026272, 0.01056087, -0.06351223]
+Convergence: 0.2315
+----------------------------
+differential_evolution step 39: f(x)= -2.12863
+Best Solution: [100.95026272, 0.01056087, -0.06351223]
+Convergence: 0.3176
+----------------------------
+differential_evolution step 40: f(x)= -2.12863
+Best Solution: [100.95026272, 0.01056087, -0.06351223]
+Convergence: 0.478
+----------------------------
+differential_evolution step 41: f(x)= -2.12863
+Best Solution: [100.95026272, 0.01056087, -0.06351223]
+Convergence: 0.9214
+----------------------------
+differential_evolution step 42: f(x)= -2.12877
+Best Solution: [100.95846683, 0.01060183, -0.06366621]
+Convergence: 1.2124
+----------------------------
+
+Current China Time: 2025-11-06 11:42:36.219502+08:00
+Optimization completed for gate time 20
+Optimized fidelity: -2.12876520
+Optimized parameters: [ 1.00958467e+02  1.06018308e-02 -6.36662099e-02]
+
+--- Results after 21 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345, -1.79344761, -1.67517597, -1.81930535 ,
+-2.1287652 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+[88.910646, 0.011218, -0.064682] ,
+[93.017585, 0.012852, -0.089462] ,
+[96.930062, 0.01259, -0.089319] ,
+[100.958467, 0.010602, -0.063666] ,
+])
+Optimizing gate time 21 (tg_initial = 105.050187)
+
+Current China Time: 2025-11-06 11:42:36.220966+08:00
+Optimizing gate times: 22it [2:24:42, 768.53s/it]differential_evolution step 1: f(x)= -1.16992
+Best Solution: [105.05301309, 0.02787815, -0.07518184]
+Convergence: 0.0203
+----------------------------
+differential_evolution step 2: f(x)= -1.16992
+Best Solution: [105.05301309, 0.02787815, -0.07518184]
+Convergence: 0.0215
+----------------------------
+differential_evolution step 3: f(x)= -1.16992
+Best Solution: [105.05301309, 0.02787815, -0.07518184]
+Convergence: 0.0234
+----------------------------
+differential_evolution step 4: f(x)= -1.76971
+Best Solution: [105.05750495, 0.01024404, -0.06128054]
+Convergence: 0.0183
+----------------------------
+differential_evolution step 5: f(x)= -1.76971
+Best Solution: [105.05750495, 0.01024404, -0.06128054]
+Convergence: 0.0187
+----------------------------
+differential_evolution step 6: f(x)= -1.77001
+Best Solution: [105.04245228, 0.01024404, -0.06128054]
+Convergence: 0.0191
+----------------------------
+differential_evolution step 7: f(x)= -1.77001
+Best Solution: [105.04245228, 0.01024404, -0.06128054]
+Convergence: 0.02
+----------------------------
+differential_evolution step 8: f(x)= -1.77001
+Best Solution: [105.04245228, 0.01024404, -0.06128054]
+Convergence: 0.0199
+----------------------------
+differential_evolution step 9: f(x)= -1.77001
+Best Solution: [105.04245228, 0.01024404, -0.06128054]
+Convergence: 0.0214
+----------------------------
+differential_evolution step 10: f(x)= -1.77001
+Best Solution: [105.04245228, 0.01024404, -0.06128054]
+Convergence: 0.0217
+----------------------------
+differential_evolution step 11: f(x)= -1.77001
+Best Solution: [105.04245228, 0.01024404, -0.06128054]
+Convergence: 0.0235
+----------------------------
+differential_evolution step 12: f(x)= -1.77001
+Best Solution: [105.04245228, 0.01024404, -0.06128054]
+Convergence: 0.0237
+----------------------------
+differential_evolution step 13: f(x)= -1.77001
+Best Solution: [105.04245228, 0.01024404, -0.06128054]
+Convergence: 0.025
+----------------------------
+differential_evolution step 14: f(x)= -2.00119
+Best Solution: [105.04627192, 0.01030338, -0.06202583]
+Convergence: 0.0256
+----------------------------
+differential_evolution step 15: f(x)= -2.00119
+Best Solution: [105.04627192, 0.01030338, -0.06202583]
+Convergence: 0.0258
+----------------------------
+differential_evolution step 16: f(x)= -2.00119
+Best Solution: [105.04627192, 0.01030338, -0.06202583]
+Convergence: 0.0268
+----------------------------
+differential_evolution step 17: f(x)= -2.00119
+Best Solution: [105.04627192, 0.01030338, -0.06202583]
+Convergence: 0.0287
+----------------------------
+differential_evolution step 18: f(x)= -2.00119
+Best Solution: [105.04627192, 0.01030338, -0.06202583]
+Convergence: 0.0296
+----------------------------
+differential_evolution step 19: f(x)= -2.00119
+Best Solution: [105.04627192, 0.01030338, -0.06202583]
+Convergence: 0.0312
+----------------------------
+differential_evolution step 20: f(x)= -2.00119
+Best Solution: [105.04627192, 0.01030338, -0.06202583]
+Convergence: 0.0331
+----------------------------
+differential_evolution step 21: f(x)= -2.1171
+Best Solution: [105.04627192, 0.01030338, -0.0623244]
+Convergence: 0.0359
+----------------------------
+differential_evolution step 22: f(x)= -2.1171
+Best Solution: [105.04627192, 0.01030338, -0.0623244]
+Convergence: 0.036
+----------------------------
+differential_evolution step 23: f(x)= -2.1171
+Best Solution: [105.04627192, 0.01030338, -0.0623244]
+Convergence: 0.0369
+----------------------------
+differential_evolution step 24: f(x)= -2.1171
+Best Solution: [105.04627192, 0.01030338, -0.0623244]
+Convergence: 0.0395
+----------------------------
+differential_evolution step 25: f(x)= -2.19962
+Best Solution: [105.05601957, 0.01025267, -0.06296957]
+Convergence: 0.0397
+----------------------------
+differential_evolution step 26: f(x)= -2.19962
+Best Solution: [105.05601957, 0.01025267, -0.06296957]
+Convergence: 0.0426
+----------------------------
+differential_evolution step 27: f(x)= -2.19962
+Best Solution: [105.05601957, 0.01025267, -0.06296957]
+Convergence: 0.0447
+----------------------------
+differential_evolution step 28: f(x)= -2.22933
+Best Solution: [105.04072361, 0.01028313, -0.06291839]
+Convergence: 0.0471
+----------------------------
+differential_evolution step 29: f(x)= -2.23594
+Best Solution: [105.04794429, 0.01029752, -0.06296957]
+Convergence: 0.0499
+----------------------------
+differential_evolution step 30: f(x)= -2.24994
+Best Solution: [105.04629579, 0.01034461, -0.06303764]
+Convergence: 0.0555
+----------------------------
+differential_evolution step 31: f(x)= -2.24994
+Best Solution: [105.04629579, 0.01034461, -0.06303764]
+Convergence: 0.0663
+----------------------------
+differential_evolution step 32: f(x)= -2.25766
+Best Solution: [105.05600823, 0.01038166, -0.06327754]
+Convergence: 0.0745
+----------------------------
+differential_evolution step 33: f(x)= -2.25766
+Best Solution: [105.05600823, 0.01038166, -0.06327754]
+Convergence: 0.108
+----------------------------
+differential_evolution step 34: f(x)= -2.25766
+Best Solution: [105.05600823, 0.01038166, -0.06327754]
+Convergence: 0.1188
+----------------------------
+differential_evolution step 35: f(x)= -2.25766
+Best Solution: [105.05600823, 0.01038166, -0.06327754]
+Convergence: 0.2974
+----------------------------
+differential_evolution step 36: f(x)= -2.25815
+Best Solution: [105.04189781, 0.01039594, -0.06332928]
+Convergence: 0.2904
+----------------------------
+differential_evolution step 37: f(x)= -2.25815
+Best Solution: [105.04189781, 0.01039594, -0.06332928]
+Convergence: 0.3882
+----------------------------
+differential_evolution step 38: f(x)= -2.25815
+Best Solution: [105.04189781, 0.01039594, -0.06332928]
+Convergence: 0.3798
+----------------------------
+differential_evolution step 39: f(x)= -2.25815
+Best Solution: [105.04189781, 0.01039594, -0.06332928]
+Convergence: 0.783
+----------------------------
+differential_evolution step 40: f(x)= -2.25815
+Best Solution: [105.04189781, 0.01039594, -0.06332928]
+Convergence: 0.8359
+----------------------------
+differential_evolution step 41: f(x)= -2.25815
+Best Solution: [105.04189781, 0.01039594, -0.06332928]
+Convergence: 1.3239
+----------------------------
+
+Current China Time: 2025-11-06 11:57:49.982989+08:00
+Optimization completed for gate time 21
+Optimized fidelity: -2.25814629
+Optimized parameters: [ 1.05041898e+02  1.03959394e-02 -6.33292798e-02]
+
+--- Results after 22 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345, -1.79344761, -1.67517597, -1.81930535 ,
+-2.1287652, -2.25814629 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+[88.910646, 0.011218, -0.064682] ,
+[93.017585, 0.012852, -0.089462] ,
+[96.930062, 0.01259, -0.089319] ,
+[100.958467, 0.010602, -0.063666] ,
+[105.041898, 0.010396, -0.063329] ,
+])
+Optimizing gate time 22 (tg_initial = 109.093345)
+
+Current China Time: 2025-11-06 11:57:49.984126+08:00
+Optimizing gate times: 23it [2:40:31, 822.92s/it]differential_evolution step 1: f(x)= -1.30351
+Best Solution: [109.09385729, 0.01239763, -0.09123481]
+Convergence: 0.0177
+----------------------------
+differential_evolution step 2: f(x)= -1.44474
+Best Solution: [109.0968481, 0.00926298, -0.05844834]
+Convergence: 0.0174
+----------------------------
+differential_evolution step 3: f(x)= -1.44474
+Best Solution: [109.0968481, 0.00926298, -0.05844834]
+Convergence: 0.0182
+----------------------------
+differential_evolution step 4: f(x)= -1.44474
+Best Solution: [109.0968481, 0.00926298, -0.05844834]
+Convergence: 0.0207
+----------------------------
+differential_evolution step 5: f(x)= -1.44474
+Best Solution: [109.0968481, 0.00926298, -0.05844834]
+Convergence: 0.0223
+----------------------------
+differential_evolution step 6: f(x)= -1.52417
+Best Solution: [109.10276141, 0.0111915, -0.06756803]
+Convergence: 0.0225
+----------------------------
+differential_evolution step 7: f(x)= -1.52417
+Best Solution: [109.10276141, 0.0111915, -0.06756803]
+Convergence: 0.0254
+----------------------------
+differential_evolution step 8: f(x)= -1.52417
+Best Solution: [109.10276141, 0.0111915, -0.06756803]
+Convergence: 0.0272
+----------------------------
+differential_evolution step 9: f(x)= -1.75822
+Best Solution: [109.10063868, 0.01531142, -0.05843692]
+Convergence: 0.0276
+----------------------------
+differential_evolution step 10: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0321
+----------------------------
+differential_evolution step 11: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0338
+----------------------------
+differential_evolution step 12: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0353
+----------------------------
+differential_evolution step 13: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0362
+----------------------------
+differential_evolution step 14: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0373
+----------------------------
+differential_evolution step 15: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0399
+----------------------------
+differential_evolution step 16: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0406
+----------------------------
+differential_evolution step 17: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0419
+----------------------------
+differential_evolution step 18: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.041
+----------------------------
+differential_evolution step 19: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0447
+----------------------------
+differential_evolution step 20: f(x)= -1.7595
+Best Solution: [109.08759466, 0.01531142, -0.05843692]
+Convergence: 0.0476
+----------------------------
+differential_evolution step 21: f(x)= -1.96969
+Best Solution: [109.09908776, 0.01184828, -0.08931721]
+Convergence: 0.0423
+----------------------------
+differential_evolution step 22: f(x)= -1.96969
+Best Solution: [109.09908776, 0.01184828, -0.08931721]
+Convergence: 0.0416
+----------------------------
+differential_evolution step 23: f(x)= -1.96969
+Best Solution: [109.09908776, 0.01184828, -0.08931721]
+Convergence: 0.042
+----------------------------
+differential_evolution step 24: f(x)= -1.96969
+Best Solution: [109.09908776, 0.01184828, -0.08931721]
+Convergence: 0.0442
+----------------------------
+differential_evolution step 25: f(x)= -2.03182
+Best Solution: [109.09671465, 0.0118038, -0.08855418]
+Convergence: 0.0459
+----------------------------
+differential_evolution step 26: f(x)= -2.03182
+Best Solution: [109.09671465, 0.0118038, -0.08855418]
+Convergence: 0.0517
+----------------------------
+differential_evolution step 27: f(x)= -2.0392
+Best Solution: [109.08586412, 0.01176877, -0.08896258]
+Convergence: 0.0582
+----------------------------
+differential_evolution step 28: f(x)= -2.0392
+Best Solution: [109.08586412, 0.01176877, -0.08896258]
+Convergence: 0.0617
+----------------------------
+differential_evolution step 29: f(x)= -2.0392
+Best Solution: [109.08586412, 0.01176877, -0.08896258]
+Convergence: 0.0653
+----------------------------
+differential_evolution step 30: f(x)= -2.04561
+Best Solution: [109.08827251, 0.01191631, -0.08907477]
+Convergence: 0.0705
+----------------------------
+differential_evolution step 31: f(x)= -2.05913
+Best Solution: [109.10297944, 0.01182571, -0.08873608]
+Convergence: 0.0827
+----------------------------
+differential_evolution step 32: f(x)= -2.05913
+Best Solution: [109.10297944, 0.01182571, -0.08873608]
+Convergence: 0.1186
+----------------------------
+differential_evolution step 33: f(x)= -2.05913
+Best Solution: [109.10297944, 0.01182571, -0.08873608]
+Convergence: 0.1359
+----------------------------
+differential_evolution step 34: f(x)= -2.05913
+Best Solution: [109.10297944, 0.01182571, -0.08873608]
+Convergence: 0.3414
+----------------------------
+differential_evolution step 35: f(x)= -2.05913
+Best Solution: [109.10297944, 0.01182571, -0.08873608]
+Convergence: 0.3657
+----------------------------
+differential_evolution step 36: f(x)= -2.05913
+Best Solution: [109.10297944, 0.01182571, -0.08873608]
+Convergence: 0.4067
+----------------------------
+differential_evolution step 37: f(x)= -2.06161
+Best Solution: [109.09257145, 0.01186179, -0.08893515]
+Convergence: 0.6496
+----------------------------
+differential_evolution step 38: f(x)= -2.06384
+Best Solution: [109.09223885, 0.01184194, -0.08888233]
+Convergence: 0.7837
+----------------------------
+differential_evolution step 39: f(x)= -2.06384
+Best Solution: [109.09223885, 0.01184194, -0.08888233]
+Convergence: 0.8126
+----------------------------
+differential_evolution step 40: f(x)= -2.06384
+Best Solution: [109.09223885, 0.01184194, -0.08888233]
+Convergence: 0.9481
+----------------------------
+differential_evolution step 41: f(x)= -2.06384
+Best Solution: [109.09223885, 0.01184194, -0.08888233]
+Convergence: 2.1081
+----------------------------
+
+Current China Time: 2025-11-06 12:13:39.765134+08:00
+Optimization completed for gate time 22
+Optimized fidelity: -2.06384114
+Optimized parameters: [ 1.09092239e+02  1.18419375e-02 -8.88823256e-02]
+
+--- Results after 23 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345, -1.79344761, -1.67517597, -1.81930535 ,
+-2.1287652, -2.25814629, -2.06384114 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+[88.910646, 0.011218, -0.064682] ,
+[93.017585, 0.012852, -0.089462] ,
+[96.930062, 0.01259, -0.089319] ,
+[100.958467, 0.010602, -0.063666] ,
+[105.041898, 0.010396, -0.063329] ,
+[109.092239, 0.011842, -0.088882] ,
+])
+Optimizing gate time 23 (tg_initial = 113.086114)
+
+Current China Time: 2025-11-06 12:13:39.766629+08:00
+Optimizing gate times: 24it [2:58:06, 892.40s/it]differential_evolution step 1: f(x)= -1.2985
+Best Solution: [113.07626123, 0.01736491, -0.06823013]
+Convergence: 0.0187
+----------------------------
+differential_evolution step 2: f(x)= -1.86136
+Best Solution: [113.08322431, 0.01053374, -0.06369984]
+Convergence: 0.0162
+----------------------------
+differential_evolution step 3: f(x)= -1.86136
+Best Solution: [113.08322431, 0.01053374, -0.06369984]
+Convergence: 0.0201
+----------------------------
+differential_evolution step 4: f(x)= -1.86142
+Best Solution: [113.08207328, 0.01053374, -0.06369984]
+Convergence: 0.0218
+----------------------------
+differential_evolution step 5: f(x)= -1.86142
+Best Solution: [113.08207328, 0.01053374, -0.06369984]
+Convergence: 0.0244
+----------------------------
+differential_evolution step 6: f(x)= -1.86142
+Best Solution: [113.08207328, 0.01053374, -0.06369984]
+Convergence: 0.0239
+----------------------------
+differential_evolution step 7: f(x)= -1.86142
+Best Solution: [113.08207328, 0.01053374, -0.06369984]
+Convergence: 0.0242
+----------------------------
+differential_evolution step 8: f(x)= -1.86142
+Best Solution: [113.08207328, 0.01053374, -0.06369984]
+Convergence: 0.0258
+----------------------------
+differential_evolution step 9: f(x)= -1.86142
+Best Solution: [113.08207328, 0.01053374, -0.06369984]
+Convergence: 0.0265
+----------------------------
+differential_evolution step 10: f(x)= -1.86142
+Best Solution: [113.08207328, 0.01053374, -0.06369984]
+Convergence: 0.027
+----------------------------
+differential_evolution step 11: f(x)= -1.86142
+Best Solution: [113.08207328, 0.01053374, -0.06369984]
+Convergence: 0.0296
+----------------------------
+differential_evolution step 12: f(x)= -1.92816
+Best Solution: [113.07858194, 0.00979771, -0.06056653]
+Convergence: 0.0274
+----------------------------
+differential_evolution step 13: f(x)= -1.92816
+Best Solution: [113.07858194, 0.00979771, -0.06056653]
+Convergence: 0.0308
+----------------------------
+differential_evolution step 14: f(x)= -1.92816
+Best Solution: [113.07858194, 0.00979771, -0.06056653]
+Convergence: 0.0321
+----------------------------
+differential_evolution step 15: f(x)= -1.92816
+Best Solution: [113.07858194, 0.00979771, -0.06056653]
+Convergence: 0.0346
+----------------------------
+differential_evolution step 16: f(x)= -1.92816
+Best Solution: [113.07858194, 0.00979771, -0.06056653]
+Convergence: 0.034
+----------------------------
+differential_evolution step 17: f(x)= -1.92816
+Best Solution: [113.07858194, 0.00979771, -0.06056653]
+Convergence: 0.0396
+----------------------------
+differential_evolution step 18: f(x)= -2.0064
+Best Solution: [113.08769954, 0.0095192, -0.0607298]
+Convergence: 0.0394
+----------------------------
+differential_evolution step 19: f(x)= -2.25432
+Best Solution: [113.07757344, 0.00987412, -0.06258279]
+Convergence: 0.0373
+----------------------------
+differential_evolution step 20: f(x)= -2.25432
+Best Solution: [113.07757344, 0.00987412, -0.06258279]
+Convergence: 0.0382
+----------------------------
+differential_evolution step 21: f(x)= -2.45053
+Best Solution: [113.08709902, 0.00991321, -0.06210256]
+Convergence: 0.0334
+----------------------------
+differential_evolution step 22: f(x)= -2.45053
+Best Solution: [113.08709902, 0.00991321, -0.06210256]
+Convergence: 0.0329
+----------------------------
+differential_evolution step 23: f(x)= -2.45053
+Best Solution: [113.08709902, 0.00991321, -0.06210256]
+Convergence: 0.0363
+----------------------------
+differential_evolution step 24: f(x)= -2.45053
+Best Solution: [113.08709902, 0.00991321, -0.06210256]
+Convergence: 0.0404
+----------------------------
+differential_evolution step 25: f(x)= -2.45053
+Best Solution: [113.08709902, 0.00991321, -0.06210256]
+Convergence: 0.0419
+----------------------------
+differential_evolution step 26: f(x)= -2.45053
+Best Solution: [113.08709902, 0.00991321, -0.06210256]
+Convergence: 0.0464
+----------------------------
+differential_evolution step 27: f(x)= -2.461
+Best Solution: [113.09101786, 0.01017279, -0.06345776]
+Convergence: 0.0547
+----------------------------
+differential_evolution step 28: f(x)= -2.46397
+Best Solution: [113.09434002, 0.01018532, -0.06345776]
+Convergence: 0.0634
+----------------------------
+differential_evolution step 29: f(x)= -2.46397
+Best Solution: [113.09434002, 0.01018532, -0.06345776]
+Convergence: 0.074
+----------------------------
+differential_evolution step 30: f(x)= -2.46397
+Best Solution: [113.09434002, 0.01018532, -0.06345776]
+Convergence: 0.0758
+----------------------------
+differential_evolution step 31: f(x)= -2.46397
+Best Solution: [113.09434002, 0.01018532, -0.06345776]
+Convergence: 0.0869
+----------------------------
+differential_evolution step 32: f(x)= -2.46397
+Best Solution: [113.09434002, 0.01018532, -0.06345776]
+Convergence: 0.0919
+----------------------------
+differential_evolution step 33: f(x)= -2.46397
+Best Solution: [113.09434002, 0.01018532, -0.06345776]
+Convergence: 0.1177
+----------------------------
+differential_evolution step 34: f(x)= -2.49791
+Best Solution: [113.0957239, 0.01014874, -0.06306471]
+Convergence: 0.1455
+----------------------------
+differential_evolution step 35: f(x)= -2.49791
+Best Solution: [113.0957239, 0.01014874, -0.06306471]
+Convergence: 0.1917
+----------------------------
+differential_evolution step 36: f(x)= -2.49791
+Best Solution: [113.0957239, 0.01014874, -0.06306471]
+Convergence: 0.2032
+----------------------------
+differential_evolution step 37: f(x)= -2.51481
+Best Solution: [113.08502974, 0.01001869, -0.06262128]
+Convergence: 0.2392
+----------------------------
+differential_evolution step 38: f(x)= -2.52115
+Best Solution: [113.08909009, 0.01007149, -0.06275638]
+Convergence: 0.4229
+----------------------------
+differential_evolution step 39: f(x)= -2.52164
+Best Solution: [113.07703426, 0.01007936, -0.06288133]
+Convergence: 0.5472
+----------------------------
+differential_evolution step 40: f(x)= -2.52164
+Best Solution: [113.07703426, 0.01007936, -0.06288133]
+Convergence: 0.9204
+----------------------------
+differential_evolution step 41: f(x)= -2.52218
+Best Solution: [113.08228806, 0.010081, -0.06282949]
+Convergence: 0.9303
+----------------------------
+differential_evolution step 42: f(x)= -2.52235
+Best Solution: [113.09036192, 0.01006539, -0.06282949]
+Convergence: 0.9882
+----------------------------
+differential_evolution step 43: f(x)= -2.5232
+Best Solution: [113.09152403, 0.0100586, -0.06277376]
+Convergence: 0.987
+----------------------------
+differential_evolution step 44: f(x)= -2.5232
+Best Solution: [113.09152403, 0.0100586, -0.06277376]
+Convergence: 2.1052
+----------------------------
+
+Current China Time: 2025-11-06 12:31:14.230477+08:00
+Optimization completed for gate time 23
+Optimized fidelity: -2.52319650
+Optimized parameters: [ 1.13091524e+02  1.00586015e-02 -6.27737640e-02]
+
+--- Results after 24 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345, -1.79344761, -1.67517597, -1.81930535 ,
+-2.1287652, -2.25814629, -2.06384114, -2.5231965 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+[88.910646, 0.011218, -0.064682] ,
+[93.017585, 0.012852, -0.089462] ,
+[96.930062, 0.01259, -0.089319] ,
+[100.958467, 0.010602, -0.063666] ,
+[105.041898, 0.010396, -0.063329] ,
+[109.092239, 0.011842, -0.088882] ,
+[113.091524, 0.010059, -0.062774] ,
+])
+Optimizing gate time 24 (tg_initial = 117.030361)
+
+Current China Time: 2025-11-06 12:31:14.231781+08:00
+Optimizing gate times: 25it [3:12:57, 891.90s/it]differential_evolution step 1: f(x)= -1.22463
+Best Solution: [117.02461009, 0.0463019, -0.08174096]
+Convergence: 0.0181
+----------------------------
+differential_evolution step 2: f(x)= -1.22463
+Best Solution: [117.02461009, 0.0463019, -0.08174096]
+Convergence: 0.0199
+----------------------------
+differential_evolution step 3: f(x)= -1.22463
+Best Solution: [117.02461009, 0.0463019, -0.08174096]
+Convergence: 0.0198
+----------------------------
+differential_evolution step 4: f(x)= -1.47409
+Best Solution: [117.02969998, 0.01054538, -0.08827328]
+Convergence: 0.02
+----------------------------
+differential_evolution step 5: f(x)= -1.47409
+Best Solution: [117.02969998, 0.01054538, -0.08827328]
+Convergence: 0.0207
+----------------------------
+differential_evolution step 6: f(x)= -1.47409
+Best Solution: [117.02969998, 0.01054538, -0.08827328]
+Convergence: 0.0212
+----------------------------
+differential_evolution step 7: f(x)= -1.47409
+Best Solution: [117.02969998, 0.01054538, -0.08827328]
+Convergence: 0.0227
+----------------------------
+differential_evolution step 8: f(x)= -1.47409
+Best Solution: [117.02969998, 0.01054538, -0.08827328]
+Convergence: 0.0249
+----------------------------
+differential_evolution step 9: f(x)= -1.47409
+Best Solution: [117.02969998, 0.01054538, -0.08827328]
+Convergence: 0.0255
+----------------------------
+differential_evolution step 10: f(x)= -1.47409
+Best Solution: [117.02969998, 0.01054538, -0.08827328]
+Convergence: 0.0252
+----------------------------
+differential_evolution step 11: f(x)= -1.47409
+Best Solution: [117.02969998, 0.01054538, -0.08827328]
+Convergence: 0.0256
+----------------------------
+differential_evolution step 12: f(x)= -1.49622
+Best Solution: [117.032815, 0.01114854, -0.08972887]
+Convergence: 0.0253
+----------------------------
+differential_evolution step 13: f(x)= -1.88313
+Best Solution: [117.03230446, 0.00928573, -0.05941822]
+Convergence: 0.0237
+----------------------------
+differential_evolution step 14: f(x)= -1.88313
+Best Solution: [117.03230446, 0.00928573, -0.05941822]
+Convergence: 0.025
+----------------------------
+differential_evolution step 15: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0211
+----------------------------
+differential_evolution step 16: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.023
+----------------------------
+differential_evolution step 17: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0235
+----------------------------
+differential_evolution step 18: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0253
+----------------------------
+differential_evolution step 19: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0264
+----------------------------
+differential_evolution step 20: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0289
+----------------------------
+differential_evolution step 21: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0316
+----------------------------
+differential_evolution step 22: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0329
+----------------------------
+differential_evolution step 23: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0401
+----------------------------
+differential_evolution step 24: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0413
+----------------------------
+differential_evolution step 25: f(x)= -2.61157
+Best Solution: [117.02324154, 0.01001595, -0.06321103]
+Convergence: 0.0495
+----------------------------
+differential_evolution step 26: f(x)= -2.68171
+Best Solution: [117.02962123, 0.00989221, -0.06247948]
+Convergence: 0.0612
+----------------------------
+differential_evolution step 27: f(x)= -2.68171
+Best Solution: [117.02962123, 0.00989221, -0.06247948]
+Convergence: 0.1066
+----------------------------
+differential_evolution step 28: f(x)= -2.68171
+Best Solution: [117.02962123, 0.00989221, -0.06247948]
+Convergence: 0.1593
+----------------------------
+differential_evolution step 29: f(x)= -2.68171
+Best Solution: [117.02962123, 0.00989221, -0.06247948]
+Convergence: 0.1817
+----------------------------
+differential_evolution step 30: f(x)= -2.68386
+Best Solution: [117.02990229, 0.00994331, -0.06270911]
+Convergence: 0.196
+----------------------------
+differential_evolution step 31: f(x)= -2.68386
+Best Solution: [117.02990229, 0.00994331, -0.06270911]
+Convergence: 0.2815
+----------------------------
+differential_evolution step 32: f(x)= -2.68386
+Best Solution: [117.02990229, 0.00994331, -0.06270911]
+Convergence: 0.2866
+----------------------------
+differential_evolution step 33: f(x)= -2.6861
+Best Solution: [117.03152133, 0.00992133, -0.06257337]
+Convergence: 0.3928
+----------------------------
+differential_evolution step 34: f(x)= -2.6861
+Best Solution: [117.03152133, 0.00992133, -0.06257337]
+Convergence: 0.4117
+----------------------------
+differential_evolution step 35: f(x)= -2.6861
+Best Solution: [117.03152133, 0.00992133, -0.06257337]
+Convergence: 0.4573
+----------------------------
+differential_evolution step 36: f(x)= -2.68619
+Best Solution: [117.02981412, 0.00992642, -0.06261831]
+Convergence: 3.9169
+----------------------------
+
+Current China Time: 2025-11-06 12:46:04.981315+08:00
+Optimization completed for gate time 24
+Optimized fidelity: -2.68618867
+Optimized parameters: [ 1.17029814e+02  9.92641979e-03 -6.26183095e-02]
+
+--- Results after 25 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345, -1.79344761, -1.67517597, -1.81930535 ,
+-2.1287652, -2.25814629, -2.06384114, -2.5231965 ,
+-2.68618867 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+[88.910646, 0.011218, -0.064682] ,
+[93.017585, 0.012852, -0.089462] ,
+[96.930062, 0.01259, -0.089319] ,
+[100.958467, 0.010602, -0.063666] ,
+[105.041898, 0.010396, -0.063329] ,
+[109.092239, 0.011842, -0.088882] ,
+[113.091524, 0.010059, -0.062774] ,
+[117.029814, 0.009926, -0.062618] ,
+])
+Optimizing gate time 25 (tg_initial = 121.011384)
+
+Current China Time: 2025-11-06 12:46:04.982688+08:00
+Optimizing gate times: 26it [3:26:01, 859.55s/it]Optimizing gate times: 26it [3:26:01, 475.43s/it]
+differential_evolution step 1: f(x)= -1.08298
+Best Solution: [121.0098681, 0.0113062, -0.07648727]
+Convergence: 0.0184
+----------------------------
+differential_evolution step 2: f(x)= -1.13314
+Best Solution: [121.00950048, 0.0113062, -0.06881078]
+Convergence: 0.022
+----------------------------
+differential_evolution step 3: f(x)= -1.26558
+Best Solution: [121.01417618, 0.01520114, -0.06351304]
+Convergence: 0.0218
+----------------------------
+differential_evolution step 4: f(x)= -1.26558
+Best Solution: [121.01417618, 0.01520114, -0.06351304]
+Convergence: 0.0244
+----------------------------
+differential_evolution step 5: f(x)= -2.2797
+Best Solution: [121.01194341, 0.00945082, -0.06148797]
+Convergence: 0.0193
+----------------------------
+differential_evolution step 6: f(x)= -2.2797
+Best Solution: [121.01194341, 0.00945082, -0.06148797]
+Convergence: 0.0184
+----------------------------
+differential_evolution step 7: f(x)= -2.2797
+Best Solution: [121.01194341, 0.00945082, -0.06148797]
+Convergence: 0.0202
+----------------------------
+differential_evolution step 8: f(x)= -2.28018
+Best Solution: [121.0170357, 0.00945082, -0.06148797]
+Convergence: 0.0211
+----------------------------
+differential_evolution step 9: f(x)= -2.28018
+Best Solution: [121.0170357, 0.00945082, -0.06148797]
+Convergence: 0.023
+----------------------------
+differential_evolution step 10: f(x)= -2.28018
+Best Solution: [121.0170357, 0.00945082, -0.06148797]
+Convergence: 0.0232
+----------------------------
+differential_evolution step 11: f(x)= -2.36166
+Best Solution: [121.00499034, 0.01122872, -0.08851639]
+Convergence: 0.0242
+----------------------------
+differential_evolution step 12: f(x)= -2.36166
+Best Solution: [121.00499034, 0.01122872, -0.08851639]
+Convergence: 0.0243
+----------------------------
+differential_evolution step 13: f(x)= -2.36166
+Best Solution: [121.00499034, 0.01122872, -0.08851639]
+Convergence: 0.0267
+----------------------------
+differential_evolution step 14: f(x)= -2.58771
+Best Solution: [121.0118591, 0.00958525, -0.06126315]
+Convergence: 0.0275
+----------------------------
+differential_evolution step 15: f(x)= -2.58771
+Best Solution: [121.0118591, 0.00958525, -0.06126315]
+Convergence: 0.0281
+----------------------------
+differential_evolution step 16: f(x)= -2.58771
+Best Solution: [121.0118591, 0.00958525, -0.06126315]
+Convergence: 0.0318
+----------------------------
+differential_evolution step 17: f(x)= -2.58771
+Best Solution: [121.0118591, 0.00958525, -0.06126315]
+Convergence: 0.0331
+----------------------------
+differential_evolution step 18: f(x)= -2.58771
+Best Solution: [121.0118591, 0.00958525, -0.06126315]
+Convergence: 0.0344
+----------------------------
+differential_evolution step 19: f(x)= -2.75198
+Best Solution: [121.01896765, 0.00968956, -0.06188136]
+Convergence: 0.0345
+----------------------------
+differential_evolution step 20: f(x)= -2.75198
+Best Solution: [121.01896765, 0.00968956, -0.06188136]
+Convergence: 0.0384
+----------------------------
+differential_evolution step 21: f(x)= -2.75198
+Best Solution: [121.01896765, 0.00968956, -0.06188136]
+Convergence: 0.0426
+----------------------------
+differential_evolution step 22: f(x)= -2.75198
+Best Solution: [121.01896765, 0.00968956, -0.06188136]
+Convergence: 0.0493
+----------------------------
+differential_evolution step 23: f(x)= -2.75198
+Best Solution: [121.01896765, 0.00968956, -0.06188136]
+Convergence: 0.0608
+----------------------------
+differential_evolution step 24: f(x)= -2.75198
+Best Solution: [121.01896765, 0.00968956, -0.06188136]
+Convergence: 0.0723
+----------------------------
+differential_evolution step 25: f(x)= -2.75198
+Best Solution: [121.01896765, 0.00968956, -0.06188136]
+Convergence: 0.0792
+----------------------------
+differential_evolution step 26: f(x)= -2.79478
+Best Solution: [121.01021566, 0.0097963, -0.06250502]
+Convergence: 0.1041
+----------------------------
+differential_evolution step 27: f(x)= -2.79478
+Best Solution: [121.01021566, 0.0097963, -0.06250502]
+Convergence: 0.1291
+----------------------------
+differential_evolution step 28: f(x)= -2.79478
+Best Solution: [121.01021566, 0.0097963, -0.06250502]
+Convergence: 0.2243
+----------------------------
+differential_evolution step 29: f(x)= -2.79478
+Best Solution: [121.01021566, 0.0097963, -0.06250502]
+Convergence: 0.2645
+----------------------------
+differential_evolution step 30: f(x)= -2.79478
+Best Solution: [121.01021566, 0.0097963, -0.06250502]
+Convergence: 0.2612
+----------------------------
+differential_evolution step 31: f(x)= -2.79844
+Best Solution: [121.01657613, 0.00979843, -0.06246302]
+Convergence: 0.2913
+----------------------------
+differential_evolution step 32: f(x)= -2.79901
+Best Solution: [121.00701277, 0.00978024, -0.06235067]
+Convergence: 0.3338
+----------------------------
+differential_evolution step 33: f(x)= -2.79901
+Best Solution: [121.00701277, 0.00978024, -0.06235067]
+Convergence: 0.4185
+----------------------------
+differential_evolution step 34: f(x)= -2.79901
+Best Solution: [121.00701277, 0.00978024, -0.06235067]
+Convergence: 0.5993
+----------------------------
+differential_evolution step 35: f(x)= -2.7999
+Best Solution: [121.01095052, 0.00978427, -0.06240346]
+Convergence: 1.2367
+----------------------------
+
+Current China Time: 2025-11-06 12:59:09.055156+08:00
+Optimization completed for gate time 25
+Optimized fidelity: -2.79990441
+Optimized parameters: [ 1.21010951e+02  9.78427344e-03 -6.24034615e-02]
+
+--- Results after 26 optimizations ---
+F_200 = np.array([
+-0.44610764, -0.60437459, -0.55017256, -0.6327835 ,
+-0.72063159, -0.83546834, -0.90500006, -0.93706315 ,
+-1.00618864, -1.086185, -1.15711806, -1.24371748 ,
+-1.33014706, -1.40679716, -1.5057557, -1.60280718 ,
+-1.68828345, -1.79344761, -1.67517597, -1.81930535 ,
+-2.1287652, -2.25814629, -2.06384114, -2.5231965 ,
+-2.68618867, -2.79990441 ,
+])
+param_200 = np.array([
+[21.046446, 0.075151, -0.083218] ,
+[25.076018, 0.061314, -0.082221] ,
+[29.096412, 0.018907, -0.079198] ,
+[33.090841, 0.01768, -0.07852] ,
+[36.932729, 0.017237, -0.079259] ,
+[41.095893, 0.016764, -0.079665] ,
+[45.058046, 0.015936, -0.07805] ,
+[49.092376, 0.015018, -0.074404] ,
+[53.088309, 0.014282, -0.071438] ,
+[57.034327, 0.0138, -0.069998] ,
+[61.047036, 0.013334, -0.068851] ,
+[65.041821, 0.012969, -0.068125] ,
+[69.042307, 0.012634, -0.067484] ,
+[73.042423, 0.0123, -0.066601] ,
+[77.096594, 0.011975, -0.066005] ,
+[81.08878, 0.011673, -0.065484] ,
+[85.022093, 0.011435, -0.065081] ,
+[88.910646, 0.011218, -0.064682] ,
+[93.017585, 0.012852, -0.089462] ,
+[96.930062, 0.01259, -0.089319] ,
+[100.958467, 0.010602, -0.063666] ,
+[105.041898, 0.010396, -0.063329] ,
+[109.092239, 0.011842, -0.088882] ,
+[113.091524, 0.010059, -0.062774] ,
+[117.029814, 0.009926, -0.062618] ,
+[121.010951, 0.009784, -0.062403] ,
+])
+Fidelity optimization sweep completed!
+
+============================================================
+OPTIMIZATION COMPLETED
+============================================================
+364262.05user 291.78system 3:26:06elapsed 2947%CPU (0avgtext+0avgdata 6445204maxresident)k
+0inputs+480outputs (8major+44147139minor)pagefaults 0swaps
