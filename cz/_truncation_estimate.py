@@ -84,11 +84,11 @@ if __name__ == "__main__":
         n_truc, core_states, drive_term, eval_tot, wd, A, 
         labels=hspace_full, path_func=ut.shortest_path_to_core)
     if gate in ['cz', 'cnot']:
-        ut.print_data(f'{gate}_short_{n_full}_{n_truc}', states_short, 
+        ut.print_fidelity(f'{gate}_short_{n_full}_{n_truc}', states_short, 
                       num_each_row=10, n_make_blank_line=50)        
 
     states_short_index = [hspace_full.index(i) for i in states_short]
-    ut.print_data(f'{gate}_short_index_{n_full}_{n_truc}', states_short_index,
+    ut.print_fidelity(f'{gate}_short_index_{n_full}_{n_truc}', states_short_index,
                       num_each_row=10, n_make_blank_line=50)   
     
     
@@ -97,12 +97,12 @@ if __name__ == "__main__":
         n_truc, core_states, drive_term, eval_tot, wd, A, 
         labels=hspace_full, path_func=ut.all_path_to_core)
     if gate in ['cz', 'cnot']:
-        ut.print_data(f'{gate}_all_{n_full}_{n_truc}', states_all, 
+        ut.print_fidelity(f'{gate}_all_{n_full}_{n_truc}', states_all, 
                       num_each_row=10, n_make_blank_line=50)
 
     states_all_index = [hspace_full.index(i) for i in states_all]
     data = states_all_index
-    ut.print_data(f'{gate}_all_index_{n_full}_{n_truc}', states_all_index,
+    ut.print_fidelity(f'{gate}_all_index_{n_full}_{n_truc}', states_all_index,
                       num_each_row=10, n_make_blank_line=50)
      
     ut.compare_two_lists(states_short, states_all)

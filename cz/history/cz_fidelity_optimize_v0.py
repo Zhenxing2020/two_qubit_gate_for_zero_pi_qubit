@@ -141,9 +141,9 @@ if __name__ == '__main__':
     print('params:')
     for i in x0_vec:
         print(i.tolist(), ',')
-    ut.print_data(f'hspace_select (len={len(hspace_select)})', 
+    ut.print_fidelity(f'hspace_select (len={len(hspace_select)})', 
                     hspace_select, num_each_row=10)
-    ut.print_data(f'index_select (len={truc_optimize})', index_select, num_each_row=10)
+    ut.print_fidelity(f'index_select (len={truc_optimize})', index_select, num_each_row=10)
 
     print('truc_tot_2=', truc_large)
     print('amp_bounds=', amp_bound, ', detune_bounds=', detune_bound, ', tg_bound=', tg_bound)

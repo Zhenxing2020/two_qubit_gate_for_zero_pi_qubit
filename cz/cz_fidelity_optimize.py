@@ -69,14 +69,14 @@ def load_system_data(config):
             Transition frequency between |5-0⟩ and |2-0⟩.
         - option_ideal, option_noisy : qutip.Options
             Solver options for ideal and noisy simulations.
-        - x0_vec : ndarray
+        - pulse_param : ndarray
             Initial drive parameters for each gate time index.
     """
     print("Loading system data...")
 
     # Load two-qubit system data (returns eigenstates, energies, etc.)
-    (hspace_full, eket_tot, eval_tot, n_theta0_dress, n_theta1_dress,
-     hspace_0, hspace_1, logi_state) = hd.load_two_qubit_data(config['folder_load'], return_full=False)
+    (hspace_full, eket_tot, eval_tot, _, n_theta1_dress,
+     _, _, logi_state) = hd.load_two_qubit_data(config['folder_load'], return_full=False)
 
     # Use the dressed theta_1 term as the drive term
     drive_term = n_theta1_dress
@@ -96,7 +96,8 @@ def load_system_data(config):
     )
 
     # Load initial drive parameters corresponding to gate time indices
-    x0_vec = ut.load_drive_params_2q(config['cz_run'])[config['gate_time_indices'], :]
+    pulse_param = ut.load_drive_params_2q(config['cz_run'], 
+                                          folder=config['folder_pulse'])[config['gate_time_indices'], :]
 
     # Print summary information
     print(f"Loaded system data with {len(hspace_full)} total states")
@@ -114,7 +115,7 @@ def load_system_data(config):
         W_20_50=W_20_50,
         option_ideal=option_ideal,
         option_noisy=option_noisy,
-        x0_vec=x0_vec
+        pulse_param=pulse_param
     )
 
 
@@ -183,7 +184,7 @@ def build_hamiltonians(sys, config):
 # ==============================================================
 
 def optimize_single_gate_time(
-    gate_time_idx, system_data, hamiltonians, config
+    gate_time_idx, system_data, hamiltonians, config, drive_param_list
 ):
     """
     Optimize gate fidelity for a single gate time using differential evolution.
@@ -196,6 +197,8 @@ def optimize_single_gate_time(
         Dictionary containing system data and initial parameters.
     hamiltonians : dict
         Dictionary containing Hamiltonians and logical state indices.
+    drive_param_list : list
+        List of drive parameters for initialization.
     config : dict
         Configuration dictionary with optimization parameters.
 
@@ -209,7 +212,7 @@ def optimize_single_gate_time(
             The optimized gate parameters [tg, amp, detune].
     """
     # Extract initial gate time and define search bounds
-    tg_initial = system_data['x0_vec'][gate_time_idx, 0]
+    tg_initial = system_data['pulse_param'][gate_time_idx, 0]
     tg_bounds = (tg_initial + config['tg_bound'][0], tg_initial + config['tg_bound'][1])
     bounds = (tg_bounds, config['amp_bound'], config['detune_bound'])
 
@@ -219,7 +222,7 @@ def optimize_single_gate_time(
         hamiltonians['logi_idx_select'], system_data['option_ideal'], system_data['option_noisy']
     ]
 
-    print(f"Optimizing gate time {gate_time_idx} (tg_initial = {tg_initial:.6f})")
+    print(f"\n--- Optimizing gate time index {gate_time_idx} (tg = {tg_initial:.6f}) ---")
     ut.print_time()
 
     params = dict(
@@ -236,10 +239,23 @@ def optimize_single_gate_time(
         tol=config['tol'],
         polish=False,
     )
-
-    if config['use_x0']:
-        print("Using x0 for initialization")
-        params['x0'] = system_data['x0_vec'][gate_time_idx, :3]
+    
+    if config['use_x0'] == 'from_neighbor':
+        if gate_time_idx == 0:
+            if config['first_x0_from_input']:
+                print("Using first x0 from input for initialization (first gate time)")
+                params['x0'] = system_data['pulse_param'][gate_time_idx, :3]
+            else:
+                print("No x0 for first gate time")
+        else:
+            print("Using first x0 from neighbor for initialization")
+            params['x0'] = [tg_initial] + drive_param_list[-1][1:]
+        
+    elif config['use_x0'] == 'from_input':
+        print("Using x0 from input for initialization")
+        params['x0'] = system_data['pulse_param'][gate_time_idx, :3]
+    else:
+        print("No x0 for all gate times")
 
     result = sp.optimize.differential_evolution(**params)
 
@@ -285,8 +301,12 @@ def run_fidelity_sweep(system_data, hamiltonians, config):
     fidelity_large_list = []
 
     # Iterate over all gate times to optimize
-    for jdx, tg in tqdm(enumerate(system_data['x0_vec'][:, 0]), desc="Optimizing gate times"):
-        fidelity, drive_params = optimize_single_gate_time(jdx, system_data, hamiltonians, config)
+    if config['tg_reverse']:
+        system_data['pulse_param'] = system_data['pulse_param'][::-1]
+
+    for jdx in tqdm(range(len(system_data['pulse_param'])), desc="Optimizing gate times"):
+        
+        fidelity, drive_params = optimize_single_gate_time(jdx, system_data, hamiltonians, config, drive_param_list)
         fidelity_list.append(fidelity)
         drive_param_list.append(drive_params)
 
@@ -297,7 +317,7 @@ def run_fidelity_sweep(system_data, hamiltonians, config):
         ut.print_time()
         fidelity_large = check_pulse_in_large(drive_params, system_data, hamiltonians, config)
         fidelity_large_list.append(fidelity_large)   
-        ut.print_data(f'f_{config["truc_large"]}', fidelity_large_list, num_digits=8)
+        ut.print_fidelity(f'f_{config["truc_large"]}', fidelity_large_list, num_digits=8)
         
         ut.print_time()
 
@@ -352,27 +372,22 @@ def print_configuration_summary(system_data, config):
     print(f"  - Mutation: {config['mutation']}")
     print(f"\nSystem parameters:")
     print(f"  - Transition frequency W_20_50: {np.round(system_data['W_20_50'], 3)}")
-    print(f"  - Number of gate times to optimize: {len(system_data['x0_vec'])}")
+    print(f"  - Number of gate times to optimize: {len(system_data['pulse_param'])}")
     print(f"  - Hilbert space size (optimization): {len(system_data['hspace_select'])}")
     print(f"  - Hilbert space size (total): {len(system_data['hspace_full'])}")
-
-    print('drive params:')
-    for i in system_data['x0_vec']:
-        print(i.tolist(), ',')
+    print(f"  - reverse tg optimization: {config['tg_reverse']}")
+    print(f"  - use_x0: {config['use_x0']}")
+    print(f"  - folder pulse: {config['folder_pulse']}")
+    ut.print_pulse_params(f"param_input", system_data['pulse_param'])        
 
     print("=" * 60)
 
 def print_intermediate_results(fidelity_list, drive_param_list, current_idx, config):
     """Print intermediate optimization results."""
     print(f"\n--- Results after {current_idx + 1} optimizations ---")
-    print(f"F_{config['truc_optimize']} = np.array([")
-    for i in range(0, len(fidelity_list), 4):
-        print(', '.join(map(str, np.round(fidelity_list[i:i+4], 8))), ',')
-    print("])")
-    print(f"param_{config['truc_optimize']} = np.array([")
-    for params in drive_param_list:
-        print(np.round(params, 6).tolist(), ',')
-    print("])")
+        
+    ut.print_pulse_params(f"param_optimized", drive_param_list)        
+    ut.print_fidelity(f'f_{config["truc_optimize"]}', fidelity_list, num_digits=8)        
 
 # ==============================================================
 # CONFIGURATION AND SETUP
@@ -411,15 +426,24 @@ def get_optimization_config(custom_config=None):
         'mutation': (0.5, 1),
         'folder_load': '../../data/_truc_3000',
         'cz_run': True,
-        'use_x0': False,
+        'folder_pulse': 'data/npz/cz_pulse_neighbor.txt',
+        'tg_reverse': False,
+        'use_x0': 'from_neighbor',  # Options: None, 'from_neighbor', 'from_input'
+        # if use 'from_neighbor', the first one will use from input, make sure it gives nice fidelity
+        'first_x0_from_input': False,
         
         # 'gate_time_indices': np.arange(10,20).tolist(),
         # 'amp_bound': (0.035, 0.045), # (0., 0.1),
         # 'detune_bound': (0.02, 0.1), # (-0.1, -0.05),
         
-        'gate_time_indices': np.arange(20,30).tolist(),
-        'amp_bound': (0.01, 0.1), 
-        'detune_bound': (0.03, 0.1),                
+        # 'gate_time_indices': np.arange(20,30).tolist(),
+        # 'amp_bound': (0.01, 0.1), 
+        # 'detune_bound': (0.03, 0.1),                  
+        
+        # 'gate_time_indices': (np.arange(144,175)-20).tolist(),
+        'gate_time_indices': (np.arange(160,180) - 20).tolist(),
+        'amp_bound': (0.0079, 0.0094), 
+        'detune_bound': (0.0125, 0.016),                    
     }
 
     # Override defaults with user-provided configuration

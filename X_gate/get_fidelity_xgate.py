@@ -102,14 +102,14 @@ def xgate_fidelity_decay_all():
 
     # Print summary
     print("n_hspace =", n_hspace, ";   n_job = ", n_job)
-    ut.print_data(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
-    ut.print_data(f'params', params.tolist(), num_each_row=1)
+    ut.print_fidelity(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
+    ut.print_fidelity(f'params', params.tolist(), num_each_row=1)
 
     if calculate_ideal:
         # Ideal fidelity simulation
         args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy]
         f_ideal = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
-        ut.print_data(f'f_ideal_{n_hspace}', f_ideal, num_digits=8)
+        ut.print_fidelity(f'f_ideal_{n_hspace}', f_ideal, num_digits=8)
         ut.print_time()
 
     if calculate_noise:
@@ -121,7 +121,7 @@ def xgate_fidelity_decay_all():
         # Noisy fidelity simulation
         args = [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy]
         f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
-        ut.print_data(f'f_{t1}us_{n_hspace}', f_noise, num_digits=8)
+        ut.print_fidelity(f'f_{t1}us_{n_hspace}', f_noise, num_digits=8)
 
 def xgate_population():
     # [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = [39.991616, 0.105045, 0.028058, 0.002171, 0.003988] # theta state 7
@@ -159,7 +159,7 @@ def xgate_population():
     if charge_truc:
         hspace = ut.get_truncated_subspace_xgate(drive_term, n_full)
     n_hspace = len(hspace)
-    ut.print_data(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
+    ut.print_fidelity(f'hspace ({n_full}\{n_hspace})', hspace, num_each_row=10)
 
     logi_state = [0, 2]
     H_qbt_drive, drive_truc, logi_idx = ut.build_hamiltonian_xgate(evals, drive_term, hspace, logi_state)

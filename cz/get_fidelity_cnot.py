@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # print('if import_2000=True, use 300_2000_False, else, use 300_1000_True')
     print(f"truc_one_qubit = {truc_one_qubit}, truc_full={truc_full}, charge_pick={charge_pick}")
     print('num_cpus=', num_cpus, ', n_job=', n_job)
-    ut.print_data('params', params.tolist(), num_each_row=1)    
+    ut.print_fidelity('params', params.tolist(), num_each_row=1)    
     print(f'n_truc_list = {np.array(n_truc_list).tolist()}')     
 
     f_list = []
@@ -118,7 +118,7 @@ if __name__ == '__main__':
                 f_ideal = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_noise)
                                                     (args_indep, *arg_select)
                                                 for args_indep in params)        
-            ut.print_data(f'f_ideal_{n_truc}', f_ideal)
+            ut.print_fidelity(f'f_ideal_{n_truc}', f_ideal)
             ut.print_time()
 
         if calculate_noise: # Noisey fidelity       
@@ -146,10 +146,10 @@ if __name__ == '__main__':
             f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)
                                                 (args_indep, *arg_select)
                                             for args_indep in params)
-            ut.print_data(f'f_{t1_tphi_other}us_{n_truc}', f_noise, num_digits=8)
+            ut.print_fidelity(f'f_{t1_tphi_other}us_{n_truc}', f_noise, num_digits=8)
             ut.print_time()
         f_list.append(f_ideal if calculate_ideal else f_noise)
-        ut.print_data('fidelity_list', f_list, num_each_row=1, num_digits=8)
+        ut.print_fidelity('fidelity_list', f_list, num_each_row=1, num_digits=8)
     print(f'n_truc_list = {np.array(n_truc_list).tolist()}')     
-    ut.print_data('fidelity_list', f_list, num_each_row=1, num_digits=8)
+    ut.print_fidelity('fidelity_list', f_list, num_each_row=1, num_digits=8)
 

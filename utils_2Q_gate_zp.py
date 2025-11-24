@@ -1571,7 +1571,7 @@ def zeropi_eval(flux=0, truncation=10):
 
     # return c_op_list
 
-def print_data(label, data, num_each_row=4, num_digits=None, 
+def print_fidelity(label, data, num_each_row=4, num_digits=None, 
                n_make_blank_line=None):
     """
     Pretty-print fidelity array in readable blocks.
@@ -1593,6 +1593,13 @@ def print_data(label, data, num_each_row=4, num_digits=None,
             else:
                 print(', '.join(map(str, data[i:i + num_each_row])), ',')
     print('])')
+
+def print_pulse_params(label, params):
+    """Print optimized drive parameters."""
+    print(f"{label} = np.array([")    
+    for i in params:
+        print(np.round(i, 6).tolist(), ',')
+    print("])")
 
 def print_time():
     """Print the current time."""
@@ -1632,16 +1639,16 @@ def compare_two_lists(list1, list2):
     print(f'list1 and list2 have {len(common_elements)} common elements'
           +f' and {len(list1) - len(common_elements)} unique elements.')
 
-    print_data(f'Only in list1 (len={len(only_in_list1)})', only_in_list1, 
+    print_fidelity(f'Only in list1 (len={len(only_in_list1)})', only_in_list1, 
                   num_each_row=10, n_make_blank_line=50)
     list1_index = [list1.index(i) for i in only_in_list1]
-    print_data(f'index Only in list1 (len={len(only_in_list1)})', list1_index, 
+    print_fidelity(f'index Only in list1 (len={len(only_in_list1)})', list1_index, 
                   num_each_row=10, n_make_blank_line=50)
     
-    print_data(f'Only in list2 (len={len(only_in_list2)})', only_in_list2, 
+    print_fidelity(f'Only in list2 (len={len(only_in_list2)})', only_in_list2, 
                   num_each_row=10, n_make_blank_line=50)    
     list2_index = [list2.index(i) for i in only_in_list2]
-    print_data(f'index Only in list2 (len={len(only_in_list2)})', list2_index, 
+    print_fidelity(f'index Only in list2 (len={len(only_in_list2)})', list2_index, 
                   num_each_row=10, n_make_blank_line=50)    
 
 
@@ -1790,16 +1797,17 @@ def load_qubit_data_2q(truc1=300, truc_full = 2000, charge_pick=True,**kwargs):
     return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
             n_theta1_dress, hspace_0, hspace_1, logi_state]
 
-def load_drive_params_2q(cz_run):
+def load_drive_params_2q(cz_run, folder=None):
     """
     Load two-qubit-gate drive parameters from a CSV file.
     """
     if cz_run:
-        folder = '../figure/data/data_cz_3ncut_truc1=300.txt'
-        # folder = '../figure/data/data_cz_3ncut_truc1=300_select.txt'
+        if folder is None:
+            folder = '../figure/data/data_cz_3ncut_truc1=300.txt'
         params = pd.read_csv(folder)[['tg', 'drive_amp', 'detune']].to_numpy()
     else:
-        folder = '../cnot/data/data_cnot_fidelity_3ncut.txt'
+        if folder is None:
+            folder = '../cnot/data/data_cnot_fidelity_3ncut.txt'
         params = pd.read_csv(folder)[['tg', 'drive_amp_1', 'drive_amp_2', 
                                       'detune_1', 'detune_2']].to_numpy()
     return params
