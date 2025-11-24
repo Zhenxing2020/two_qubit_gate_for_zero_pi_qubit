@@ -22,7 +22,7 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = [200] # np.arange(100, 1001, 50) #
+    n_truc_list = [200, 1000] # np.arange(100, 1001, 50) #
     cz_run = True # True  # whether to use CZ gate or CNOT gate
     
     # 300_2000_True; 300_2000_False
@@ -38,9 +38,9 @@ if __name__ == '__main__':
     filter_ratio = 0.3
 
     t1_tphi_other = 3 # μs
-    tg_list = [  0,  45,  90, 135, 179] # np.arange(180) #[0::3]
+    tg_list = np.arange(180)[0::6] # [  0,  45,  90, 135, 179] # np.arange(180) #[0::3]
     # np.arange(181)[0::6] # [2, 9, 16, 23, 30] # Select the first row for testing
-    max_step_ideal, max_step_noisy = 1e-4, 1e-3 # Set max_step to 0 for parallel execution
+    max_step_ideal, max_step_noisy = 0, 1e-3 # Set max_step to 0 for parallel execution
     num_cpus, n_job = 16, len(tg_list) # Number of CPUs and jobs for parallel processing
 
     # [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
