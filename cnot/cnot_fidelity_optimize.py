@@ -428,8 +428,6 @@ def fidelity_de_x0():
     print('tg_bounds=',tg_bounds)
 
 
-
-
 ###################################################################
 ## Optimize fidelity with differential evolution and sweep
 ###################################################################
@@ -458,11 +456,6 @@ def fidelity_shgo():
         drive_param.append(res.x)
         print('fidelity = ', fidelity)
         print('drive_param = ', np.array(drive_param).tolist())
-
-
-
-
-
 
 
 ###################################################################

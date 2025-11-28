@@ -1,0 +1,38 @@
+Starting cnot_fidelity_optimize_gpt_v2.py
+
+Current China Time: 2025-11-28 10:46:20.818031+08:00
+Loading system data for CZ...
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_fidelity_optimize_gpt_v2.py", line 866, in <module>
+    main()
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_fidelity_optimize_gpt_v2.py", line 662, in main
+    system_data = load_system_data(config)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_fidelity_optimize_gpt_v2.py", line 53, in load_system_data
+    return load_system_data_cz(config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_fidelity_optimize_gpt_v2.py", line 85, in load_system_data_cz
+    pulse_param = ut.load_drive_params_2q(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/../utils_2Q_gate_zp.py", line 1814, in load_drive_params_2q
+    params = pd.read_csv(folder)[['tg', 'drive_amp', 'detune']].to_numpy()
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 948, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 611, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 1448, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 1705, in _make_engine
+    self.handles = get_handle(
+                   ^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/pandas/io/common.py", line 863, in get_handle
+    handle = open(
+             ^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/npz/cz_pulse_neighbor.txt'
+Command exited with non-zero status 1
+2.95user 1.26system 0:04.25elapsed 99%CPU (0avgtext+0avgdata 4826232maxresident)k
+0inputs+8outputs (0major+92279minor)pagefaults 0swaps

@@ -1,0 +1,100 @@
+Starting cnot_fidelity_optimize_gpt_v2.py
+
+Current China Time: 2025-11-28 10:59:20.051129+08:00
+Loading system data for CNOT...
+Loaded CNOT data: total states = 1000
+W_0_2 = 45.546, W_1_2 = 23.753
+Building Hamiltonians for CNOT...
+
+============================================================
+CNOT GATE FIDELITY OPTIMIZATION CONFIGURATION
+============================================================
+Start time: 2025-11-28 02:59:20 UTC
+gate_type = CNOT
+truc_large      = 1000
+truc_optimize   = 30
+workers         = 30
+popsize         = 10
+recombination   = 0.7
+tol             = 0.01
+mutation        = (0.5, 1.0)
+resume          = False
+result_file     = data/results/cnot_20251127_215920/result.npz
+csv_file        = data/results/cnot_20251127_215920/result.csv
+plot_dir        = data/results/cnot_20251127_215920/plots
+W_0_2, W_1_2    = 45.546, 23.753
+A1_bound        = (0.15, 0.45)
+A2_bound        = (0.01, 0.55)
+detune1_bound   = (-0.5, 0.0001)
+detune2_bound   = (-0.5, 0.0001)
+============================================================
+Starting fidelity sweep...
+CNOT optimize:   0%|          | 0/1 [00:00<?, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387
+--- Optimizing CNOT at index 0, tg_init=2.009075 ---
+
+Current China Time: 2025-11-28 10:59:20.218590+08:00
+Using x0 from input for initialization
+CNOT optimize: 100%|██████████| 1/1 [02:15<00:00, 135.81s/it]CNOT optimize: 100%|██████████| 1/1 [02:15<00:00, 135.81s/it]
+differential_evolution step 1: f(x)= -0.219727
+Best Solution: [2.00959355, 0.15251013, 0.07590496, -0.21234247, -0.21947392]
+Convergence: 0.0591
+----------------------------
+differential_evolution step 2: f(x)= -0.21997
+Best Solution: [2.00881946, 0.16509749, 0.03536822, -0.04188416, -0.227769]
+Convergence: 0.0815
+----------------------------
+differential_evolution step 3: f(x)= -0.220015
+Best Solution: [2.00883144, 0.15627089, 0.03572161, -0.06983126, -0.16988466]
+Convergence: 0.0986
+----------------------------
+differential_evolution step 4: f(x)= -0.220475
+Best Solution: [2.00896272, 0.15169516, 0.07025874, -0.03126087, -0.11068809]
+Convergence: 0.1292
+----------------------------
+differential_evolution step 5: f(x)= -0.220539
+Best Solution: [2.00881515, 0.15381882, 0.05976017, -0.00687766, -0.06858132]
+Convergence: 0.1872
+----------------------------
+differential_evolution step 6: f(x)= -0.220539
+Best Solution: [2.00881515, 0.15381882, 0.05976017, -0.00687766, -0.06858132]
+Convergence: 0.6782
+----------------------------
+differential_evolution step 7: f(x)= -0.220539
+Best Solution: [2.00881515, 0.15381882, 0.05976017, -0.00687766, -0.06858132]
+Convergence: 0.964
+----------------------------
+differential_evolution step 8: f(x)= -0.220539
+Best Solution: [2.00881515, 0.15381882, 0.05976017, -0.00687766, -0.06858132]
+Convergence: 1.2536
+----------------------------
+
+Current China Time: 2025-11-28 11:01:15.210613+08:00
+Optimization completed, fidelity = -0.22053865
+Optimized params = [ 2.00881515  0.15381882  0.05976017 -0.00687766 -0.06858132]
+param_optimized = np.array([
+[2.008815, 0.153819, 0.05976, -0.006878, -0.068581] ,
+])
+
+f_30 = np.array([
+-0.22053865 ,
+])
+
+f_1000 = np.array([
+-0.22064730 ,
+])
+[SAVE] npz saved to data/results/cnot_20251127_215920/result.npz
+[SAVE] csv saved to data/results/cnot_20251127_215920/result.csv
+Fidelity sweep completed!
+[PLOT] Saved data/results/cnot_20251127_215920/plots/CNOT_fidelity.png
+[PLOT] Saved data/results/cnot_20251127_215920/plots/CNOT_param0.png
+[PLOT] Saved data/results/cnot_20251127_215920/plots/CNOT_param1.png
+[PLOT] Saved data/results/cnot_20251127_215920/plots/CNOT_param2.png
+[PLOT] Saved data/results/cnot_20251127_215920/plots/CNOT_param3.png
+[PLOT] Saved data/results/cnot_20251127_215920/plots/CNOT_param4.png
+
+============================================================
+OPTIMIZATION COMPLETED
+============================================================
+583.62user 130.36system 2:18.39elapsed 515%CPU (0avgtext+0avgdata 614264maxresident)k
+0inputs+608outputs (0major+45212009minor)pagefaults 0swaps

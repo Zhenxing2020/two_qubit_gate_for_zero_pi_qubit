@@ -1664,8 +1664,15 @@ def get_qutip_options(max_step_ideal, max_step_noisy, num_cpus=1, print_flag=Fal
     """
     Get the qutip options 
     """
-    nsteps_ideal = 1/ max_step_ideal  # Set nsteps to a large number for parallel execution
-    nsteps_noisy = 1/ max_step_noisy  # Set nsteps to a large number for parallel execution
+    if max_step_ideal != 0:
+        nsteps_ideal = int(1/ max_step_ideal )  # Set nsteps to a large number for serial execution
+    else:
+        nsteps_ideal = 1e5  # Set nsteps to a large number for parallel execution
+
+    if max_step_noisy != 0:
+        nsteps_noisy = int(1/ max_step_noisy )  # Set nsteps to a large number for serial execution
+    else:
+        nsteps_noisy = 1e5  # Set nsteps to a large number for parallel execution        
 
     option_ideal =qt.Options(max_step=max_step_ideal, nsteps=nsteps_ideal, num_cpus=num_cpus)  
     option_noisy =qt.Options(max_step=max_step_noisy, nsteps=nsteps_noisy, num_cpus=num_cpus) 

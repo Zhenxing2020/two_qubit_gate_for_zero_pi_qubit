@@ -413,7 +413,7 @@ def get_optimization_config(custom_config=None):
     # Default configuration
     config = {
         'truc_large': 1000,
-        'truc_optimize': 200,
+        'truc_optimize': 300,
         'use_truc_model': False,
         'truc_model_name': 'cz_short_500_detune1',
         'max_step_ideal': 1e-3,
@@ -428,9 +428,9 @@ def get_optimization_config(custom_config=None):
         'cz_run': True,
         'folder_pulse': 'data/npz/cz_pulse_neighbor.txt',
         'tg_reverse': False,
-        'use_x0': 'from_neighbor',  # Options: None, 'from_neighbor', 'from_input'
+        'use_x0': 'from_input',  # Options: None, 'from_neighbor', 'from_input'
         # if use 'from_neighbor', the first one will use from input, make sure it gives nice fidelity
-        'first_x0_from_input': False,
+        'first_x0_from_input': True,
         
         # 'gate_time_indices': np.arange(10,20).tolist(),
         # 'amp_bound': (0.035, 0.045), # (0., 0.1),
@@ -441,9 +441,9 @@ def get_optimization_config(custom_config=None):
         # 'detune_bound': (0.03, 0.1),                  
         
         # 'gate_time_indices': (np.arange(144,175)-20).tolist(),
-        'gate_time_indices': (np.arange(160,180) - 20).tolist(),
-        'amp_bound': (0.0079, 0.0094), 
-        'detune_bound': (0.0125, 0.016),                    
+        'gate_time_indices': (np.arange(20,50) - 20).tolist(),
+        'amp_bound': (0.01, 0.05), 
+        'detune_bound': (0.001, 0.04),                    
     }
 
     # Override defaults with user-provided configuration

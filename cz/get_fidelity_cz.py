@@ -22,7 +22,7 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = [200, 1000] # np.arange(100, 1001, 50) #
+    n_truc_list = [200, 250, 1000] # np.arange(100, 1001, 50) #
     cz_run = True # True  # whether to use CZ gate or CNOT gate
     
     # 300_2000_True; 300_2000_False
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     t1_tphi_other = 3 # μs
     tg_list = np.arange(180)[0::6] # [  0,  45,  90, 135, 179] # np.arange(180) #[0::3]
     # np.arange(181)[0::6] # [2, 9, 16, 23, 30] # Select the first row for testing
-    max_step_ideal, max_step_noisy = 0, 1e-3 # Set max_step to 0 for parallel execution
+    max_step_ideal, max_step_noisy = 1e-3, 1e-3 # Set max_step to 0 for parallel execution
     num_cpus, n_job = 16, len(tg_list) # Number of CPUs and jobs for parallel processing
 
     # [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
@@ -55,8 +55,42 @@ if __name__ == '__main__':
     dim_1 = len(hspace_1) 
 
     # Load pulse parameters from CSV
-    folder = 'data/npz/cz_pulse_neighbor.txt'
-    params = ut.load_drive_params_2q(cz_run, folder=folder)[tg_list, ]  # [1::4,] 
+    # folder = 'data/npz/cz_pulse_neighbor.txt'
+    # params = ut.load_drive_params_2q(cz_run, folder=folder)[tg_list, ]  # [1::4,] 
+    
+    params = np.array([
+[20.036223, 0.047529, 0.031549] ,
+[21.056504, 0.045424, 0.032751] ,
+[22.039611, 0.042818, 0.035569] ,
+[23.091315, 0.039794, 0.039868] ,
+[24.071078, 0.038628, 0.039974] ,
+[25.07626, 0.038301, 0.039951] ,
+[26.092321, 0.037932, 0.039998] ,
+[27.082449, 0.038031, 0.039582] ,
+[28.069609, 0.013817, 0.005016] ,
+[29.101602, 0.013343, 0.004844] ,
+[30.057238, 0.041657, 0.010669] ,
+[31.100583, 0.03923, 0.009722] ,
+[32.060376, 0.037386, 0.010602] ,
+[33.112569, 0.035734, 0.012895] ,
+[34.099918, 0.034463, 0.015224] ,
+[35.065909, 0.034531, 0.019579] ,
+[36.044359, 0.036397, 0.021658] ,
+[36.932952, 0.036409, 0.02184] ,
+[38.061268, 0.036401, 0.022479] ,
+[39.028991, 0.036205, 0.023243] ,
+[40.041038, 0.03528, 0.024113] ,
+[41.10079, 0.034937, 0.024358] ,
+[42.035916, 0.034499, 0.024743] ,
+[43.095904, 0.033641, 0.02493] ,
+[44.052773, 0.032822, 0.02579] ,
+[45.070904, 0.031818, 0.026331] ,
+[46.046183, 0.031097, 0.026723] ,
+[47.034873, 0.030229, 0.026999] ,
+[48.000298, 0.029445, 0.027353] ,
+[49.0707, 0.028438, 0.027504] ,
+    ])
+        
     option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy) 
 
     if cz_run: # CZ
