@@ -42,6 +42,12 @@ import ham_data as hd
 from functools import partial
 
 
+# === global variables for multiprocessing ===
+GLOBAL_system_data = None
+GLOBAL_hamiltonians = None
+GLOBAL_config = None
+
+
 # ==============================================================
 # SYSTEM LOADING
 # ==============================================================
@@ -83,7 +89,7 @@ def load_system_data_cz(config):
     )
 
     pulse_param = ut.load_drive_params_2q(
-        config['cz_run'], folder=config['folder_pulse']
+        config['gate_type'] == 'CZ', folder=config['folder_pulse']
     )[config['gate_time_indices'], :]
 
     print(f"Loaded CZ data: total states = {len(hspace_full)}")
@@ -114,74 +120,58 @@ def load_system_data_cnot(config):
 
     print("Loading system data for CNOT...")
 
-    truc1 = config['truc1']
-    truc_tot = config['truc_tot']
-    truc_full = config['truc_full']
-    charge_pick = config['charge_pick']
-
-    folder = config['folder_cnot_trunc']
-    eval_tot = 2 * np.pi * pd.read_csv(folder + 'eval_tot.txt').to_numpy().flatten()
-    hspace_full = pd.read_csv(folder + 'hspace_full.txt').to_numpy().flatten().tolist()
-    n_theta0_dress = 2 * np.pi * np.load(folder + 'n_theta0_dress.npy')
-    n_theta1_dress = 2 * np.pi * np.load(folder + 'n_theta1_dress.npy')
-
-    truc_list = np.arange(truc_full)
-    hspace_full = hspace_full[:truc_full]
-    eval_tot = eval_tot[:truc_full]
-    n_theta0_dress = ut.truncate_2(n_theta0_dress, truc_list)
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, truc_list)
-
-    # large-space (False) 数据
-    folder_False = config['folder_cnot_False']
-    eval_False = 2 * np.pi * pd.read_csv(folder_False + 'eval_tot.txt').to_numpy().flatten()
-    hspace_False = pd.read_csv(folder_False + 'hspace_full.txt').to_numpy().flatten().tolist()
-    n_theta0_False = qt.Qobj(2 * np.pi * np.load(folder_False + 'n_theta0_dress.npy'))
-    n_theta1_False = qt.Qobj(2 * np.pi * np.load(folder_False + 'n_theta1_dress.npy'))
-
-    logi_state = config['logi_state']
-    mid_state = config['mid_state']
+    (hspace_full, eket_tot, eval_tot, n_theta0_dress,
+     n_theta1_dress, hspace_0, hspace_1, logi_state) = hd.load_two_qubit_data(
+        config['folder_load'], return_full=False
+    )
 
     # 逻辑态索引
-    if mid_state in ['8-2', '4-5']:
+    if config['mid_state'] in ['8-2', '4-5']:
         idx_0 = hspace_full.index('0-2')
         idx_1 = hspace_full.index('2-2')
-    elif mid_state in ['1-4', '8-0', '4-1']:
+    elif config['mid_state'] in ['1-4', '8-0', '4-1']:
         idx_0 = hspace_full.index('0-0')
         idx_1 = hspace_full.index('2-0')
     else:
-        raise ValueError(f"Unsupported mid_state for CNOT: {mid_state}")
+        raise ValueError(f"Unsupported mid_state for CNOT: {config['mid_state']}")
 
-    idx_mid = hspace_full.index(mid_state)
+    if config['mid_state'] in ['8-2', '4-5', '1-4', '8-0', '4-1']:
+        drive_term = n_theta0_dress
+    else:
+        drive_term = n_theta1_dress
+
+    idx_mid = hspace_full.index(config['mid_state'])
     W_0_2 = eval_tot[idx_mid] - eval_tot[idx_0]
     W_1_2 = eval_tot[idx_mid] - eval_tot[idx_1]
+
+    # 选择优化空间的 Hilbert space（沿用你原来的逻辑）
+    if config['use_truc_model']:
+        hspace_select = ut.truc_model['cnot_' + config['mid_state'][0] + config['mid_state'][2]][:config['truc_optimize']]
+    else:
+        hspace_select = hspace_full[:config['truc_optimize']]
 
     option_ideal, option_noisy = ut.get_qutip_options(
         config['max_step_ideal'], config['max_step_noisy']
     )
 
     # pulse 参数：优先使用 x0_array，其次可以用 pulse 文件
-    if config.get('cnot_run', False):
+    if config['folder_pulse'] is not None:
         pulse_param = ut.load_drive_params_2q(
-            config['cnot_run'], folder=config['folder_pulse']
+            config['gate_type']=='CZ', folder=config['folder_pulse']
         )[config['gate_time_indices'], :]
     else:
         pulse_param = config['x0_array'][config['gate_time_indices'], :]
 
     print(f"Loaded CNOT data: total states = {len(hspace_full)}")
-    print(f"W_0_2 = {np.round(W_0_2, 3)}, W_1_2 = {np.round(W_1_2, 3)}")
 
     return dict(
         gate_type='CNOT',
         hspace_full=hspace_full,
+        eket_tot=eket_tot,
         eval_tot=eval_tot,
-        n_theta0_dress=n_theta0_dress,
-        n_theta1_dress=n_theta1_dress,
-        eval_False=eval_False,
-        hspace_False=hspace_False,
-        n_theta0_False=n_theta0_False,
-        n_theta1_False=n_theta1_False,
+        drive_term=drive_term,
+        hspace_select=hspace_select,
         logi_state=logi_state,
-        mid_state=mid_state,
         W_0_2=W_0_2,
         W_1_2=W_1_2,
         option_ideal=option_ideal,
@@ -214,7 +204,7 @@ def build_hamiltonians_cz(sys, config):
     index_select = [sys['hspace_full'].index(i) for i in sys['hspace_select']]
 
     H_drive_select, eket_truc = ut.build_hamiltonian_2q(
-        config['cz_run'], index_select,
+        config['gate_type']=='CZ', index_select,
         sys['eval_tot'], sys['eket_tot'], sys['drive_term']
     )
 
@@ -223,7 +213,7 @@ def build_hamiltonians_cz(sys, config):
     idx_large = np.arange(config['truc_large']).tolist()
 
     H_drive_large, _ = ut.build_hamiltonian_2q(
-        config['cz_run'], idx_large,
+        config['gate_type']=='CZ', idx_large,
         sys['eval_tot'], sys['eket_tot'], sys['drive_term']
     )
 
@@ -243,71 +233,28 @@ def build_hamiltonians_cnot(sys, config):
     """
     print("Building Hamiltonians for CNOT...")
 
-    eval_tot = sys['eval_tot']
-    hspace_full = sys['hspace_full']
-    eval_False = sys['eval_False']
-    hspace_False = sys['hspace_False']
-    n_theta0_dress = sys['n_theta0_dress']
-    n_theta1_dress = sys['n_theta1_dress']
-    n_theta0_False = sys['n_theta0_False']
-    n_theta1_False = sys['n_theta1_False']
-    logi_state = sys['logi_state']
-    mid_state = sys['mid_state']
+    logi_idx_select = [sys['hspace_select'].index(i) for i in sys['logi_state']]
+    index_select = [sys['hspace_full'].index(i) for i in sys['hspace_select']]
 
-    H0_full = qt.Qobj(np.diag(eval_tot))
-    H0_False = qt.Qobj(np.diag(eval_False))
-    logi_idx_False = [hspace_False.index(i) for i in logi_state]
+    H_drive_select, eket_truc = ut.build_hamiltonian_2q(
+        config['gate_type']=='CZ', index_select,
+        sys['eval_tot'], sys['eket_tot'], sys['drive_term']
+    )
 
-    # 选择优化空间的 Hilbert space（沿用你原来的逻辑）
-    if mid_state in ['8-2']:
-        hspace_part = hspace_full[:200]
-    elif mid_state in ['4-5']:
-        hspace_part = ut.truc_model['cnot_45']
-    elif mid_state in ['4-1']:
-        hspace_part = ut.truc_model['cnot_41']
-    elif mid_state in ['1-4']:
-        hspace_part = ut.truc_model['cnot_14']
-    elif mid_state in ['8-0']:
-        hspace_part = ut.truc_model['cnot_80']
-    else:
-        raise ValueError(f"Unsupported mid_state for CNOT: {mid_state}")
+    hspace_large = sys['hspace_full'][:config['truc_large']]
+    logi_idx_large = [hspace_large.index(i) for i in sys['logi_state']]
+    idx_large = np.arange(config['truc_large']).tolist()
 
-    index_part = [hspace_full.index(i) for i in hspace_part]
-    len_part = len(hspace_part)
-    H0_part = ut.truncate_2(H0_full, index_part)
-    n_theta0_part = ut.truncate_2(n_theta0_dress, index_part)
-    n_theta1_part = ut.truncate_2(n_theta1_dress, index_part)
-    logi_idx_part = [hspace_part.index(i) for i in logi_state]
-
-    # drive 选择：你原来的逻辑
-    if mid_state in ['8-2', '4-5', '1-4', '8-0', '4-1']:
-        H_drive_False = [
-            H0_False,
-            [n_theta0_False, ut.drive_gauss_A],
-            [n_theta0_False, ut.drive_gauss_B],
-        ]
-        H_drive_part = [
-            H0_part,
-            [n_theta0_part, ut.drive_gauss_A],
-            [n_theta0_part, ut.drive_gauss_B],
-        ]
-    else:
-        H_drive_False = [
-            H0_False,
-            [n_theta1_False, ut.drive_gauss_A],
-            [n_theta1_False, ut.drive_gauss_B],
-        ]
-        H_drive_part = [
-            H0_part,
-            [n_theta1_part, ut.drive_gauss_A],
-            [n_theta1_part, ut.drive_gauss_B],
-        ]
+    H_drive_large, _ = ut.build_hamiltonian_2q(
+        config['gate_type']=='CZ', idx_large,
+        sys['eval_tot'], sys['eket_tot'], sys['drive_term']
+    )
 
     return dict(
-        H_drive_select=H_drive_part,
-        H_drive_large=H_drive_False,
-        logi_idx_select=logi_idx_part,
-        logi_idx_large=logi_idx_False,
+        H_drive_select=H_drive_select,
+        H_drive_large=H_drive_large,
+        logi_idx_select=logi_idx_select,
+        logi_idx_large=logi_idx_large,
     )
 
 
@@ -341,7 +288,7 @@ def evaluate_fidelity_truncated(x, system_data, hamiltonians, config):
             1,
             [],
             hamiltonians['logi_idx_select'],
-            system_data['mid_state'],
+            config['mid_state'],
             system_data['option_ideal'],
             system_data['option_noisy'],
         ]
@@ -379,7 +326,7 @@ def evaluate_fidelity_large(drive_params, system_data, hamiltonians, config):
             num_cpus,
             c_op_list,
             hamiltonians['logi_idx_large'],
-            system_data['mid_state'],
+            config['mid_state'],
             system_data['option_ideal'],
             system_data['option_noisy'],
         ]
@@ -392,14 +339,27 @@ def evaluate_fidelity_large(drive_params, system_data, hamiltonians, config):
 # OPTIMIZATION CORE
 # ==============================================================
 
+def fid_func_global(x):
+    # x 是 differential_evolution 给的参数
+    # 复杂对象从全局读，不用被 pickle
+    return evaluate_fidelity_truncated(
+        x,
+        system_data=GLOBAL_system_data,
+        hamiltonians=GLOBAL_hamiltonians,
+        config=GLOBAL_config,
+    )
+
+from pathos.multiprocessing import ProcessingPool as Pool
+pool = Pool(nodes=50)
+def vectorized_fid(X):
+    return pool.map(fid_func_global, X)
+
+
 def optimize_single_gate_time(
     gate_time_idx, system_data, hamiltonians, config, drive_param_list
 ):
     gate_type = config['gate_type']
     x0_full = system_data['pulse_param'][gate_time_idx]
-
-
-
 
     # ===== bounds =====
     if gate_type == 'CZ':
@@ -424,15 +384,22 @@ def optimize_single_gate_time(
 
     # differential evolution settings
     # 用 partial 包装成可 pickle 的函数
-    fid_func = partial(
-        evaluate_fidelity_truncated,
-        system_data=system_data,
-        hamiltonians=hamiltonians,
-        config=config
-    )
+    # fid_func = partial(
+    #     evaluate_fidelity_truncated,
+    #     system_data=system_data,
+    #     hamiltonians=hamiltonians,
+    #     config=config
+    # )
+
+    global GLOBAL_system_data, GLOBAL_hamiltonians, GLOBAL_config
+
+    # === 把复杂对象放入全局变量 ===
+    GLOBAL_system_data = system_data
+    GLOBAL_hamiltonians = hamiltonians
+    GLOBAL_config = config
 
     params = dict(
-        func=fid_func,
+        func=fid_func_global,
         bounds=bounds,
         disp=True,
         callback=ut.print_soln,
@@ -455,13 +422,14 @@ def optimize_single_gate_time(
                 print("No x0 for first gate time")
         else:
             print("Using x0 from previous optimized param")
-            params['x0'] = drive_param_list[-1]
+            params['x0'] = [tg_initial] + drive_param_list[-1][1:]
     elif config['use_x0'] == 'from_input':
         print("Using x0 from input for initialization")
         params['x0'] = x0_full[:len(bounds)]
     else:
         print("No x0 used")
 
+    print(f'params["x0"] = {params.get("x0", "None")}')
     result = sp.optimize.differential_evolution(**params)
 
     ut.print_time()
@@ -678,69 +646,6 @@ def main():
 # CONFIGURATION
 # ==============================================================
 
-# def get_optimization_config(gate_type="CZ", custom_config=None):
-#     """
-#     返回统一配置字典。
-#     gate_type: "CZ" 或 "CNOT"
-
-#     custom_config 若提供，则覆盖默认配置。
-#     """
-
-#     # ===== 通用部分 =====
-#     config = dict(
-#         gate_type=gate_type,
-#         # truncation
-#         truc_large=1000,
-#         truc_optimize=100,
-#         use_truc_model=False,
-#         truc_model_name="cz_short_500_detune1",
-
-#         # qutip options
-#         max_step_ideal=1e-3,
-#         max_step_noisy=1e-3,
-
-#         # differential evolution parameters
-#         workers=30,
-#         popsize=10,
-#         recombination=0.7,
-#         tol=0.01,
-#         mutation=(0.5, 1.0),
-
-#         # resume & saving
-#         resume=False,
-        
-#         result_file=f"data/results/{gate_type.lower()}_optimize_resume.npz",
-#         csv_file=f"data/results/{gate_type.lower()}_optimize_results.csv",
-#         plot_dir=f"data/results/{gate_type.lower()}_figs",
-#         do_plot=True,
-
-#         # x0 使用方式：None / 'from_neighbor' / 'from_input'
-#         use_x0='from_input',
-#         first_x0_from_input=True,
-#     )
-
-#     # 确保结果目录存在
-#     os.makedirs(os.path.dirname(config["result_file"]), exist_ok=True)
-#     os.makedirs(config["plot_dir"], exist_ok=True)
-
-#     # ====== 🔥 Add timestamp folder here ======
-#     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-#     base_dir = f"data/results/{gate_type.lower()}_{timestamp}"
-
-#     result_file = os.path.join(base_dir, "result.npz")
-#     csv_file = os.path.join(base_dir, "result.csv")
-#     plot_dir = os.path.join(base_dir, "plots")
-
-#     os.makedirs(plot_dir, exist_ok=True)
-
-#     config.update(dict(
-#         timestamp=timestamp,
-#         result_dir=base_dir,
-#         result_file=result_file,
-#         csv_file=csv_file,
-#         plot_dir=plot_dir,
-#     ))
-
 def get_optimization_config(gate_type="CZ", custom_config=None):
     """
     返回统一配置字典。
@@ -754,7 +659,7 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
 
         # truncation
         truc_large=1000,
-        truc_optimize=30,
+        truc_optimize=200,
         use_truc_model=False,
         truc_model_name="cz_short_500_detune1",
 
@@ -763,7 +668,7 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
         max_step_noisy=1e-3,
 
         # differential evolution parameters
-        workers=30,
+        workers=-1,
         popsize=10,
         recombination=0.7,
         tol=0.01,
@@ -774,8 +679,9 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
         do_plot=True,
 
         # x0 使用方式：None / 'from_neighbor' / 'from_input'
-        use_x0='from_input',
+        use_x0='from_neighbor',
         first_x0_from_input=True,
+        folder_load='../../data/_truc_3000',
     )
 
     # =====================================================
@@ -807,8 +713,6 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
     if gate_type == "CZ":
         config.update(dict(
             # data path
-            folder_load='../../data/_truc_3000',
-            cz_run=True,
             folder_pulse='data/npz/cz_pulse_neighbor.txt',
 
             tg_bound=(-0.01, 0.01),
@@ -827,23 +731,18 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
             truc_full=1000,
             charge_pick=True,
 
-            # 文件夹示例（你可以按需改）
-            folder_cnot_trunc='../../data/3ncut_two_zeropi/truc1=300_truc2=1000_pick=True/',
-            folder_cnot_False='../../data/3ncut_two_zeropi/truc1=300_truc2=1000_pick=True/',
-
             # 如果有 pulse 文件，也可以设置为 True + 给路径
-            cnot_run=False,
-            folder_pulse='data/npz/cnot_pulse.txt',
+            folder_pulse='../figure/data/data_cnot_fidelity_3ncut.txt',
 
             # CNOT 参数 bounds （你可以按需要改）
             tg_bound=(-0.001, 0.001),
-            A1_bound=(0.15, 0.45),
-            A2_bound=(0.01, 0.55),
-            detune1_bound=(-0.5, 0.0001),
-            detune2_bound=(-0.5, 0.0001),
+            A1_bound=(0.01, 0.15),
+            A2_bound=(0.005, 0.08),
+            detune1_bound=(-0.05, -0.0001),
+            detune2_bound=(-0.05, -0.0001),
 
             # gate_time_indices: 对应 x0_vec 行数
-            gate_time_indices=[0],
+            gate_time_indices=np.arange(20).tolist(),  #[0],
 
             # CNOT 逻辑 + 中间态
             logi_state=['0-0', '0-2', '2-0', '2-2'],

@@ -1,0 +1,95 @@
+Starting cnot_fidelity_optimize_gpt_v2.py
+
+Current China Time: 2025-11-30 16:17:51.771606+08:00
+Loading system data for CNOT...
+Loaded CNOT data: total states = 3000
+Building Hamiltonians for CNOT...
+
+============================================================
+CNOT GATE FIDELITY OPTIMIZATION CONFIGURATION
+============================================================
+Start time: 2025-11-30 08:17:54 UTC
+gate_type = CNOT
+truc_large      = 1000
+truc_optimize   = 30
+workers         = 30
+popsize         = 10
+recombination   = 0.7
+tol             = 0.01
+mutation        = (0.5, 1.0)
+resume          = False
+result_file     = data/results/cnot_20251130_161751/result.npz
+csv_file        = data/results/cnot_20251130_161751/result.csv
+plot_dir        = data/results/cnot_20251130_161751/plots
+W_0_2, W_1_2    = 45.56, 23.924
+A1_bound        = (0.01, 0.15)
+A2_bound        = (0.005, 0.08)
+detune1_bound   = (-0.05, -0.0001)
+detune2_bound   = (-0.05, -0.0001)
+============================================================
+Starting fidelity sweep...
+
+CNOT optimize:   0%|          | 0/20 [00:00<?, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 387
+--- Optimizing CNOT at index 0, tg_init=30.016865 ---
+
+Current China Time: 2025-11-30 16:17:54.466502+08:00
+Using first x0 from input for initialization (first gate time)
+params["x0"] = [30.016865  0.119046  0.056799 -0.032063 -0.030732]
+
+CNOT optimize:   5%|▌         | 1/20 [02:16<43:17, 136.70s/it]differential_evolution step 1: f(x)= -0.221792
+Best Solution: [30.01717857, 0.01077959, 0.07690092, -0.02131605, -0.02834091]
+Convergence: 0.3736
+----------------------------
+differential_evolution step 2: f(x)= -0.221792
+Best Solution: [30.01717857, 0.01077959, 0.07690092, -0.02131605, -0.02834091]
+Convergence: 1.051
+----------------------------
+
+Current China Time: 2025-11-30 16:18:06.278751+08:00
+Optimization completed, fidelity = -0.22179151
+Optimized params = [ 3.00171786e+01  1.07795933e-02  7.69009173e-02 -2.13160514e-02
+ -2.83409108e-02]
+param_optimized = np.array([
+[30.017179, 0.01078, 0.076901, -0.021316, -0.028341] ,
+])
+
+f_30 = np.array([
+-0.22179151 ,
+])
+
+f_1000 = np.array([
+-0.22173835 ,
+])
+[SAVE] npz saved to data/results/cnot_20251130_161751/result.npz
+[SAVE] csv saved to data/results/cnot_20251130_161751/result.csv
+
+--- Optimizing CNOT at index 1, tg_init=40.016766 ---
+
+Current China Time: 2025-11-30 16:20:11.162287+08:00
+Using x0 from previous optimized param
+params["x0"] = [30.017178570026307, 0.010779593265767093, 0.0769009173192454, -0.021316051425039402, -0.02834091077570789]
+
+
+
+CNOT optimize:   5%|▌         | 1/20 [02:16<43:22, 136.95s/it]
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_fidelity_optimize_gpt_v2.py", line 760, in <module>
+    main()
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_fidelity_optimize_gpt_v2.py", line 633, in main
+    run_fidelity_sweep(system_data, hamiltonians, config)
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_fidelity_optimize_gpt_v2.py", line 581, in run_fidelity_sweep
+    f_trunc, params = optimize_single_gate_time(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_for_zero_pi_qubit/cnot/cnot_fidelity_optimize_gpt_v2.py", line 427, in optimize_single_gate_time
+    result = sp.optimize.differential_evolution(**params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py", line 387, in differential_evolution
+    with DifferentialEvolutionSolver(func, bounds, args=args,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py", line 803, in __init__
+    raise ValueError(
+ValueError: Some entries in x0 lay outside the specified bounds
+Command exited with non-zero status 1
+377.48user 5.45system 2:21.29elapsed 271%CPU (0avgtext+0avgdata 6205640maxresident)k
+0inputs+48outputs (27major+536910minor)pagefaults 0swaps
