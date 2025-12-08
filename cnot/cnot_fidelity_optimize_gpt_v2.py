@@ -150,11 +150,9 @@ def load_system_data_cnot(config):
     else:
         hspace_select = hspace_full[:config['truc_optimize']]
 
-    option_ideal, option_noisy = ut.get_qutip_options(
-        config['max_step_ideal'], config['max_step_noisy']
-    )
+    option_ideal, option_noisy = ut.get_qutip_options(config['max_step_ideal'], config['max_step_noisy'])
 
-    # pulse 参数：优先使用 x0_array，其次可以用 pulse 文件
+    # pulse 参数：优先使用 pulse 文件, 其次可以用 x0_array，
     if config['folder_pulse'] is not None:
         pulse_param = ut.load_drive_params_2q(
             config['gate_type']=='CZ', folder=config['folder_pulse']
@@ -476,7 +474,7 @@ def save_results(config, system_data, fidelity_list, fidelity_large_list,
 
 
 def load_resume_if_any(config):
-    """如果配置要求 resume 且文件存在，则加载之前的结果。"""
+    """断点续跑: 如果配置要求 resume 且文件存在，则加载之前的结果。"""
     if not config.get('resume', False):
         return 0, [], [], []
 
@@ -497,77 +495,188 @@ def load_resume_if_any(config):
     return start_idx, fidelity_list, fidelity_large_list, drive_param_list
 
 
+# def plot_results(config, fidelity_list, fidelity_large_list, drive_param_list):
+#     if not config.get('do_plot', False):
+#         return
+
+#     plot_dir = config['plot_dir']
+#     os.makedirs(plot_dir, exist_ok=True)
+
+#     # fidelity vs index
+#     x = np.arange(len(fidelity_list))
+
+#     plt.figure()
+#     plt.plot(x, fidelity_list, 'o-', label='log(error) truncated')
+#     if len(fidelity_large_list) == len(fidelity_list):
+#         plt.plot(x, fidelity_large_list, 's--', label='log(error) large')
+#     plt.xlabel("Gate index")
+#     plt.ylabel("log(error)")
+#     plt.legend()
+#     plt.title(f"{config['gate_type']} fidelity")
+#     fname = os.path.join(plot_dir, f"{config['gate_type']}_fidelity.png")
+#     plt.savefig(fname, dpi=200, bbox_inches='tight')
+#     plt.close()
+#     print(f"[PLOT] Saved {fname}")
+
+#     # parameters vs index
+#     if len(drive_param_list) == 0:
+#         return
+#     arr = np.array(drive_param_list)
+#     for j in range(arr.shape[1]):
+#         plt.figure()
+#         plt.plot(x, arr[:, j], 'o-')
+#         plt.xlabel("Gate index")
+#         plt.ylabel(f"param {j}")
+#         plt.title(f"{config['gate_type']} parameter {j}")
+#         fname = os.path.join(plot_dir, f"{config['gate_type']}_param{j}.png")
+#         plt.savefig(fname, dpi=200, bbox_inches='tight')
+#         plt.close()
+#         print(f"[PLOT] Saved {fname}")
+
+
 def plot_results(config, fidelity_list, fidelity_large_list, drive_param_list):
+    """
+    绘制 3×1 图：
+    1. fidelity vs tg
+    2. drive_amp vs tg
+    3. detuning vs tg
+
+    CNOT 参数：
+        0: tg
+        1: drive_amp1
+        2: drive_amp2
+        3: detuning1
+        4: detuning2
+    CZ 参数：
+        0: tg
+        1: drive_amp1
+        2: detuning1
+    """
     if not config.get('do_plot', False):
         return
 
     plot_dir = config['plot_dir']
     os.makedirs(plot_dir, exist_ok=True)
 
-    # fidelity vs index
-    x = np.arange(len(fidelity_list))
-
-    plt.figure()
-    plt.plot(x, fidelity_list, 'o-', label='log(error) truncated')
-    if len(fidelity_large_list) == len(fidelity_list):
-        plt.plot(x, fidelity_large_list, 's--', label='log(error) large')
-    plt.xlabel("Gate index")
-    plt.ylabel("log(error)")
-    plt.legend()
-    plt.title(f"{config['gate_type']} fidelity")
-    fname = os.path.join(plot_dir, f"{config['gate_type']}_fidelity.png")
-    plt.savefig(fname, dpi=200, bbox_inches='tight')
-    plt.close()
-    print(f"[PLOT] Saved {fname}")
-
-    # parameters vs index
     if len(drive_param_list) == 0:
+        print("[PLOT] No parameters to plot.")
         return
-    arr = np.array(drive_param_list)
-    for j in range(arr.shape[1]):
-        plt.figure()
-        plt.plot(x, arr[:, j], 'o-')
-        plt.xlabel("Gate index")
-        plt.ylabel(f"param {j}")
-        plt.title(f"{config['gate_type']} parameter {j}")
-        fname = os.path.join(plot_dir, f"{config['gate_type']}_param{j}.png")
-        plt.savefig(fname, dpi=200, bbox_inches='tight')
-        plt.close()
-        print(f"[PLOT] Saved {fname}")
+
+    arr = np.array(drive_param_list)   # shape: (N, num_params)
+    tg = arr[:, 0]
+
+    # -----------------------------
+    # Fidelity subplot
+    # -----------------------------
+    fig, ax = plt.subplots(3, 1, figsize=(6, 8))
+
+    ax[0].set_title(f"{config['gate_type']} optimization results")
+
+    # truncated fidelity
+    fidelity = 10 ** np.array(fidelity_list)
+    ax[0].plot(tg, fidelity, ".-", label="truncated")
+
+    # large Hilbert fidelity
+    if len(fidelity_large_list) == len(fidelity_list):
+        fidelity_large = 10 ** np.array(fidelity_large_list)
+        ax[0].plot(tg, fidelity_large, "o", label="large", alpha=0.8)
+
+    ax[0].set_ylabel("Fidelity")
+    ax[0].set_yscale("log")
+    ax[0].legend()
+    ax[0].grid()
+
+    # -----------------------------
+    # Drive amplitude subplot
+    # -----------------------------
+    gate_type = config["gate_type"].upper()
+
+    if gate_type == "CNOT":
+        # param1 = amp1; param2 = amp2
+        ax[1].plot(tg, arr[:, 1], ".-", label="drive_amp1")
+        ax[1].plot(tg, arr[:, 2], ".-", label="drive_amp2")
+    else:  # CZ
+        ax[1].plot(tg, arr[:, 1], ".-", label="drive_amp1")
+
+    ax[1].set_ylabel("Drive amplitude")
+    ax[1].legend()
+    ax[1].grid()
+
+    # -----------------------------
+    # Detuning subplot
+    # -----------------------------
+    if gate_type == "CNOT":
+        ax[2].plot(tg, arr[:, 3], ".-", label="detuning1")
+        ax[2].plot(tg, arr[:, 4], ".-", label="detuning2")
+    else:  # CZ
+        ax[2].plot(tg, arr[:, 2], ".-", label="detuning1")
+
+    ax[2].set_ylabel("Detuning")
+    ax[2].set_xlabel("Gate time tg")
+    ax[2].legend()
+    ax[2].grid()
+
+    # -----------------------------
+    # Save figure
+    # -----------------------------
+    fname = os.path.join(plot_dir, f"{config['gate_type']}_summary.png")
+    fig.tight_layout()
+    fig.savefig(fname, dpi=200, bbox_inches='tight')
+    plt.close(fig)
+
+    print(f"[PLOT] Saved {fname}")
 
 
 # ==============================================================
 # PRINTING
 # ==============================================================
 
-def print_configuration_summary(system_data, config):
+def print_configuration_summary(sys, config):
     print("\n" + "=" * 60)
     print(f"{config['gate_type']} GATE FIDELITY OPTIMIZATION CONFIGURATION")
     print("=" * 60)
     print(f"Start time: {datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d %H:%M:%S UTC')}")
     print(f"gate_type = {config['gate_type']}")
+    
     print(f"truc_large      = {config['truc_large']}")
-    print(f"truc_optimize   = {config['truc_optimize']}")
+    print(f"truc_optimize   = {config['truc_optimize']}")    
+    print(f"use_truc_model   = {config['use_truc_model']}")
+    print(f"truc_model_name  = {config['truc_model_name']}")
+    
+    print(f"max_step_ideal  = {config['max_step_ideal']}")
+    print(f"max_step_noisy  = {config['max_step_noisy']}")
+
     print(f"workers         = {config['workers']}")
     print(f"popsize         = {config['popsize']}")
     print(f"recombination   = {config['recombination']}")
     print(f"tol             = {config['tol']}")
     print(f"mutation        = {config['mutation']}")
     print(f"resume          = {config['resume']}")
+    print(f"do_plot         = {config['do_plot']}")
+    
+    print(f"use_x0         = {config['use_x0']}")
+    print(f"first_x0_from_input = {config['first_x0_from_input']}")
+    
     print(f"result_file     = {config['result_file']}")
-    print(f"csv_file        = {config['csv_file']}")
-    print(f"plot_dir        = {config['plot_dir']}")
+    
+    print(f"folder_pulse   = {config['folder_pulse']}")
+    print(f"gate_time_indices = {config['gate_time_indices']}") 
 
     if config['gate_type'] == 'CZ':
-        print(f"W_20_50         = {np.round(system_data['W_20_50'], 3)}")
+        print(f"W_20_50         = {np.round(sys['W_20_50'], 3)}")
         print(f"amp_bound       = {config['amp_bound']}")
         print(f"detune_bound    = {config['detune_bound']}")
     else:
-        print(f"W_0_2, W_1_2    = {np.round(system_data['W_0_2'], 3)}, {np.round(system_data['W_1_2'], 3)}")
+        print(f"mid_state       = {config['mid_state']}")
+        print(f"W_0_2, W_1_2    = {np.round(sys['W_0_2'], 3)}, {np.round(sys['W_1_2'], 3)}")
         print(f"A1_bound        = {config['A1_bound']}")
         print(f"A2_bound        = {config['A2_bound']}")
         print(f"detune1_bound   = {config['detune1_bound']}")
         print(f"detune2_bound   = {config['detune2_bound']}")
+        
+        print(f"x0_array       = {config['x0_array']}")
+
+    print(f"pulse_param = {sys['pulse_param']}")
 
     print("=" * 60)
 
@@ -583,6 +692,9 @@ def run_fidelity_sweep(system_data, hamiltonians, config):
     start_idx, fidelity_list, fidelity_large_list, drive_param_list = load_resume_if_any(config)
 
     n_total = len(system_data['pulse_param'])
+    # print(f"pulse_param = {system_data['pulse_param']}")
+    # print(f"Total gate times to optimize: {n_total}, starting from index {start_idx}")
+    
     for jdx in tqdm(range(start_idx, n_total), desc=f"{config['gate_type']} optimize"):
         f_trunc, params = optimize_single_gate_time(
             jdx, system_data, hamiltonians, config, drive_param_list
@@ -681,7 +793,9 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
         # x0 使用方式：None / 'from_neighbor' / 'from_input'
         use_x0='from_neighbor',
         first_x0_from_input=True,
+        
         folder_load='../../data/_truc_3000',
+        logi_state=['0-0', '0-2', '2-0', '2-2'],    
     )
 
     # =====================================================
@@ -691,13 +805,11 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
     beijing_tz = pytz.timezone("Asia/Shanghai")
     timestamp = datetime.now(beijing_tz).strftime("%Y%m%d_%H%M%S")
 
-    base_dir = f"data/results/{gate_type.lower()}_{timestamp}"
-    result_file = os.path.join(base_dir, "result.npz")
-    csv_file = os.path.join(base_dir, "result.csv")
-    plot_dir = os.path.join(base_dir, "plots")
-
-    # 创建结果目录 + 图片目录
-    os.makedirs(plot_dir, exist_ok=True)
+    label_str = f"{gate_type.lower()}_{timestamp}"
+    base_dir = f"data/results/{label_str}"
+    result_file = os.path.join(base_dir, f"{label_str}.npz")
+    csv_file = os.path.join(base_dir, f"{label_str}.csv")
+    os.makedirs(base_dir, exist_ok=True)
 
     # 放入 config
     config.update(dict(
@@ -705,7 +817,7 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
         result_dir=base_dir,
         result_file=result_file,
         csv_file=csv_file,
-        plot_dir=plot_dir,
+        plot_dir=base_dir,
     ))
     # =====================================================
 
@@ -714,9 +826,9 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
         config.update(dict(
             # data path
             folder_pulse='data/npz/cz_pulse_neighbor.txt',
+            gate_time_indices=(np.arange(20, 50) - 20).tolist(),
 
             tg_bound=(-0.01, 0.01),
-            gate_time_indices=(np.arange(20, 50) - 20).tolist(),
             amp_bound=(0.01, 0.05),
             detune_bound=(0.001, 0.04),
         ))
@@ -725,6 +837,9 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
     elif gate_type == "CNOT":
         # 这里沿用你旧脚本中对 CNOT 的数据读取方式（truc1/truc_tot/folder）
         config.update(dict(
+            
+            mid_state='8-2',
+            
             # 数据相关
             truc1=300,
             truc_tot=1000,
@@ -733,20 +848,14 @@ def get_optimization_config(gate_type="CZ", custom_config=None):
 
             # 如果有 pulse 文件，也可以设置为 True + 给路径
             folder_pulse='../figure/data/data_cnot_fidelity_3ncut.txt',
+            gate_time_indices= [0, 15, -1], # np.arange(3).tolist(),  #[0],
 
             # CNOT 参数 bounds （你可以按需要改）
             tg_bound=(-0.001, 0.001),
             A1_bound=(0.01, 0.15),
-            A2_bound=(0.005, 0.08),
-            detune1_bound=(-0.05, -0.0001),
-            detune2_bound=(-0.05, -0.0001),
-
-            # gate_time_indices: 对应 x0_vec 行数
-            gate_time_indices=np.arange(20).tolist(),  #[0],
-
-            # CNOT 逻辑 + 中间态
-            logi_state=['0-0', '0-2', '2-0', '2-2'],
-            mid_state='8-2',
+            A2_bound=(0.01, 0.15),
+            detune1_bound=(-0.1, 0.1),
+            detune2_bound=(-0.1, 0.1),
 
             # 初始 x0 向量（可扩展多行对应多个 gate time）
             x0_array=np.array([
