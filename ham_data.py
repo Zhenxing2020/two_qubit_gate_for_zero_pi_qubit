@@ -142,29 +142,75 @@ def get_dressed_states_index(top_index, hspace_0, hspace_1, n=None):
     return hspace_full
 
 
+# def normalize_eigenvector_phases(eigenvectors):
+#     """
+#     Normalize the phases of eigenvectors to ensure consistent phase convention.
+    
+#     The phase of each eigenvector is normalized so that the element with the 
+#     largest magnitude in the first half of the vector has zero phase (is real 
+#     and positive).
+    
+#     Parameters
+#     ----------
+#     eigenvectors : list
+#         List of eigenvectors, can be numpy arrays or qutip Qobj objects.
+    
+#     Returns
+#     -------
+#     list
+#         List of phase-normalized eigenvectors with unit norm, in the same 
+#         format as the input.
+#     """
+#     normalized_evecs = []
+    
+#     for evec in eigenvectors:
+#         # Handle both qutip Qobj and numpy array inputs
+#         if isinstance(evec, qt.Qobj):
+#             data = evec.data.toarray().flatten()
+#             is_qobj = True
+#             original_shape = evec.shape
+#         else:
+#             data = np.array(evec).flatten()
+#             is_qobj = False
+#             original_shape = np.array(evec).shape
+        
+#         # Find the phase correction based on the chosen method
+#         # Find element with largest magnitude
+#         half = data.size//2
+#         if data.size % 2 == 1:
+#             half += 1
+#         max_idx = np.argmax(np.abs(data)[:half])
+#         phase_element = data[max_idx]
+        
+#         # Calculate phase correction
+#         phase_correction = np.exp(-1j * np.angle(phase_element))
+        
+#         # Apply phase correction
+#         normalized_data = data * phase_correction
+        
+#         # Reshape back to original format
+#         if is_qobj:
+#             if len(original_shape) == 2:
+#                 normalized_data = normalized_data.reshape(original_shape)
+#                 normalized_evec = qt.Qobj(normalized_data)
+#             else:
+#                 normalized_evec = qt.Qobj(normalized_data)
+#         else:
+#             normalized_evec = normalized_data.reshape(original_shape)
+        
+#         # Add phase and normalize to unit norm
+#         normalized_evecs.append(normalized_evec/np.linalg.norm(normalized_evec))
+    
+#     return normalized_evecs
+
+
 def normalize_eigenvector_phases(eigenvectors):
     """
     Normalize the phases of eigenvectors to ensure consistent phase convention.
-    
-    The phase of each eigenvector is normalized so that the element with the 
-    largest magnitude in the first half of the vector has zero phase (is real 
-    and positive).
-    
-    Parameters
-    ----------
-    eigenvectors : list
-        List of eigenvectors, can be numpy arrays or qutip Qobj objects.
-    
-    Returns
-    -------
-    list
-        List of phase-normalized eigenvectors with unit norm, in the same 
-        format as the input.
     """
     normalized_evecs = []
     
     for evec in eigenvectors:
-        # Handle both qutip Qobj and numpy array inputs
         if isinstance(evec, qt.Qobj):
             data = evec.data.toarray().flatten()
             is_qobj = True
@@ -174,32 +220,30 @@ def normalize_eigenvector_phases(eigenvectors):
             is_qobj = False
             original_shape = np.array(evec).shape
         
-        # Find the phase correction based on the chosen method
-        # Find element with largest magnitude
-        half = data.size//2
+        # use first half as phase anchor
+        half = data.size // 2
         if data.size % 2 == 1:
             half += 1
+
         max_idx = np.argmax(np.abs(data)[:half])
-        phase_element = data[max_idx]
+        phase_element = complex(data[max_idx])   # ⭐ 关键
         
-        # Calculate phase correction
-        phase_correction = np.exp(-1j * np.angle(phase_element))
+        if np.abs(phase_element) == 0:
+            phase_correction = 1.0 + 0j
+        else:
+            phase_correction = np.exp(-1j * np.angle(phase_element))
         
-        # Apply phase correction
         normalized_data = data * phase_correction
         
-        # Reshape back to original format
         if is_qobj:
-            if len(original_shape) == 2:
-                normalized_data = normalized_data.reshape(original_shape)
-                normalized_evec = qt.Qobj(normalized_data)
-            else:
-                normalized_evec = qt.Qobj(normalized_data)
+            normalized_data = normalized_data.reshape(original_shape)
+            normalized_evec = qt.Qobj(normalized_data)
         else:
             normalized_evec = normalized_data.reshape(original_shape)
         
-        # Add phase and normalize to unit norm
-        normalized_evecs.append(normalized_evec/np.linalg.norm(normalized_evec))
+        normalized_evecs.append(
+            normalized_evec / np.linalg.norm(normalized_evec)
+        )
     
     return normalized_evecs
 
@@ -332,7 +376,23 @@ def save_two_qubit_data(params, folder_save):
     H_tot = qt.tensor(H1, qt.qeye(len(hspace_2))) + qt.tensor(qt.qeye(len(hspace_1)), H2) + \
              g * qt.tensor(n_theta1_qobj, n_theta2_qobj)
     evals_tot, evecs_tot = ssp.linalg.eigsh(H_tot.data, k=params["truc_total"],  which='SA')
-    evecs_tot = np.array(normalize_eigenvector_phases(evecs_tot.T))
+    
+    ######################################################################################
+    sorted_idx = np.argsort(evals_tot)
+    evals_tot = evals_tot[sorted_idx]
+    evals_tot = evals_tot - evals_tot[0]
+    # evecs_tot = ssp.csr_matrix([evecs_tot[:,idx] for idx in sorted_idx])
+    
+    evecs_tot = np.column_stack(
+        [evecs_tot[:, idx] for idx in sorted_idx]
+    ).astype(complex)    
+    print("dtype after reorder:", evecs_tot.dtype)
+    # evecs_tot = np.array(normalize_eigenvector_phases(evecs_tot.T).astype(np.complex128))
+    
+    evecs_tot = np.array(normalize_eigenvector_phases(evecs_tot.T)) 
+    
+    ######################################################################################
+    
 
     print("Finished calculating full system eigensystem.")
 
@@ -512,7 +572,7 @@ def load_two_qubit_data(folder_load, return_full=False):
         n_theta1_dress = 2*np.pi*data['n_theta2_dressed']
         hspace_0 = data['hspace_1_charge'].tolist()
         hspace_1 = data['hspace_2_charge'].tolist()
-        logi_state = ['0-0', '2-0', '0-2', '2-2']
+        logi_state = ['0-0', '0-2', '2-0', '2-2']
         return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
             n_theta1_dress, hspace_0, hspace_1, logi_state]
 

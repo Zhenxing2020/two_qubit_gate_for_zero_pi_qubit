@@ -1,608 +1,1002 @@
+#!/usr/bin/env python3
+# pyright: reportMissingImports=false
+"""
+Unified 2Q Gate Optimizer for Zero-Pi System
+Supports:
+    - CZ gate optimization
+    - CNOT gate optimization
+
+Features:
+    - Modular, function-based structure
+    - Differential evolution optimizer
+    - Automatic saving (npz + csv)
+    - Resume from previous runs
+    - Simple plotting (fidelity & parameters)
+
+Author: ChatGPT + Zhenxing's original scripts
+Date: 2025
+"""
+
+# ===== Standard Library Imports =====
+import os
 import sys
-sys.path.append('../')
-import scqubits as scq
-import pandas as pd
-import qutip as qt
-import numpy as np
-from matplotlib import pyplot as plt
-from qutip.qip.operations import rz, cz_gate
-from tqdm import tqdm
-from matplotlib.colors import LogNorm
-import time, pytz, os, itertools, cmath
 from datetime import datetime
-import scqubits.settings as settings
-settings.OVERLAP_THRESHOLD = 0.3
-from joblib import Parallel, delayed
-import scipy.sparse as ssp
-from sympy import symbols
+import pytz
+import json
+
+# ===== Third-Party Imports =====
+import numpy as np
 import scipy as sp
+from tqdm import tqdm
+import qutip as qt
+import pandas as pd
+from matplotlib import pyplot as plt
+import scqubits.settings as settings
+
+settings.OVERLAP_THRESHOLD = 0.3
+
+# ===== Local Imports =====
+sys.path.append('../')
 import utils_2Q_gate_zp as ut
-
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-def fidelity_sweep():
-    fidelity = []
-    drive_param = []
-    fidelity_full = []
-    arg_truc = [H_drive_part, W_0_2, W_1_2, num_cpus, c_op_list, 
-                logi_idx_part, mid_state, option_ideal, option_noisy]
-    for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
-    # for jdx, tg in tqdm(enumerate(tg_vec)):
-        tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
-        bounds = (tg_bounds, A1_bound, A2_bound, detune1_bound, detune2_bound)
-        res = sp.optimize.differential_evolution(
-            func=ut.cnot_fidelity_log_noise,
-            bounds=bounds,
-            args=arg_truc,
-            disp=True,
-            callback=ut.print_soln,
-            init="sobol",
-            workers=workers,
-            popsize=popsize,
-            mutation=mutation,
-            recombination=recombination,
-            tol=tol,
-            x0=x0_vec[jdx],
-            polish=False, # 'True' will make the for-loop break
-            )
-        fidelity.append(res.fun)
-        drive_param.append(res.x.tolist())
-        print(res, '\n')
-        # print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
-        print('\ntg = ', np.array((x0_vec[:,0])[:jdx+1]).tolist())
-        print(f'\nlog of gate error (truc={len_part}) = ')
-        for i in range(0, len(fidelity), 4):
-            print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
-        print(f'\ndrive_param (truc={len_part}) = ')
-        for i in drive_param:
-            print(np.round(i,6).tolist(),',')
-
-        ut.print_time()
-        [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = drive_param[jdx]
-        arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
-                    H_drive_False, W_0_2, W_1_2, num_cpus, c_op_list, 
-                    logi_idx_False, mid_state, option_ideal, option_noisy]
-        fidelity_full.append(ut.cnot_fidelity_log(arg_all))
-
-        print(f'\nlog of gate error (truc={H_drive_False[0].shape[0]},True) = ')
-        for i in range(0, len(fidelity_full), 4):
-            print(', '.join(map(str, np.round(fidelity_full[i:i+4], 8))), ',')
-            
-        print('amp1_bounds=',A1_bound, ', amp2_bounds=',A2_bound, ', tg_bound=', tg_bound)
-        print('detune1_bounds=',detune1_bound, ', detune2_bounds=', detune2_bound)
-        ut.print_time()
+import ham_data as hd
+from functools import partial
 
 
-if __name__ == '__main__':
-    print(os.path.basename(__file__)) # Print the name of the current Python file
-    print("NUMEXPR_NUM_THREADS =", os.environ.get('NUMEXPR_NUM_THREADS'))
-    print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
-    ut.print_time()
+# === global variables for multiprocessing ===
+GLOBAL_system_data = None
+GLOBAL_hamiltonians = None
+GLOBAL_config = None
 
-    truc1, truc_tot, charge_pick = 300, 1000, True
-    truc_full = 1000
 
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
-    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
-    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
-    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
-    truc_list = np.arange(truc_full)
-    hspace_full = hspace_full[:truc_full]
-    eval_tot = eval_tot[:truc_full]
-    n_theta0_dress = ut.truncate_2(n_theta0_dress, truc_list)
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, truc_list)
+# ==============================================================
+# SYSTEM LOADING
+# ==============================================================
 
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick=True/'
-    eval_False = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    hspace_False = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
-    n_theta0_False = qt.Qobj(2*np.pi* np.load(folder+'n_theta0_dress.npy'))
-    n_theta1_False = qt.Qobj(2*np.pi* np.load(folder+'n_theta1_dress.npy'))
+def load_system_data(config):
+    """根据 gate_type 分发到 CZ / CNOT 的系统加载函数。"""
+    """Dispatch to CZ / CNOT system loading routines based on gate_type."""
+    gate_type = config["gate_type"]
+    if gate_type == "CZ":
+        return load_system_data_cz(config)
+    elif gate_type == "CNOT":
+        return load_system_data_cnot(config)
+    else:
+        raise ValueError(f"Unknown gate_type: {gate_type}")
 
-    A1_bound, A2_bound, detune1_bound, detune2_bound = [
-        ## tg=50
-        # (0.039, 0.95), (0.024, 0.95), (-0.028, -0.001), (-0.028, -0.001) # x0, good
-        # (0.4, 0.95), (0.09, 0.55), (-0.01, 0.0001), (-0.01, 0.0001) # no x0, bad
-        # (0.09, 0.9), (0.04, 0.4), (-0.1, -0.0001), (-0.1, -0.0001) # no x0, increase A1,A2 range, large  
-        # (0.4, 0.95), (0.01, 0.55), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A1, v1
-        (0.15, 0.45), (0.01, 0.55), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A1, v2
-        # (0.4, 0.95), (0.01, 0.55), (-0.5, 0.5), (-0.5, 0.5) # no x0, only limit A1, larger detune
-        # (0.01, 0.95), (0.25, 0.46), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A2
-        # (0.01, 0.95), (0.25, 0.46), (-0.5, 0.2), (-0.5, 0.2) # no x0, only limit A2, larger detune
-        # (0.09, 0.9), (0.04, 0.4), (-0.1, -0.0001), (-0.1, -0.0001) # no x0, increase A1,A2 range, small  
-        
-        ## tg=100, 150
-        # (0.2, 0.95), (0.01, 0.55), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A1
-        # (0.01, 0.9), (0.05, 0.55), (-0.5, 0.0001), (-0.5, 0.0001) # no x0, only limit A1, narrower range
-        ]
-    tg_bound = (-0.001, 0.001) #(-1e-10, 1e-10) #
 
-    # tg_vec = [2, 3] #np.arange(350, 401, 10)
-    # tg_vec = [50, 100, 150, 200] #np.arange(350, 401, 10)
-    x0_vec = np.array([
-[50.009075, 0.432514, 0.042229, -0.181457, -0.236707] ,
-# [50.008813,0.090273,0.046546,-0.027498,-0.025767] ,
-# [100.006167,0.053076,0.029316,-0.01188,-0.01157],
-# [149.996866,0.039078,0.024359,-0.009107,-0.008681],
-    ])
+def load_system_data_cz(config):
+    """
+    基于你原来的 CZ 版本 load_system_data 改造。
+    System data loader for CZ gate, adapted from your original CZ script.
+    """
 
-    max_step_ideal, max_step_noisy = 1e-3, 1e-3 # Set max_step to 0 for parallel execution
-    option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy) 
+    print("Loading system data for CZ...")
 
-    workers, popsize = 100, 10
-    recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
-    logi_state = ['0-0', '0-2', '2-0', '2-2']
+    (hspace_full, eket_tot, eval_tot, _,
+     n_theta1_dress, _, _, logi_state) = hd.load_two_qubit_data(
+        config['folder_load'], return_full=False
+    )
 
-    mid_state = '8-2'
+    drive_term = n_theta1_dress
 
-    if mid_state in ['8-2', '4-5' ]:
+    W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
+
+    if config['use_truc_model']:
+        hspace_select = ut.truc_model[config['truc_model_name']][:config['truc_optimize']]
+    else:
+        hspace_select = hspace_full[:config['truc_optimize']]
+
+    option_ideal, option_noisy = ut.get_qutip_options(
+        config['max_step_ideal'], config['max_step_noisy']
+    )
+
+    pulse_param = ut.load_drive_params_2q(
+        config['gate_type'] == 'CZ', folder=config.get('folder_pulse', None)
+    )[config.get('gate_time_indices', slice(None)), :]
+
+    print(f"Loaded CZ data: total states = {len(hspace_full)}")
+    print(f"Optimization truncation = {len(hspace_select)}")
+    print(f"W_20_50 = {np.round(W_20_50, 3)}")
+
+    return dict(
+        gate_type='CZ',
+        hspace_full=hspace_full,
+        eket_tot=eket_tot,
+        eval_tot=eval_tot,
+        drive_term=drive_term,
+        logi_state=logi_state,
+        hspace_select=hspace_select,
+        W_20_50=W_20_50,
+        option_ideal=option_ideal,
+        option_noisy=option_noisy,
+        pulse_param=pulse_param,
+    )
+
+
+def load_system_data_cnot(config):
+    """
+    CNOT 使用你旧脚本的那套数据结构：
+    System data loader for CNOT, using the data layout of your old CNOT scripts:
+        - eval_tot, hspace_full, n_theta0_dress, n_theta1_dress
+        - eval_False, hspace_False, n_theta0_False, n_theta1_False
+    """
+
+    print("Loading system data for CNOT...")
+
+    (hspace_full, eket_tot, eval_tot, n_theta0_dress,
+     n_theta1_dress, hspace_0, hspace_1, logi_state) = hd.load_two_qubit_data(
+        config['folder_load'], return_full=False
+    )
+
+    # 逻辑态索引
+    if config['mid_state'] in ['8-2', '4-5']:
         idx_0 = hspace_full.index('0-2')
         idx_1 = hspace_full.index('2-2')
-    elif mid_state in ['1-4', '8-0', '4-1']:
+    elif config['mid_state'] in ['1-4', '8-0', '4-1']:
         idx_0 = hspace_full.index('0-0')
         idx_1 = hspace_full.index('2-0')
-
-    if mid_state in ['8-2']:        
-        hspace_part = hspace_full[:200] # ut.truc_model['cnot_short_1000'][:200]
-        # hspace_part = ut.truc_model['cnot_short_1000'][:200]
-        # hspace_part = ut.truc_model['cnot_82']
-    elif mid_state in [ '4-5']:        
-        hspace_part = ut.truc_model['cnot_45']
-    elif mid_state in [ '4-1']:        
-        hspace_part = ut.truc_model['cnot_41']
-    elif mid_state in [ '1-4']:        
-        hspace_part = ut.truc_model['cnot_14']  ### 1-4 which is indeed 8-0
-    elif mid_state in [ '8-0']:        
-        hspace_part = ut.truc_model['cnot_80']  ### 8-0 which is indeed 1-4
-
-    idx_2 = hspace_full.index(mid_state)
-    W_0_2 = eval_tot[idx_2] - eval_tot[idx_0]
-    W_1_2 = eval_tot[idx_2] - eval_tot[idx_1]
-    H0_full = qt.Qobj(np.diag(eval_tot))
-    
-    H0_False = qt.Qobj(np.diag(eval_False))
-    logi_idx_False = [hspace_False.index(i) for i in logi_state]
-
-    index_part = [hspace_full.index(i) for i in hspace_part]
-    len_part = len(hspace_part)
-    H0_part = ut.truncate_2( H0_full, index_part)
-    n_theta0_part = ut.truncate_2(n_theta0_dress, index_part)
-    n_theta1_part = ut.truncate_2(n_theta1_dress, index_part)
-    logi_idx_part = [hspace_part.index(i) for i in logi_state]
-
-    if mid_state in [ '8-2', '4-5', '1-4', '8-0', '4-1' ]:
-        H_drive_False = [ H0_False,     [n_theta0_False, ut.drive_gauss_A],
-                                        [n_theta0_False, ut.drive_gauss_B]  ]
-        H_drive_part = [ H0_part,   [n_theta0_part, ut.drive_gauss_A],
-                                    [n_theta0_part, ut.drive_gauss_B]  ]
     else:
-        H_drive_False = [ H0_False,     [n_theta1_False, ut.drive_gauss_A],
-                                        [n_theta1_False, ut.drive_gauss_B]  ]
-        H_drive_part = [ H0_part,   [n_theta1_part, ut.drive_gauss_A],
-                                    [n_theta1_part, ut.drive_gauss_B]  ]
-    c_op_list = []
-    num_cpus = 1
-    print('\nmid_state = ', mid_state)
-    print('truc1=', truc1, ', truc_tot=', truc_tot, ', charge_pick=', charge_pick)
-    print('truc_tot_2=', truc_full )
-    print('W_0_2 = ', np.round(W_0_2, 3), ', W_1_2 = ', np.round(W_1_2, 3))
-    print('tg_bound=', tg_bound, ', A1_bound=',A1_bound, ', A2_bound=',A2_bound)
-    print('detune1_bound=',detune1_bound, ', detune2_bound=', detune2_bound)
-    if 'x0_vec' in globals():
-        print('params = ')
-        for i in x0_vec:
-            print(np.round(i,6).tolist(),',')
-    if 'tg_vec' in globals():
-        print('tg_vec = ')
-        for i in range(0, len(tg_vec), 4):
-            print(', '.join(map(str, tg_vec[i:i+4])), ',')
-    print('workers=', workers, ', popsize=', popsize)
-    print('recombination=', recombination, ', tol=', tol, ', mutation=', mutation)
-    print(f'\nhspace_truc (len={len_part}) = [')
-    for i in range(0, len(hspace_part), 10):
-        print(", ".join(f"'{x}'" for x in hspace_part[i:i + 10]), ',')
-    print(']')
+        raise ValueError(f"Unsupported mid_state for CNOT: {config['mid_state']}")
 
-    fidelity_sweep()
+    if config['mid_state'] in ['8-2', '4-5', '1-4', '8-0', '4-1']:
+        drive_term = n_theta0_dress
+    else:
+        drive_term = n_theta1_dress
 
-    print('workers=',workers, ', popsize=',popsize)
-    print('recombination=',recombination, ', tol=',tol, ', mutation=',mutation)
+    idx_mid = hspace_full.index(config['mid_state'])
+    W_0_2 = eval_tot[idx_mid] - eval_tot[idx_0]
+    W_1_2 = eval_tot[idx_mid] - eval_tot[idx_1]
 
+    # 选择优化空间的 Hilbert space（沿用你原来的逻辑）
+    if config['use_truc_model']:
+        hspace_select = ut.truc_model['cnot_' + config['mid_state'][0] + config['mid_state'][2]][:config['truc_optimize']]
+    else:
+        hspace_select = hspace_full[:config['truc_optimize']]
 
+    option_ideal, option_noisy = ut.get_qutip_options(config['max_step_ideal'], config['max_step_noisy'])
 
+    # pulse 参数：优先使用 pulse 文件, 其次可以用 x0_array，
+    if config.get('folder_pulse', None) is not None:
+        pulse_param = ut.load_drive_params_2q(
+            config['gate_type']=='CZ', folder=config.get('folder_pulse', None)
+        )[config.get('gate_time_indices', slice(None)), :]
+    else:
+        pulse_param = config['x0_array'][config.get('gate_time_indices', slice(None)), :]
 
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-# def calculate_fidelity_tgbound_de_sweep_copy(smal_tgbound=False):
-#     amp_bounds = (0, 0.1)
-#     detune_bounds = (-0.3, 0.)
-#     tg_vec = np.linspace(100, 300, num=6)
-#     tg_bounds = []
-#     # for i in range(len(tg_vec)-1):
-#     #     if smal_tgbound == True:
-#     #         tg_bounds.append((tg_vec[i+1]-0.01, tg_vec[i+1]))
-#     #     else:
-#     #         tg_bounds.append((tg_vec[i], tg_vec[i+1]))
+    print(f"Loaded CNOT data: total states = {len(hspace_full)}")
 
-#     workers = 100
-#     popsize = 50
-#     mutation = (0.5, 1.)
-#     recombination = 0.7
-#     tol = 0.01
-
-#     x0_vec =  [[0.08214998234257803, 0.022990968193458108, 296.66484505688254, -0.023540986415900633, -0.037436621530911374],
-# [0.0754751709841197, 0.024475013338660225, 317.4485123699629, -0.02987912201182486, -0.03701554537424631],
-# [0.08382476280437687, 0.022136314047758274, 346.44487004688864, -0.027351130436972983, -0.03970968382979541],
-# [0.09229964280612983, 0.026601756554862972, 376.59966093024786, -0.010816171264945452, -0.033824786376229904],
-# [0.08305134439614023, 0.0263249315943987, 403.9988097743255, -0.01803758091532333, -0.02972465374945854],
-# [0.06489069860635269, 0.016290503464261363, 420.1249512139678, -0.015430544119623952, -0.02485317699266697]]
-#     x0_vec = np.array(x0_vec)
-
-
-#     # x0_vec = np.array(x0_vec)
-#     print('\namp_bounds=',amp_bounds)
-#     print('detune_bounds=',detune_bounds)
-#     print('tg_bounds=',tg_bounds)
-
-#     print('\nworkers=',workers)
-#     print('popsize=',popsize)
-#     print('mutation=',mutation)
-#     print('recombination=',recombination)
-#     print('tol=',tol)
-#     print('x0_vec=',x0_vec)
-
-#     result_opt = []
-#     fidelity = []
-#     drive_param = []
-#     for tg_bound in tqdm(tg_bounds):
-#         x0 = None
-#         for i in range(x0_vec.shape[0]):
-#             if x0_vec[i,1] > tg_bound[0] and x0_vec[i,1] < tg_bound[1]:
-#                 x0 = x0_vec[i]
-
-#         bounds = (amp_bounds, amp_bounds, tg_bound, detune_bounds, detune_bounds)
-#         res = sp.optimize.differential_evolution(
-#             func=ut.get_fidelity_cnot_2A0,
-#             bounds=bounds,
-#             args=args,
-#             disp=True,
-#             callback=ut.print_soln,
-#             init="sobol",
-#             workers=workers,
-#             popsize=popsize,
-#             mutation=mutation,
-#             recombination=recombination,
-#             tol=tol,
-#             polish=False, # 'True' will make the for-loop break
-#             # x0=x0
-#             )
-
-#         print(res, '\n')
-#         fidelity.append(res.fun)
-#         drive_param.append(res.x)
-
-#         print('fidelity = ', fidelity)
-#         print('drive_param = ', np.array(drive_param).tolist())
-
-
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-def fidelity_de_sweep():
-    amp_bounds = (0, 0.04)
-    detune_bounds = (-0.02, 0.)
-
-    workers = 100
-    popsize = 50
-    mutation = (0.5, 1.)
-    recombination = 0.7
-    tol = 0.01
-
-    x0_vec =   np.array([[0.02998763398547402, 129.060364854945, -0.009524334449526474],
- [0.029493350591334434, 157.71779952810067, -0.009941382763999338],
- [0.025950915455974895, 187.30292652442327, -0.00821681040657746],
- [0.022534777844595476, 216.42619098890876, -0.006268319044336534],
- [0.019572332065418703, 243.7496949100433, -0.004686625611314125],
- [0.01700764083302345, 274.1637763512114, -0.003590807111667511],
- [0.015643541999459592, 300.81632686689034, -0.003026750944939577],
- [0.014080775914738629, 329.4778392022009, -0.0024729159770241482],
- [0.012941227938039604, 354.7592332298872, -0.0020370898504066593],
- [0.011829096115033699, 385.78884937994235, -0.0017382166860813444],
- [0.011257929230028885, 404.36043366270167, -0.0015458429030142506],
- [0.010279964335750055, 445.0323390656677, -0.0013057734346887317],
- [0.009513295140347789, 476.83700141609415, -0.0011199238032474656],
- [0.009046422511480925, 501.3241321052972, -0.0010093707724371384],
- [0.008466852336793954, 535.2523726323412, -0.0008810170202933889],
- [0.00822939850536708, 549.9230118770298, -0.0008156841033343572],
- [0.007675580940429315, 589.106942356207, -0.0007218788768798149],
- [0.007247654633780758, 623.8079249944897, -0.0006615194170941016],
- [0.007084520133174579, 635.6321429096266, -0.0005958385713969502],
- [0.0066357557646690764, 680.9737743178056, -0.0005502122424595225],
- [0.006523487692003517, 691.0266744208469, -0.0005193310668362792],
- [0.006091476575864481, 738.6159881855083, -0.00044466628394118114],
- [0.005938864303736805, 760.76318597172, -0.00043410563429241867],
- [0.005718650638369904, 787.4597105231765, -0.00038813713923993576]])
-    print('\namp_bounds=',amp_bounds)
-    print('detune_bounds=',detune_bounds)
-
-    print('\nworkers=',workers)
-    print('popsize=',popsize)
-    print('mutation=',mutation)
-    print('recombination=',recombination)
-    print('tol=',tol)
-    print('x0_vec=',x0_vec)
-
-    fidelity = []
-    drive_param = []
-    x0 = None
-    for i in tqdm(range(x0_vec.shape[0])):
-        tg_bound = (x0_vec[i,1]-0.01, x0_vec[i,1]+0.01)
-        x0 = (x0_vec[i,0], x0_vec[i,0], x0_vec[i,1], x0_vec[i,2], x0_vec[i,2])
-
-        bounds = (amp_bounds, amp_bounds, tg_bound, detune_bounds, detune_bounds)
-        res = sp.optimize.differential_evolution(
-            func=ut.get_fidelity_cnot_two_A0,
-            bounds=bounds,
-            args=args,
-            disp=True,
-            callback=ut.print_soln,
-            init="sobol",
-            workers=workers,
-            popsize=popsize,
-            mutation=mutation,
-            recombination=recombination,
-            tol=tol,
-            polish=False, # 'True' will make the for-loop break
-            x0=x0
-            )
-        fidelity.append(res.fun)
-        drive_param.append(res.x)
-        print(res, '\n')
-        print('fidelity = ', fidelity)
-        print('drive_param = ', np.array(drive_param).tolist())
-
-
-
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-def fidelity_de_x0():
-    amp_bounds = (0, 0.1)
-    detune_bounds = (-0.25, 0.)
-    tg_bounds = []
-    workers = 70
-    popsize = 50
-    mutation = (0.5, 1.)
-    recombination = 0.7
-    tol = 0.01
-    x0_vec = np.array([[0.07138275557618617, 0.06263709015005474, 179.5743123263788, -0.23823111049155965, -0.2351910652491388],
-                       [0.09998562868919722, 0.057375890802752766, 296.37375343645454, -0.06433356140617433, -0.06618230878238646],
-])
-    print('\namp_bounds=',amp_bounds)
-    print('detune_bounds=',detune_bounds)
-    print('tg_bounds=',tg_bounds)
-
-    print('\nworkers=',workers)
-    print('popsize=',popsize)
-    print('mutation=',mutation)
-    print('recombination=',recombination)
-    print('tol=',tol)
-    print('x0_vec=',x0_vec)
-
-    # def constraint(vars):
-    #     A1, A2, tg, detune_1, detune_2 = vars
-    #     return A2 - A1  # Ensure that y - x >= 0 which implies y >= x
-    # nonlinear_constraint = sp.optimize.NonlinearConstraint(constraint, 0, np.inf)
-    fidelity = []
-    drive_param = []
-    for i in tqdm(range(x0_vec.shape[0])):
-        x0 = x0_vec[i]
-        tg_bound = (x0_vec[i][2] - 0.000001, x0_vec[i][2] + 0.000001)
-        bounds = (amp_bounds, amp_bounds, tg_bound, detune_bounds, detune_bounds)
-
-        res = sp.optimize.differential_evolution(
-            func=ut.get_fidelity_cnot_2A0,
-            bounds=bounds,
-            args=args,
-            disp=True,
-            callback=ut.print_soln,
-            init="sobol",
-            workers=workers,
-            popsize=popsize,
-            mutation=mutation,
-            recombination=recombination,
-            tol=tol,
-            polish=False, # 'True' will make the for-loop break
-            # x0=x0,
-            # constraints=(nonlinear_constraint,)
-            )
-        fidelity.append(res.fun)
-        drive_param.append(res.x)
-        print(res, '\n')
-        print('fidelity = ', fidelity)
-        print('drive_param = ', np.array(drive_param).tolist())
-    print('\namp_bounds=',amp_bounds)
-    print('detune_bounds=',detune_bounds)
-    print('tg_bounds=',tg_bounds)
-
-
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-def fidelity_shgo():
-    amp_bounds = (0, 0.1)
-    detune_bounds = (-0.05, 0.)
-    x0_vec = np.array([[0.08519997507149087, 0.028762603136169497, 404.00207461095397, -0.025975962691102063, -0.034013945266784036],
-[0.07368360422310369, 0.01681222219061629, 420.13378612121545, -0.0164934651853555, -0.029706520480420585],
-[0.019847538056258038, 0.04643890457429329, 452.94356604958097, -0.03221107458131659, -0.02656755643591971]]
+    return dict(
+        gate_type='CNOT',
+        hspace_full=hspace_full,
+        eket_tot=eket_tot,
+        eval_tot=eval_tot,
+        drive_term=drive_term,
+        hspace_select=hspace_select,
+        logi_state=logi_state,
+        W_0_2=W_0_2,
+        W_1_2=W_1_2,
+        option_ideal=option_ideal,
+        option_noisy=option_noisy,
+        pulse_param=pulse_param,
     )
-    options = {'disp': True, 'f_min':-6.3}
-    fidelity = []
-    drive_param = []
-    for i in tqdm(range(x0_vec.shape[0])):
-        tg_bound = (x0_vec[i][2] - 0.000001, x0_vec[i][2] + 0.000001)
-        bounds = (amp_bounds, amp_bounds, tg_bound, detune_bounds, detune_bounds)
-        res = sp.optimize.shgo(
-            func=ut.get_fidelity_cnot_2A0,
-            bounds=bounds,
-            args=args,
-            workers=100,
-            options=options
-            )
-        print(res, '\n')
-        fidelity.append(res.fun)
-        drive_param.append(res.x)
-        print('fidelity = ', fidelity)
-        print('drive_param = ', np.array(drive_param).tolist())
 
 
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-def fidelity_de_repeat2(smal_tgbound=True):
-    amp_bounds = (0, 0.2)
-    detune_bounds = (-0.3, 0.)
+# ==============================================================
+# HAMILTONIAN BUILDING
+# ==============================================================
 
-    workers = 100
-    popsize = 50
-    mutation = (1.5, 1.99)
-    recombination = 0.7
-    tol = 0.01
-
-    tg_vec = np.linspace(142.14, 200+6.43, num=6)
-    # tg_vec = np.linspace(20, 200, num=15)
-    tg_bounds = []
-    if smal_tgbound:
-        for i in range(len(tg_vec)):
-            tg_bounds.append((tg_vec[i]-0.00000001, tg_vec[i]))
+def build_hamiltonians(system_data, config):
+    gate_type = config["gate_type"]
+    if gate_type == "CZ":
+        return build_hamiltonians_cz(system_data, config)
+    elif gate_type == "CNOT":
+        return build_hamiltonians_cnot(system_data, config)
     else:
-        for i in range(len(tg_vec)-1):
-            tg_bounds.append((tg_vec[i], tg_vec[i+1]))
+        raise ValueError(f"Unknown gate_type: {gate_type}")
 
-    print('\namp_bounds=',amp_bounds)
-    print('detune_bounds=',detune_bounds)
-    print('tg_bounds=',tg_bounds)
 
-    print('\nworkers=',workers)
-    print('popsize=',popsize)
-    print('mutation=',mutation)
-    print('recombination=',recombination)
-    print('tol=',tol)
+def build_hamiltonians_cz(sys, config):
+    """
+    和你原来的 CZ 版本 build_hamiltonians 类似。
+    Hamiltonian construction for CZ gate, similar to your original CZ version.
+    """
+    print("Building Hamiltonians for CZ...")
 
-    Fidelity = {}
-    Drive_param = {}
-    repets = 10
-    for idx in range(repets):
-        print('\n\n\n***&&&***repeats=%d\n\n\n'%idx)
-        fidelity = []
-        drive_param = []
-        for jdx, tg_bound in tqdm(enumerate(tg_bounds)):
-            if idx==0:
-                x0 = None
+    logi_idx_select = [sys['hspace_select'].index(i) for i in sys['logi_state']]
+    index_select = [sys['hspace_full'].index(i) for i in sys['hspace_select']]
+
+    H_drive_select, eket_truc = ut.build_hamiltonian_2q(
+        config['gate_type']=='CZ', index_select,
+        sys['eval_tot'], sys['eket_tot'], sys['drive_term']
+    )
+
+    hspace_large = sys['hspace_full'][:config['truc_large']]
+    logi_idx_large = [hspace_large.index(i) for i in sys['logi_state']]
+    idx_large = np.arange(config['truc_large']).tolist()
+
+    H_drive_large, _ = ut.build_hamiltonian_2q(
+        config['gate_type']=='CZ', idx_large,
+        sys['eval_tot'], sys['eket_tot'], sys['drive_term']
+    )
+
+    return dict(
+        H_drive_select=H_drive_select,
+        H_drive_large=H_drive_large,
+        logi_idx_select=logi_idx_select,
+        logi_idx_large=logi_idx_large,
+    )
+
+
+def build_hamiltonians_cnot(sys, config):
+    """
+    按照你旧 CNOT 脚本构建：
+        - H_drive_part: 用于优化
+        - H_drive_False: 大空间检查
+    Hamiltonian construction for CNOT gate, following your old CNOT script:
+        - H_drive_select: for optimization
+        - H_drive_large: for large Hilbert space check     
+    """
+    print("Building Hamiltonians for CNOT...")
+
+    logi_idx_select = [sys['hspace_select'].index(i) for i in sys['logi_state']]
+    # print(f"logi_idx_select = {logi_idx_select}\n")
+    # print(f"sys['hspace_select'] = {sys['hspace_select'][:20]}\n")
+    # print(f"sys['logi_state'] = {sys['logi_state']}\n")
+    # print("sys['hspace_full'] =", sys['hspace_full'][:20])
+    
+    index_select = [sys['hspace_full'].index(i) for i in sys['hspace_select']]
+
+    H_drive_select, _ = ut.build_hamiltonian_2q(
+        config['gate_type']=='CZ', index_select,
+        sys['eval_tot'], sys['eket_tot'], sys['drive_term']
+    )
+
+    hspace_large = sys['hspace_full'][:config['truc_large']]
+    logi_idx_large = [hspace_large.index(i) for i in sys['logi_state']]
+    idx_large = np.arange(config['truc_large']).tolist()
+
+    H_drive_large, _ = ut.build_hamiltonian_2q(
+        config['gate_type']=='CZ', idx_large,
+        sys['eval_tot'], sys['eket_tot'], sys['drive_term']
+    )
+
+    return dict(
+        H_drive_select=H_drive_select,
+        H_drive_large=H_drive_large,
+        logi_idx_select=logi_idx_select,
+        logi_idx_large=logi_idx_large,
+    )
+
+
+# ==============================================================
+# FIDELITY EVALUATION HELPERS
+# ==============================================================
+
+def evaluate_fidelity_truncated(x, system_data, hamiltonians, config):
+    """给 DE 用的目标函数 wrapper。
+    Wrapper objective function for differential evolution (truncated Hilbert space)."""
+    gate_type = config['gate_type']
+
+    if gate_type == 'CZ':
+        # x = [tg, amp, detune]
+        args = [
+            hamiltonians['H_drive_select'],
+            system_data['W_20_50'],
+            1,
+            [],
+            hamiltonians['logi_idx_select'],
+            system_data['option_ideal'],
+            system_data['option_noisy'],
+        ]
+        return ut.cz_fidelity_log_noise(x, *args)
+
+    elif gate_type == 'CNOT':
+        # x = [tg, A1, A2, d1, d2]
+        args = [
+            hamiltonians['H_drive_select'],
+            system_data['W_0_2'],
+            system_data['W_1_2'],
+            1,
+            [],
+            hamiltonians['logi_idx_select'],
+            config['mid_state'],
+            system_data['option_ideal'],
+            system_data['option_noisy'],
+        ]
+        return ut.cnot_fidelity_log_noise(x, *args)
+    else:
+        raise ValueError(f"Unknown gate_type: {gate_type}")
+
+
+def evaluate_fidelity_large(drive_params, system_data, hamiltonians, config):
+    """在大 Hilbert 空间上检查 fidelity。
+    Evaluate fidelity on a larger Hilbert space (sanity check / validation)."""
+    gate_type = config['gate_type']
+
+    if gate_type == 'CZ':
+        tg, amp, detune = drive_params
+        n_cpu_parallel = 16
+        arg_all = [
+            tg, amp, detune,
+            n_cpu_parallel,
+            np.arange(config['truc_large']),
+            system_data['W_20_50'],
+            hamiltonians['H_drive_large'],
+            hamiltonians['logi_idx_large'],
+        ]
+        return ut.cz_fidelity_log_old(arg_all)
+
+    elif gate_type == 'CNOT':
+        tg, A1, A2, d1, d2 = drive_params
+        num_cpus = 1
+        c_op_list = []
+        arg_all = [
+            tg, A1, A2, d1, d2,
+            hamiltonians['H_drive_large'],
+            system_data['W_0_2'],
+            system_data['W_1_2'],
+            num_cpus,
+            c_op_list,
+            hamiltonians['logi_idx_large'],
+            config['mid_state'],
+            system_data['option_ideal'],
+            system_data['option_noisy'],
+        ]
+        return ut.cnot_fidelity_log(arg_all)
+    else:
+        raise ValueError(f"Unknown gate_type: {gate_type}")
+
+
+# ==============================================================
+# OPTIMIZATION CORE
+# ==============================================================
+
+def fid_func_global(x):
+    """
+    Global wrapper for truncated fidelity used by differential evolution.
+    It reads complex objects from global variables to avoid pickling issues.
+    """    
+    # x 是 differential_evolution 给的参数
+    # 复杂对象从全局读，不用被 pickle
+    return evaluate_fidelity_truncated(
+        x,
+        system_data=GLOBAL_system_data,
+        hamiltonians=GLOBAL_hamiltonians,
+        config=GLOBAL_config,
+    )
+
+from pathos.multiprocessing import ProcessingPool as Pool
+pool = Pool(nodes=50)
+def vectorized_fid(X):
+    """
+    Example vectorized fidelity using a process pool.
+    Not used by default differential evolution, but available if needed.
+    """    
+    return pool.map(fid_func_global, X)
+
+
+def optimize_single_gate_time(
+    gate_time_idx, system_data, hamiltonians, config, drive_param_list
+):
+    """
+    Optimize fidelity for a single gate time index using differential evolution.
+    """    
+    gate_type = config['gate_type']
+    tg_idx = config['tg_opt_vec'][gate_time_idx]
+
+    # ===== bounds =====
+    if gate_type == 'CZ':
+        tg_initial = tg_idx
+        tg_bounds = (tg_initial + config['tg_bound'][0],
+                     tg_initial + config['tg_bound'][1])
+        bounds = (tg_bounds, config['amp_bound'], config['detune_bound'])
+    else:
+        tg_initial = tg_idx
+        tg_bounds = (tg_initial + config['tg_bound'][0],
+                     tg_initial + config['tg_bound'][1])
+        bounds = (
+            tg_bounds,
+            config['A1_bound'],
+            config['A2_bound'],
+            config['detune1_bound'],
+            config['detune2_bound'],
+        )
+
+    print(f"\n--- Optimizing {gate_type} at index {gate_time_idx}, tg_init={tg_initial:.6f} ---")
+    ut.print_time()
+
+    # differential evolution settings
+    # 用 partial 包装成可 pickle 的函数
+    # fid_func = partial(
+    #     evaluate_fidelity_truncated,
+    #     system_data=system_data,
+    #     hamiltonians=hamiltonians,
+    #     config=config
+    # )
+
+    global GLOBAL_system_data, GLOBAL_hamiltonians, GLOBAL_config
+
+    # === 把复杂对象放入全局变量 ===
+    GLOBAL_system_data = system_data
+    GLOBAL_hamiltonians = hamiltonians
+    GLOBAL_config = config
+
+    params = dict(
+        func=fid_func_global,
+        bounds=bounds,
+        disp=True,
+        callback=ut.print_soln,
+        init="sobol",
+        workers=config['workers'],
+        popsize=config['popsize'],
+        mutation=config['mutation'],
+        recombination=config['recombination'],
+        tol=config['tol'],
+        polish=False,
+    )
+
+    # x0 逻辑
+    if config['use_x0'] == 'from_neighbor':
+        if gate_time_idx == 0:
+            if config['first_x0_from_input']:
+                print("Using first x0 from input for initialization (first gate time)")
+                params['x0'] = config['x0_array']
             else:
-                x0 = Drive_param[idx][jdx]
+                print("No x0 for first gate time")
+        else:
+            print("Using x0 from previous optimized param")
+            params['x0'] = [tg_initial] + drive_param_list[-1][1:]
+    elif config['use_x0'] == 'from_input':
+        print("Using x0 from input for initialization")
+        params['x0'] = config['x0_array']
+    else:
+        print("No x0 used")
 
-            bounds = (amp_bounds, amp_bounds, tg_bound, detune_bounds, detune_bounds)
+    print(f'params["x0"] = {params.get("x0", "None")}')
+    result = sp.optimize.differential_evolution(**params)
 
-            res = sp.optimize.differential_evolution(
-                func=ut.get_fidelity_cnot_2A0,
-                bounds=bounds,
-                args=args,
-                disp=True,
-                callback=ut.print_soln,
-                init="sobol",
-                workers=workers,
-                popsize=popsize,
-                mutation=mutation,
-                recombination=recombination,
-                tol=tol,
-                polish=False, # 'True' will make the for-loop break
-                x0=x0,
-                # constraints=(nonlinear_constraint,)
-                )
-            fidelity.append(res.fun)
-            drive_param.append(res.x)
-            print(res, '\n')
-            print('fidelity = ', fidelity)
-            print('drive_param = ', np.array(drive_param).tolist())
-        Fidelity[idx+1] = fidelity
-        Drive_param[idx+1] = drive_param
-    print('Fidelity = ', Fidelity)
-    print('Drive_param = ', Drive_param)
-    print('\namp_bounds=',amp_bounds)
-    print('detune_bounds=',detune_bounds)
-    print('tg_bounds=',tg_bounds)
+    ut.print_time()
+    print(f"Optimization completed, fidelity = {result.fun:.8f}")
+    print(f"Optimized params = {result.x}")
+
+    return result.fun, result.x.tolist()
 
 
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-def fidelity_de_x0_repeat():
-    amp_bounds = (0, 0.4)
-    detune_bounds = (-0.5, 0.)
-    workers = 75
-    popsize = 50
-    mutation = (1.5, 1.99)
-    recombination = 0.7
-    tol = 0.01
-    print('\namp_bounds=',amp_bounds)
-    print('detune_bounds=',detune_bounds)
-    print('\nworkers=',workers)
-    print('popsize=',popsize)
-    print('mutation=',mutation)
-    print('recombination=',recombination)
-    print('tol=',tol)
+# ==============================================================
+# SAVE / RESUME / PLOT
+# ==============================================================
 
-    x0_vec = np.array([
-# [ 1.29375677e-01,  4.12452337e-02,  1.29287143e+02,-2.60842903e-01, -2.79434355e-01],
-# [ 1.39375677e-01,  4.12452337e-02,  1.29287143e+02,-2.60842903e-01, -2.79434355e-01, -2.26002033e+00],
-# [ 1.26599461e-01,  3.43961750e-02,  1.80715714e+02, -2.65980086e-01, -2.79133255e-01,],
-#    [ 1.52635845e-01,  9.30792596e-02,  1.80715714e+02, -1.45921117e-01, -1.53642899e-01, -1.46603733e+00],
-# [ 1.22295234e-01,  3.22886233e-02,   1.87142856e+02, -2.65458734e-01, -2.76565235e-01],
-# [ 1.86138183e-01,  3.74156793e-02,  1.87142856e+02, -2.97170859e-01, -3.29698991e-01, -3.23563],
-[ 2.23997351e-01,  4.20319395e-02,  1.99999999e+02, -3.34368079e-01, -3.94603445e-01],
-# [ 2.33997351e-01,  4.20319395e-02,  1.99999999e+02, -3.34368079e-01, -3.94603445e-01,  -3.44211]
-])
-    print('x0_vec=',x0_vec)
-    Fidelity = {}
-    Drive_param = {}
-    repets = 2
-    Drive_param[0] = x0_vec
-    for idx in range(repets):
-        print('\n\n\n***&&&***repeats=%d\n\n\n'%idx)
-        fidelity = []
-        drive_param = []
-        for jdx in tqdm(range(x0_vec.shape[0])):
-            x0 = Drive_param[idx][jdx]
-            tg_bound = (x0_vec[jdx][2] - 0.000001, x0_vec[jdx][2] + 0.000001)
-            bounds = (amp_bounds, amp_bounds, tg_bound, detune_bounds, detune_bounds)
+def save_results(config, system_data, fidelity_list, fidelity_large_list,
+                 drive_param_list, last_index):
+    """保存当前优化结果到 npz + csv。
+    Save current optimization results to both npz and csv.
+    """
+    result_file = config['result_file']
+    csv_file = config['csv_file']
 
-            res = sp.optimize.differential_evolution(
-                func=ut.get_fidelity_cnot_2A0,
-                bounds=bounds,
-                args=args,
-                disp=True,
-                callback=ut.print_soln,
-                init="sobol",
-                workers=workers,
-                popsize=popsize,
-                mutation=mutation,
-                recombination=recombination,
-                tol=tol,
-                polish=False, # 'True' will make the for-loop break
-                x0=x0,
-                # constraints=(nonlinear_constraint,)
-                )
-            fidelity.append(res.fun)
-            drive_param.append(res.x)
-            print(res, '\n')
-            print('fidelity = ', fidelity)
-            print('drive_param = ', np.array(drive_param).tolist())
-        Fidelity[idx+1] = fidelity
-        Drive_param[idx+1] = drive_param
-    print('fidelity = ', Fidelity)
-    print('drive_param = ', Drive_param)
-    print('\namp_bounds=',amp_bounds)
-    print('detune_bounds=',detune_bounds)
+    np.savez(
+        result_file,
+        config=json.dumps(config, default=str),
+        fidelity=np.array(fidelity_list),
+        fidelity_large=np.array(fidelity_large_list),
+        drive_params=np.array(drive_param_list, dtype=object),
+        last_index=last_index,
+    )
+    print(f"[SAVE] npz saved to {result_file}")
+
+    # 保存 csv（简单表格式）
+    if len(drive_param_list) > 0:
+        max_len = max(len(p) for p in drive_param_list)
+        data = {}
+        data['idx'] = np.arange(len(drive_param_list))
+        data['f_trunc'] = fidelity_list
+        if len(fidelity_large_list) == len(drive_param_list):
+            data['f_large'] = fidelity_large_list
+        for j in range(max_len):
+            data[f'p{j}'] = [p[j] if j < len(p) else np.nan for p in drive_param_list]
+
+        df = pd.DataFrame(data)
+        df.to_csv(csv_file, index=False)
+        print(f"[SAVE] csv saved to {csv_file}")
+
+
+def load_resume_if_any(config):
+    """断点续跑: 如果配置要求 resume 且文件存在，则加载之前的结果。
+        Resume mode helper: if config['resume'] is True and result file exists,
+    load previous results and continue from the next index.
+    """
+    if not config.get('resume', False):
+        return 0, [], [], []
+
+    result_file = config['result_file']
+    if not os.path.exists(result_file):
+        print(f"[RESUME] No existing file {result_file}, starting from scratch.")
+        return 0, [], [], []
+
+    data = np.load(result_file, allow_pickle=True)
+    fidelity_list = data.get('fidelity', np.array([])).tolist()
+    fidelity_large_list = data.get('fidelity_large', np.array([])).tolist()
+    drive_param_list = data.get('drive_params', np.array([], dtype=object)).tolist()
+    last_index = int(data.get('last_index', 0))
+
+    start_idx = last_index + 1
+    print(f"[RESUME] Loaded from {result_file}, resume from index {start_idx}.")
+
+    return start_idx, fidelity_list, fidelity_large_list, drive_param_list
+
+
+def plot_results(config, fidelity_list, fidelity_large_list, drive_param_list):
+    """
+    Plot 3×1 panel:
+        1. Fidelity vs gate time tg
+        2. Drive amplitude vs gate time tg
+        3. Detuning vs gate time tg
+
+    CNOT parameters:
+        0: tg
+        1: drive_amp1
+        2: drive_amp2
+        3: detuning1
+        4: detuning2
+
+    CZ parameters:
+        0: tg
+        1: drive_amp1
+        2: detuning1
+    """
+    if not config.get('do_plot', False):
+        return
+
+    plot_dir = config['plot_dir']
+    os.makedirs(plot_dir, exist_ok=True)
+
+    if len(drive_param_list) == 0:
+        print("[PLOT] No parameters to plot.")
+        return
+
+    arr = np.array(drive_param_list)   # shape: (N, num_params)
+    tg = arr[:, 0]
+
+    # -----------------------------
+    # Fidelity subplot
+    # -----------------------------
+    fig, ax = plt.subplots(3, 1, figsize=(6, 8))
+
+    ax[0].set_title(f"{config['gate_type']} optimization results")
+
+    # truncated fidelity
+    fidelity = 10 ** np.array(fidelity_list)
+    ax[0].plot(tg, fidelity, ".-", label="truncated")
+
+    # large Hilbert fidelity
+    if len(fidelity_large_list) == len(fidelity_list):
+        fidelity_large = 10 ** np.array(fidelity_large_list)
+        ax[0].plot(tg, fidelity_large, "o", label="large", alpha=0.8)
+
+    ax[0].set_ylabel("Fidelity")
+    ax[0].set_yscale("log")
+    ax[0].legend()
+    ax[0].grid()
+
+    # -----------------------------
+    # Drive amplitude subplot
+    # -----------------------------
+    gate_type = config["gate_type"].upper()
+
+    if gate_type == "CNOT":
+        # param1 = amp1; param2 = amp2
+        ax[1].plot(tg, arr[:, 1], ".-", label="drive_amp1")
+        ax[1].plot(tg, arr[:, 2], ".-", label="drive_amp2")
+    else:  # CZ
+        ax[1].plot(tg, arr[:, 1], ".-", label="drive_amp1")
+
+    ax[1].set_ylabel("Drive amplitude")
+    ax[1].legend()
+    ax[1].grid()
+
+    # -----------------------------
+    # Detuning subplot
+    # -----------------------------
+    if gate_type == "CNOT":
+        ax[2].plot(tg, arr[:, 3], ".-", label="detuning1")
+        ax[2].plot(tg, arr[:, 4], ".-", label="detuning2")
+    else:  # CZ
+        ax[2].plot(tg, arr[:, 2], ".-", label="detuning1")
+
+    ax[2].set_ylabel("Detuning")
+    ax[2].set_xlabel("Gate time tg")
+    ax[2].legend()
+    ax[2].grid()
+
+    # -----------------------------
+    # Save figure
+    # -----------------------------
+    fname = os.path.join(plot_dir, f"{config['gate_type']}_summary.png")
+    fig.tight_layout()
+    fig.savefig(fname, dpi=200, bbox_inches='tight')
+    plt.close(fig)
+
+    print(f"[PLOT] Saved {fname}")
+
+
+# ==============================================================
+# PRINTING
+# ==============================================================
+
+def print_configuration_summary(sys, config):
+    print("\n" + "=" * 60)
+    print(f"{config['gate_type']} GATE FIDELITY OPTIMIZATION CONFIGURATION")
+    print("=" * 60)
+    print(f"Start time: {datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    print(f"gate_type = {config['gate_type']}")
+    
+    print(f"truc_large      = {config['truc_large']}")
+    print(f"truc_optimize   = {config['truc_optimize']}")    
+    print(f"use_truc_model   = {config['use_truc_model']}")
+    print(f"truc_model_name  = {config['truc_model_name']}")
+    
+    print(f"max_step_ideal  = {config['max_step_ideal']}")
+    print(f"max_step_noisy  = {config['max_step_noisy']}")
+
+    print(f"workers         = {config['workers']}")
+    print(f"popsize         = {config['popsize']}")
+    print(f"recombination   = {config['recombination']}")
+    print(f"tol             = {config['tol']}")
+    print(f"mutation        = {config['mutation']}")
+    print(f"resume          = {config['resume']}")
+    print(f"do_plot         = {config['do_plot']}")
+    
+    print(f"use_x0         = {config['use_x0']}")
+    print(f"first_x0_from_input = {config['first_x0_from_input']}")
+    
+    print(f"result_file     = {config['result_file']}")
+    
+    print(f"folder_pulse   = {config.get('folder_pulse', 'None')}")
+    print(f"gate_time_indices = {config.get('gate_time_indices', 'None')}") 
+
+    if config['gate_type'] == 'CZ':
+        print(f"W_20_50         = {np.round(sys['W_20_50'], 3)}")
+        print(f"amp_bound       = {config['amp_bound']}")
+        print(f"detune_bound    = {config['detune_bound']}")
+    else:
+        print(f"mid_state       = {config['mid_state']}")
+        print(f"W_0_2, W_1_2    = {np.round(sys['W_0_2'], 3)}, {np.round(sys['W_1_2'], 3)}")
+        print(f"A1_bound        = {config['A1_bound']}")
+        print(f"A2_bound        = {config['A2_bound']}")
+        print(f"detune1_bound   = {config['detune1_bound']}")
+        print(f"detune2_bound   = {config['detune2_bound']}")
+        
+        print(f"x0_array       = {config['x0_array']}")
+        print(f"tg_opt_vec       = {config['tg_opt_vec']}")
+
+    print(f"pulse_param = {sys['pulse_param']}")
+
+    print("=" * 60)
+
+
+# ==============================================================
+# RUN SWEEP
+# ==============================================================
+
+def run_fidelity_sweep(system_data, hamiltonians, config):
+    print("Starting fidelity sweep...")
+
+    # resume
+    start_idx, fidelity_list, fidelity_large_list, drive_param_list = load_resume_if_any(config)
+
+    n_total = len(config['tg_opt_vec'])
+    print(f"pulse_param = {system_data['pulse_param']}")
+    print(f"Total gate times to optimize: {n_total}, starting from index {start_idx}")
+    
+    for jdx in tqdm(range(start_idx, n_total), desc=f"{config['gate_type']} optimize"):
+        f_trunc, params = optimize_single_gate_time(
+            jdx, system_data, hamiltonians, config, drive_param_list
+        )
+        fidelity_list.append(f_trunc)
+        drive_param_list.append(params)
+
+        ut.print_pulse_params("param_optimized", drive_param_list)
+        ut.print_fidelity(f"f_{config['truc_optimize']}", fidelity_list, num_digits=8)
+
+        f_large = evaluate_fidelity_large(params, system_data, hamiltonians, config)
+        fidelity_large_list.append(f_large)
+        ut.print_fidelity(f"f_{config['truc_large']}", fidelity_large_list, num_digits=8)
+
+        # 每步都保存一次，方便断点恢复
+        save_results(config, system_data, fidelity_list, fidelity_large_list,
+                     drive_param_list, jdx)
+
+    print("Fidelity sweep completed!")
+
+    # 最后画图
+    plot_results(config, fidelity_list, fidelity_large_list, drive_param_list)
+
+
+# ==============================================================
+# CONFIGURATION
+# ==============================================================
+
+def get_optimization_config(gate_type="CNOT", custom_config=None):
+    """
+    Return the unified configuration dictionary.
+
+    Parameters
+    ----------
+    gate_type : {"CZ", "CNOT"}
+        Type of 2-qubit gate.
+    custom_config : dict or None
+        If provided, overrides entries in the default config.
+    """
+
+    # ===== 通用部分 =====
+    config = dict(
+        gate_type=gate_type,
+
+        # truncation
+        truc_large=1000,
+        truc_optimize=200,
+        use_truc_model=False,
+        truc_model_name="cz_short_500_detune1",
+
+        # qutip options
+        max_step_ideal=1e-3,
+        max_step_noisy=1e-3,
+
+        # differential evolution parameters
+        workers=120,
+        popsize=10,
+        recombination=0.7,
+        tol=0.01,
+        mutation=(0.5, 1.0),
+
+        # resume & saving
+        resume=False,
+        do_plot=True,
+
+        # x0 使用方式：None / 'from_neighbor' / 'from_input'
+        use_x0='from_neighbor',
+        first_x0_from_input=True,
+        
+        folder_load='../../data/_truc_3000',
+    )
+
+    # =====================================================
+    # Add timestamped directory (this is the effective path)
+    # =====================================================    
+    
+    beijing_tz = pytz.timezone("Asia/Shanghai")
+    timestamp = datetime.now(beijing_tz).strftime("%Y%m%d_%H%M%S")
+
+    label_str = f"{gate_type.lower()}_{timestamp}"
+    base_dir = f"data/results/{label_str}"
+    result_file = os.path.join(base_dir, f"{label_str}.npz")
+    csv_file = os.path.join(base_dir, f"{label_str}.csv")
+    os.makedirs(base_dir, exist_ok=True)
+
+    config.update(dict(
+        timestamp=timestamp,
+        result_dir=base_dir,
+        result_file=result_file,
+        csv_file=csv_file,
+        plot_dir=base_dir,
+    ))
+    # =====================================================
+
+    # ===== CZ-specific parameters =====
+    if gate_type == "CZ":
+        config.update(dict(
+            # data path
+            folder_pulse='data/npz/cz_pulse_neighbor.txt',
+            gate_time_indices=(np.arange(20, 50) - 20).tolist(),
+
+            tg_bound=(-0.01, 0.01),
+            amp_bound=(0.01, 0.05),
+            detune_bound=(0.001, 0.04),
+        ))
+
+    # ===== CNOT-specific parameters =====
+    elif gate_type == "CNOT":
+        # Here we follow your old CNOT script style (truncations and related parameters)
+        config.update(dict(
+            
+            mid_state='8-2',
+            
+            # data-related parameters (kept for compatibility with your previous scripts)
+            truc1=300,
+            truc_tot=1000,
+            truc_full=1000,
+            charge_pick=True,
+
+            # If you have a pulse file, you can enable it and specify path and indices
+            # folder_pulse='../figure/data/data_cnot_fidelity_3ncut.txt',
+            # gate_time_indices= [0, 15, -1], # np.arange(3).tolist(),  #[0],
+
+            # CNOT parameter bounds (you can adjust as needed)
+            tg_bound=(-0.01, 0.01),
+            A1_bound=(0.001, 0.05),
+            A2_bound=(0.001, 0.25),
+            detune1_bound=(-0.01, -0.00001),
+            detune2_bound=(-0.01, -0.00001),
+
+            # Initial x0 vector(s) (can be extended to multiple rows for multiple gate times)
+            # x0_array=np.array([
+            #     [200.00347, 0.0213, 0.0139, -0.005, -0.005],
+            # ]),
+            # tg_opt_vec=np.arange(200, 250, 2).tolist(),  
+            x0_array=np.array([
+[179.993111, 0.032105, 0.021322, -0.006023, -0.005717] ,
+                # [200.00347, 0.0213, 0.0139, -0.005, -0.005],
+            ]),
+            tg_opt_vec=np.arange(180, 351, 10).tolist(),             
+        ))
+    else:
+        raise ValueError(f"Unknown gate_type: {gate_type}")
+
+    # 用户自定义覆盖
+    if custom_config:
+        config.update(custom_config)
+
+    return config
+
+# ==============================================================
+# DIRECT FIDELITY CALCULATION (NO OPTIMIZATION)
+# ==============================================================
+
+def compute_fidelity_given_params(params, system_data, hamiltonians, config):
+    """
+        f_trunc   -- truncated Hilbert space fidelity (log10(error))
+        f_large   -- large Hilbert space fidelity (log10(error))
+    """
+    gate_type = config["gate_type"].upper()
+
+    # -------- truncated fidelity --------
+    if gate_type == "CZ":
+        args = [
+            hamiltonians['H_drive_select'],
+            system_data['W_20_50'],
+            1,
+            [],
+            hamiltonians['logi_idx_select'],
+            system_data['option_ideal'],
+            system_data['option_noisy'],
+        ]
+
+        f_trunc = ut.cz_fidelity_log_noise(params, *args)
+
+    elif gate_type == "CNOT":
+        args = [
+            hamiltonians['H_drive_select'],
+            system_data['W_0_2'],
+            system_data['W_1_2'],
+            1,
+            [],
+            hamiltonians['logi_idx_select'],
+            config['mid_state'],
+            system_data['option_ideal'],
+            system_data['option_noisy'],
+        ]
+        # print("params =", params)
+        # print("args =", args)        
+        f_trunc = ut.cnot_fidelity_log_noise(params, *args)
+
+    else:
+        raise ValueError(f"Unknown gate_type: {gate_type}")
+
+    # -------- large fidelity --------
+    # f_large = evaluate_fidelity_large(params, system_data, hamiltonians, config)
+
+    return f_trunc # , f_large
+
+
+# ==============================================================
+# BATCH DIRECT FIDELITY CALCULATION (NO OPTIMIZATION)
+# ==============================================================
+
+def compute_fidelity_batch(
+    params_list,
+    system_data,
+    hamiltonians,
+    config,
+    show_progress=True,
+    return_numpy=False,
+):
+    """
+    Compute fidelities for multiple pulse parameter sets without optimization.
+
+    Parameters
+    ----------
+    params_list : array-like, shape (N, P)
+        List of pulse parameters.
+        CZ:   [tg, amp, detune]
+        CNOT: [tg, A1, A2, d1, d2]
+    show_progress : bool, optional
+        Whether to show a tqdm progress bar.
+
+    return_numpy : bool, optional
+        If True, return NumPy arrays instead of Python lists.
+
+    Returns
+    -------
+    f_trunc_list : list or np.ndarray
+        log10(error) fidelities in truncated Hilbert space.
+    """
+
+    params_array = np.asarray(params_list)
+    if params_array.ndim != 2:
+        raise ValueError("params_list must have shape (N, num_params)")
+
+    iterator = params_array
+    if show_progress:
+        iterator = tqdm(iterator, desc="Computing fidelity batch")
+
+    f_trunc_list = []
+
+    for params in iterator:
+        f_trunc = compute_fidelity_given_params(
+            params.tolist(),
+            system_data,
+            hamiltonians,
+            config,
+        )
+        f_trunc_list.append(f_trunc)
+
+    if return_numpy:
+        return np.array(f_trunc_list)
+    return f_trunc_list
+
+
+# ==============================================================
+# MAIN
+# ==============================================================
+
+def main():
+    print(f"Starting {os.path.basename(__file__)}")
+    ut.print_time()
+
+    # ===== choose gate type here: 'CZ' or 'CNOT' =====
+    # gate_type = "CZ"
+    gate_type = "CNOT"
+
+    # Override some configuration entries here if needed
+    custom_config = {
+        # "resume": True,
+        # "do_plot": False,
+    }
+    config = get_optimization_config(gate_type=gate_type, custom_config=custom_config)
+
+    # Step 1: Load system data
+    system_data = load_system_data(config)
+
+    # Step 2: Build Hamiltonians
+    hamiltonians = build_hamiltonians(system_data, config)
+
+    # Step 3: Print configuration summary
+    print_configuration_summary(system_data, config)
+
+    # Step 4: Run sweep
+    # run_fidelity_sweep(system_data, hamiltonians, config)
+    # print("system_data['hspace_full'] = ", system_data['hspace_full'])
+    # print("system_data['eval_tot'] = ", system_data['eval_tot'][:10])
+
+    ### Direct fidelity calculation example (no optimization)
+    
+    cnot = pd.read_csv('data/cnot_fidelity_npz.txt')
+    params_list = cnot[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].values.tolist()[:2]
+    
+    f_trunc = compute_fidelity_batch(
+        params_list,
+        system_data,
+        hamiltonians,
+        config,
+    )
+    ut.print_fidelity(f'f_{n_truc}', f_trunc, num_digits=8)
+    ut.print_time()
+
+    # print("Truncated fidelities:", f_trunc)
+
+    # print("\n" + "=" * 60)
+    # print("OPTIMIZATION COMPLETED")
+    # print("=" * 60)
+
+if __name__ == '__main__':
+    main()
