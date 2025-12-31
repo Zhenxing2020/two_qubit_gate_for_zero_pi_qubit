@@ -293,7 +293,6 @@ def save_two_qubit_data(params, folder_save):
         setattr(zp, f"cutoff_ext_{i}", params["phi_cut"])
     zp.set_discretized_phi_range(var_indices=zp.var_categories["extended"], phi_range=params["phi_range"])
 
-
     summary_file = str(Path(folder_save, 'two_qubit_data_summary.txt'))
     with open(summary_file, 'w') as f:
         print("Two Qubit Data Summary:", file=f)
@@ -388,11 +387,9 @@ def save_two_qubit_data(params, folder_save):
     ).astype(complex)    
     print("dtype after reorder:", evecs_tot.dtype)
     # evecs_tot = np.array(normalize_eigenvector_phases(evecs_tot.T).astype(np.complex128))
-    
     evecs_tot = np.array(normalize_eigenvector_phases(evecs_tot.T)) 
     
     ######################################################################################
-    
 
     print("Finished calculating full system eigensystem.")
 

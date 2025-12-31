@@ -41,12 +41,10 @@ import utils_2Q_gate_zp as ut
 import ham_data as hd
 from functools import partial
 
-
 # === global variables for multiprocessing ===
 GLOBAL_system_data = None
 GLOBAL_hamiltonians = None
 GLOBAL_config = None
-
 
 # ==============================================================
 # SYSTEM LOADING
@@ -149,10 +147,14 @@ def load_system_data_cnot(config):
 
     # 选择优化空间的 Hilbert space（沿用你原来的逻辑）
     if config['use_truc_model']:
-        hspace_select = ut.truc_model['cnot_' + config['mid_state'][0] + config['mid_state'][2]][:config['truc_optimize']]
+        hspace_select = np.array(hspace_full)[ ut.truc_model[config['truc_model_name']][:config['truc_optimize']]].tolist()
+        # hspace_select = ut.truc_model['cnot_' + config['mid_state'][0] + config['mid_state'][2]][:config['truc_optimize']]
     else:
         hspace_select = hspace_full[:config['truc_optimize']]
-
+    print(f'hspace_full={hspace_full[:30]}')
+    print(f"hspace_select_idx={ut.truc_model[config['truc_model_name']][:config['truc_optimize']]}")
+    print(f'hspace_select={hspace_select[:30]}')
+    
     option_ideal, option_noisy = ut.get_qutip_options(config['max_step_ideal'], config['max_step_noisy'])
 
     # pulse 参数：优先使用 pulse 文件, 其次可以用 x0_array，
@@ -713,132 +715,6 @@ def run_fidelity_sweep(system_data, hamiltonians, config):
 
 
 # ==============================================================
-# CONFIGURATION
-# ==============================================================
-
-def get_optimization_config(gate_type="CNOT", custom_config=None):
-    """
-    Return the unified configuration dictionary.
-
-    Parameters
-    ----------
-    gate_type : {"CZ", "CNOT"}
-        Type of 2-qubit gate.
-    custom_config : dict or None
-        If provided, overrides entries in the default config.
-    """
-
-    # ===== 通用部分 =====
-    config = dict(
-        gate_type=gate_type,
-
-        # truncation
-        truc_large=1000,
-        truc_optimize=200,
-        use_truc_model=False,
-        truc_model_name="cz_short_500_detune1",
-
-        # qutip options
-        max_step_ideal=1e-3,
-        max_step_noisy=1e-3,
-
-        # differential evolution parameters
-        workers=120,
-        popsize=10,
-        recombination=0.7,
-        tol=0.01,
-        mutation=(0.5, 1.0),
-
-        # resume & saving
-        resume=False,
-        do_plot=True,
-
-        # x0 使用方式：None / 'from_neighbor' / 'from_input'
-        use_x0='from_neighbor',
-        first_x0_from_input=True,
-        
-        folder_load='../../data/_truc_3000',
-    )
-
-    # =====================================================
-    # Add timestamped directory (this is the effective path)
-    # =====================================================    
-    
-    beijing_tz = pytz.timezone("Asia/Shanghai")
-    timestamp = datetime.now(beijing_tz).strftime("%Y%m%d_%H%M%S")
-
-    label_str = f"{gate_type.lower()}_{timestamp}"
-    base_dir = f"data/results/{label_str}"
-    result_file = os.path.join(base_dir, f"{label_str}.npz")
-    csv_file = os.path.join(base_dir, f"{label_str}.csv")
-    os.makedirs(base_dir, exist_ok=True)
-
-    config.update(dict(
-        timestamp=timestamp,
-        result_dir=base_dir,
-        result_file=result_file,
-        csv_file=csv_file,
-        plot_dir=base_dir,
-    ))
-    # =====================================================
-
-    # ===== CZ-specific parameters =====
-    if gate_type == "CZ":
-        config.update(dict(
-            # data path
-            folder_pulse='data/npz/cz_pulse_neighbor.txt',
-            gate_time_indices=(np.arange(20, 50) - 20).tolist(),
-
-            tg_bound=(-0.01, 0.01),
-            amp_bound=(0.01, 0.05),
-            detune_bound=(0.001, 0.04),
-        ))
-
-    # ===== CNOT-specific parameters =====
-    elif gate_type == "CNOT":
-        # Here we follow your old CNOT script style (truncations and related parameters)
-        config.update(dict(
-            
-            mid_state='8-2',
-            
-            # data-related parameters (kept for compatibility with your previous scripts)
-            truc1=300,
-            truc_tot=1000,
-            truc_full=1000,
-            charge_pick=True,
-
-            # If you have a pulse file, you can enable it and specify path and indices
-            # folder_pulse='../figure/data/data_cnot_fidelity_3ncut.txt',
-            # gate_time_indices= [0, 15, -1], # np.arange(3).tolist(),  #[0],
-
-            # CNOT parameter bounds (you can adjust as needed)
-            tg_bound=(-0.01, 0.01),
-            A1_bound=(0.001, 0.05),
-            A2_bound=(0.001, 0.25),
-            detune1_bound=(-0.01, -0.00001),
-            detune2_bound=(-0.01, -0.00001),
-
-            # Initial x0 vector(s) (can be extended to multiple rows for multiple gate times)
-            # x0_array=np.array([
-            #     [200.00347, 0.0213, 0.0139, -0.005, -0.005],
-            # ]),
-            # tg_opt_vec=np.arange(200, 250, 2).tolist(),  
-            x0_array=np.array([
-[179.993111, 0.032105, 0.021322, -0.006023, -0.005717] ,
-                # [200.00347, 0.0213, 0.0139, -0.005, -0.005],
-            ]),
-            tg_opt_vec=np.arange(180, 351, 10).tolist(),             
-        ))
-    else:
-        raise ValueError(f"Unknown gate_type: {gate_type}")
-
-    # 用户自定义覆盖
-    if custom_config:
-        config.update(custom_config)
-
-    return config
-
-# ==============================================================
 # DIRECT FIDELITY CALCULATION (NO OPTIMIZATION)
 # ==============================================================
 
@@ -944,6 +820,135 @@ def compute_fidelity_batch(
         return np.array(f_trunc_list)
     return f_trunc_list
 
+# ==============================================================
+# CONFIGURATION
+# ==============================================================
+
+def get_optimization_config(gate_type="CNOT", custom_config=None):
+    """
+    Return the unified configuration dictionary.
+
+    Parameters
+    ----------
+    gate_type : {"CZ", "CNOT"}
+        Type of 2-qubit gate.
+    custom_config : dict or None
+        If provided, overrides entries in the default config.
+    """
+
+    # ===== 通用部分 =====
+    config = dict(
+        gate_type=gate_type,
+
+        # truncation
+        truc_large=1000,
+        truc_optimize=240,
+        use_truc_model=True,
+        truc_model_name="n_theta_dress_charge_truc",
+
+        # qutip options
+        max_step_ideal=1e-3,
+        max_step_noisy=1e-3,
+
+        # differential evolution parameters
+        workers=60,
+        popsize=10,
+        recombination=0.7,
+        tol=0.01,
+        mutation=(0.5, 1.0),
+
+        # resume & saving
+        resume=False,
+        do_plot=True,
+
+        # x0 使用方式：None / 'from_neighbor' / 'from_input'
+        use_x0='from_neighbor',
+        first_x0_from_input=True,
+        
+        # folder_load='../../data/_truc_3000',
+        folder_load = '../data/December_17_2025_Sorted_Untruc'
+    )
+
+    # =====================================================
+    # Add timestamped directory (this is the effective path)
+    # =====================================================    
+    
+    beijing_tz = pytz.timezone("Asia/Shanghai")
+    timestamp = datetime.now(beijing_tz).strftime("%Y%m%d_%H%M%S")
+
+    label_str = f"{gate_type.lower()}_{timestamp}"
+    base_dir = f"data/results/{label_str}"
+    result_file = os.path.join(base_dir, f"{label_str}.npz")
+    csv_file = os.path.join(base_dir, f"{label_str}.csv")
+    os.makedirs(base_dir, exist_ok=True)
+
+    config.update(dict(
+        timestamp=timestamp,
+        result_dir=base_dir,
+        result_file=result_file,
+        csv_file=csv_file,
+        plot_dir=base_dir,
+    ))
+    # =====================================================
+
+    # ===== CZ-specific parameters =====
+    if gate_type == "CZ":
+        config.update(dict(
+            # data path
+            folder_pulse='data/npz/cz_pulse_neighbor.txt',
+            gate_time_indices=(np.arange(20, 50) - 20).tolist(),
+
+            tg_bound=(-0.01, 0.01),
+            amp_bound=(0.01, 0.05),
+            detune_bound=(0.001, 0.04),
+        ))
+
+    # ===== CNOT-specific parameters =====
+    elif gate_type == "CNOT":
+        # Here we follow your old CNOT script style (truncations and related parameters)
+        config.update(dict(
+            
+            mid_state='8-2',
+            
+            # data-related parameters (kept for compatibility with your previous scripts)
+            # truc1=300,
+            # truc_tot=1000,
+            # truc_full=1000,
+            # charge_pick=True,
+
+            # If you have a pulse file, you can enable it and specify path and indices
+            # folder_pulse='../figure/data/data_cnot_fidelity_3ncut.txt',
+            # gate_time_indices= [0, 15, -1], # np.arange(3).tolist(),  #[0],
+
+            # CNOT parameter bounds (you can adjust as needed)
+            tg_bound=(-0.01, 0.01),
+            A1_bound=(0.001, 0.1),
+            A2_bound=(0.001, 0.1),
+            detune1_bound=(-0.05, -0.00001),
+            detune2_bound=(-0.05, -0.00001),
+
+            # Initial x0 vector(s) (can be extended to multiple rows for multiple gate times)
+            # x0_array=np.array([
+            #     [200.00347, 0.0213, 0.0139, -0.005, -0.005],
+            # ]),
+            # tg_opt_vec=np.arange(200, 250, 2).tolist(),  
+            x0_array=np.array([
+# [29.998501,0.096133,0.070563,-0.035335,-0.032721] ,
+[300.00454,0.018764,0.012331,-0.001994,-0.001895],
+# [149.998717,0.039313,0.025856,-0.008901,-0.00847],
+# [149.9928624, 0.0390348, 0.02497799, -0.0085582, -0.00815811],
+                # [200.00347, 0.0213, 0.0139, -0.005, -0.005],
+            ]),
+            tg_opt_vec=np.arange(300, 351, step=10).tolist(),             
+        ))
+    else:
+        raise ValueError(f"Unknown gate_type: {gate_type}")
+
+    # 用户自定义覆盖
+    if custom_config:
+        config.update(custom_config)
+
+    return config
 
 # ==============================================================
 # MAIN
@@ -974,26 +979,23 @@ def main():
     print_configuration_summary(system_data, config)
 
     # Step 4: Run sweep
-    # run_fidelity_sweep(system_data, hamiltonians, config)
+    run_fidelity_sweep(system_data, hamiltonians, config)
     # print("system_data['hspace_full'] = ", system_data['hspace_full'])
     # print("system_data['eval_tot'] = ", system_data['eval_tot'][:10])
 
-    ### Direct fidelity calculation example (no optimization)
-    
-    cnot = pd.read_csv('data/cnot_fidelity_npz.txt')
-    params_list = cnot[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].values.tolist()[:2]
-    
-    f_trunc = compute_fidelity_batch(
-        params_list,
-        system_data,
-        hamiltonians,
-        config,
-    )
-    ut.print_fidelity(f'f_{n_truc}', f_trunc, num_digits=8)
-    ut.print_time()
-
+    ### Direct fidelity calculation example (no optimization)    
+    # cnot = pd.read_csv('data/cnot_fidelity_npz.txt')
+    # params_list = cnot[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].values.tolist()[:2]
+    # f_trunc = compute_fidelity_batch(
+    #     params_list,
+    #     system_data,
+    #     hamiltonians,
+    #     config,
+    # )
+    # ut.print_fidelity(f'f_{n_truc}', f_trunc, num_digits=8)
     # print("Truncated fidelities:", f_trunc)
 
+    ut.print_time()
     # print("\n" + "=" * 60)
     # print("OPTIMIZATION COMPLETED")
     # print("=" * 60)
