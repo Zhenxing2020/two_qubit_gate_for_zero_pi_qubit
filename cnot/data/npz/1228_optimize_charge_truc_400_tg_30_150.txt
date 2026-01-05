@@ -44,14 +44,16 @@ pulse_param = [[29.998501  0.096133  0.070563 -0.035335 -0.032721]]
 Starting fidelity sweep...
 pulse_param = [[29.998501  0.096133  0.070563 -0.035335 -0.032721]]
 Total gate times to optimize: 13, starting from index 0
-CNOT optimize:   0%|          | 0/13 [00:00<?, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
+
+CNOT optimize:   0%|          | 0/13 [00:00<?, ?it/s]UserWarning: differential_evolution: the 'workers' keyword has overridden updating='immediate' to updating='deferred'
  /home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py: 487
 --- Optimizing CNOT at index 0, tg_init=30.000000 ---
 
 Current China Time: 2025-12-28 18:20:55.729127+08:00
 Using first x0 from input for initialization (first gate time)
 params["x0"] = [[29.998501  0.096133  0.070563 -0.035335 -0.032721]]
-CNOT optimize:   8%|▊         | 1/13 [33:20<6:40:01, 2000.12s/it]differential_evolution step 1: f(x)= -0.32028973970447894
+
+CNOT optimize:   8%|▊         | 1/13 [33:20<6:40:01, 2000.12s/it]differential_evolution step 1: f(x)= -0.32028973970447894
 Best Solution: [30.00324283, 0.09884686, 0.05974257, -0.03129365, -0.02547937]
 Convergence: 0.096
 ----------------------------
@@ -147,7 +149,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-28 18:54:15.844541+08:00
 Using x0 from previous optimized param
 params["x0"] = [40, 0.09920459921238543, 0.05710854003420828, -0.028523356327809054, -0.027362056286777413]
-CNOT optimize:  15%|█▌        | 2/13 [1:16:51<7:12:39, 2359.91s/it]differential_evolution step 1: f(x)= -0.37233934632593874
+
+CNOT optimize:  15%|█▌        | 2/13 [1:16:51<7:12:39, 2359.91s/it]differential_evolution step 1: f(x)= -0.37233934632593874
 Best Solution: [40.0064698, 0.06504105, 0.05766167, -0.03319981, -0.03019635]
 Convergence: 0.0594
 ----------------------------
@@ -240,7 +243,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-28 19:37:47.617962+08:00
 Using x0 from previous optimized param
 params["x0"] = [50, 0.09660936253796086, 0.04957877110864591, -0.028325391154137847, -0.026693527359217848]
-CNOT optimize:  23%|██▎       | 3/13 [2:12:22<7:47:11, 2803.17s/it]differential_evolution step 1: f(x)= -0.488526731349081
+
+CNOT optimize:  23%|██▎       | 3/13 [2:12:22<7:47:11, 2803.17s/it]differential_evolution step 1: f(x)= -0.488526731349081
 Best Solution: [49.99974589, 0.06898379, 0.04600408, -0.02574743, -0.02185114]
 Convergence: 0.0392
 ----------------------------
@@ -338,7 +342,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-28 20:33:18.271702+08:00
 Using x0 from previous optimized param
 params["x0"] = [60, 0.0862076683091261, 0.04533357702734325, -0.02618209513449383, -0.02455135505521392]
-CNOT optimize:  31%|███       | 4/13 [3:31:27<8:55:27, 3569.74s/it]differential_evolution step 1: f(x)= -0.5832899910387415
+
+CNOT optimize:  31%|███       | 4/13 [3:31:27<8:55:27, 3569.74s/it]differential_evolution step 1: f(x)= -0.5832899910387415
 Best Solution: [59.99360276, 0.07367137, 0.05120736, -0.0301661, -0.03097852]
 Convergence: 0.0299
 ----------------------------
@@ -449,7 +454,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-28 21:52:23.148024+08:00
 Using x0 from previous optimized param
 params["x0"] = [70, 0.07754400682799056, 0.04181605641813295, -0.02449107577609121, -0.023159964725869675]
-CNOT optimize:  38%|███▊      | 5/13 [5:24:40<10:30:56, 4732.02s/it]differential_evolution step 1: f(x)= -0.6686075227224458
+
+CNOT optimize:  38%|███▊      | 5/13 [5:24:40<10:30:56, 4732.02s/it]differential_evolution step 1: f(x)= -0.6686075227224458
 Best Solution: [70.0, 0.07754401, 0.04181606, -0.02449108, -0.02315996]
 Convergence: 0.0297
 ----------------------------
@@ -587,7 +593,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-28 23:45:36.020735+08:00
 Using x0 from previous optimized param
 params["x0"] = [80, 0.07014152826926344, 0.03721659065633907, -0.020716619484096623, -0.01996156778650986]
-CNOT optimize:  46%|████▌     | 6/13 [7:09:06<10:12:55, 5253.68s/it]differential_evolution step 1: f(x)= -0.7804847445840379
+
+CNOT optimize:  46%|████▌     | 6/13 [7:09:06<10:12:55, 5253.68s/it]differential_evolution step 1: f(x)= -0.7804847445840379
 Best Solution: [80.0, 0.07014153, 0.03721659, -0.02071662, -0.01996157]
 Convergence: 0.0269
 ----------------------------
@@ -710,7 +717,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-29 01:30:02.335386+08:00
 Using x0 from previous optimized param
 params["x0"] = [90, 0.06465420239095365, 0.03514718592407994, -0.01949337098240736, -0.019464515896087047]
-CNOT optimize:  54%|█████▍    | 7/13 [9:07:47<9:46:24, 5864.11s/it] differential_evolution step 1: f(x)= -0.8597143349776748
+
+CNOT optimize:  54%|█████▍    | 7/13 [9:07:47<9:46:24, 5864.11s/it] differential_evolution step 1: f(x)= -0.8597143349776748
 Best Solution: [90.0, 0.0646542, 0.03514719, -0.01949337, -0.01946452]
 Convergence: 0.0239
 ----------------------------
@@ -842,7 +850,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-29 03:28:43.206167+08:00
 Using x0 from previous optimized param
 params["x0"] = [100, 0.05836963420286957, 0.03313056881515499, -0.016679127097874, -0.016418916481762566]
-CNOT optimize:  62%|██████▏   | 8/13 [11:20:54<9:05:00, 6540.05s/it]differential_evolution step 1: f(x)= -0.9459766541341547
+
+CNOT optimize:  62%|██████▏   | 8/13 [11:20:54<9:05:00, 6540.05s/it]differential_evolution step 1: f(x)= -0.9459766541341547
 Best Solution: [100.0, 0.05836963, 0.03313057, -0.01667913, -0.01641892]
 Convergence: 0.0229
 ----------------------------
@@ -971,7 +980,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-29 05:41:50.569610+08:00
 Using x0 from previous optimized param
 params["x0"] = [110, 0.054087422906211595, 0.030880177570189047, -0.014070003669765156, -0.013905843085786393]
-CNOT optimize:  69%|██████▉   | 9/13 [14:09:20<8:30:19, 7654.80s/it]differential_evolution step 1: f(x)= -1.1028909858353815
+
+CNOT optimize:  69%|██████▉   | 9/13 [14:09:20<8:30:19, 7654.80s/it]differential_evolution step 1: f(x)= -1.1028909858353815
 Best Solution: [110.0, 0.05408742, 0.03088018, -0.01407, -0.01390584]
 Convergence: 0.0221
 ----------------------------
@@ -1123,7 +1133,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-29 08:30:16.494121+08:00
 Using x0 from previous optimized param
 params["x0"] = [120, 0.04942043615413137, 0.02952275985550025, -0.012466960608572376, -0.012273808488764307]
-CNOT optimize:  77%|███████▋  | 10/13 [16:54:47<6:57:48, 8356.32s/it]differential_evolution step 1: f(x)= -1.2902336604143978
+
+CNOT optimize:  77%|███████▋  | 10/13 [16:54:47<6:57:48, 8356.32s/it]differential_evolution step 1: f(x)= -1.2902336604143978
 Best Solution: [120.0, 0.04942044, 0.02952276, -0.01246696, -0.01227381]
 Convergence: 0.0169
 ----------------------------
@@ -1264,7 +1275,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-29 11:15:43.657809+08:00
 Using x0 from previous optimized param
 params["x0"] = [130, 0.04697167480154598, 0.02854112559850011, -0.012215147917716055, -0.011722567832076359]
-CNOT optimize:  85%|████████▍ | 11/13 [20:10:42<5:13:12, 9396.26s/it]differential_evolution step 1: f(x)= -1.4779655502826934
+
+CNOT optimize:  85%|████████▍ | 11/13 [20:10:42<5:13:12, 9396.26s/it]differential_evolution step 1: f(x)= -1.4779655502826934
 Best Solution: [130.0, 0.04697167, 0.02854113, -0.01221515, -0.01172257]
 Convergence: 0.0172
 ----------------------------
@@ -1426,7 +1438,8 @@ f_1000 = np.array([
 Current China Time: 2025-12-29 14:31:37.889981+08:00
 Using x0 from previous optimized param
 params["x0"] = [140, 0.044966934757170195, 0.02775473119248081, -0.01184423703843535, -0.011357538821944334]
-CNOT optimize:  92%|█████████▏| 12/13 [23:33:57<2:50:47, 10247.70s/it]differential_evolution step 1: f(x)= -1.6114637681834063
+
+CNOT optimize:  92%|█████████▏| 12/13 [23:33:57<2:50:47, 10247.70s/it]differential_evolution step 1: f(x)= -1.6114637681834063
 Best Solution: [140.0, 0.04496693, 0.02775473, -0.01184424, -0.01135754]
 Convergence: 0.0166
 ----------------------------
@@ -1768,10 +1781,14 @@ f_400 = np.array([
 f_1000 = np.array([
 -0.32093210, -0.40827203, -0.51470948, -0.62789940 ,
 -0.74043991, -0.83569142, -0.90790866, -1.00014384 ,
--1.14607615, -1.33406571, -1.54178217, -1.72897327CNOT optimize: 100%|██████████| 13/13 [28:10:35<00:00, 12171.56s/it]  CNOT optimize: 100%|██████████| 13/13 [28:10:35<00:00, 7802.75s/it] 
- ,
+-1.14607615, -1.33406571, -1.54178217, -1.72897327
 -1.85331970 ,
 ])
+
+CNOT optimize: 100%|██████████| 13/13 [28:10:35<00:00, 12171.56s/it]  
+CNOT optimize: 100%|██████████| 13/13 [28:10:35<00:00, 7802.75s/it] 
+ ,
+
 [SAVE] npz saved to data/results/cnot_20251228_182050/cnot_20251228_182050.npz
 [SAVE] csv saved to data/results/cnot_20251228_182050/cnot_20251228_182050.csv
 Fidelity sweep completed!
