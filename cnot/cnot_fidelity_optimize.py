@@ -122,7 +122,7 @@ def load_system_data_cnot(config):
     print("Loading system data for CNOT...")
 
     (hspace_full, eket_tot, eval_tot, n_theta0_dress,
-     n_theta1_dress, hspace_0, hspace_1, logi_state) = hd.load_two_qubit_data(
+     n_theta1_dress, hspace_0, hspace_1, hspace_n_theta1, hspace_n_theta2, logi_state) = hd.load_two_qubit_data(
         config['folder_load'], return_full=False
     )
 
@@ -145,14 +145,30 @@ def load_system_data_cnot(config):
     W_0_2 = eval_tot[idx_mid] - eval_tot[idx_0]
     W_1_2 = eval_tot[idx_mid] - eval_tot[idx_1]
 
-    # 选择优化空间的 Hilbert space（沿用你原来的逻辑）
-    if config['use_truc_model']:
-        hspace_select = np.array(hspace_full)[ ut.truc_model[config['truc_model_name']][:config['truc_optimize']]].tolist()
-        # hspace_select = ut.truc_model['cnot_' + config['mid_state'][0] + config['mid_state'][2]][:config['truc_optimize']]
+    if config["reduced_model"] == 'lowest_state':
+        index_select = list(range(config['truc_optimize']))
+        hspace_select = np.array(hspace_full)[:config['truc_optimize']]
+        
+    elif config["reduced_model"] == 'charge_pick':
+        index_select = hspace_n_theta1[:config['truc_optimize']]
+        hspace_select = [np.array(hspace_full)[i] for i in index_select]
+        
+    elif config["reduced_model"] == 'graph_pick':
+        index_select = ut.truc_model[config["graph_model_name"]][:config['truc_optimize']]
+        hspace_select = [np.array(hspace_full)[i] for i in index_select]        
+        
     else:
-        hspace_select = hspace_full[:config['truc_optimize']]
+        raise ValueError("Unknown reduced_model type. Please choose from 'graph_pick', 'lowest_state', 'charge_pick'.")
+    
+    # if config['use_truc_model']:
+    #     hspace_select = np.array(hspace_full)[ hspace_n_theta1[:config['truc_optimize']]].tolist()
+        # hspace_select = np.array(hspace_full)[ ut.truc_model[config['truc_model_name']][:config['truc_optimize']]].tolist()
+        # hspace_select = ut.truc_model['cnot_' + config['mid_state'][0] + config['mid_state'][2]][:config['truc_optimize']]
+    # else:
+    #     hspace_select = hspace_full[:config['truc_optimize']]
     print(f'hspace_full={hspace_full[:30]}')
-    print(f"hspace_select_idx={ut.truc_model[config['truc_model_name']][:config['truc_optimize']]}")
+    print(f"hspace_select_idx={index_select}")
+    ut.print_fidelity(f'hspace_select_idx', index_select, num_each_row=20, n_make_blank_line=200)
     print(f'hspace_select={hspace_select[:30]}')
     
     option_ideal, option_noisy = ut.get_qutip_options(config['max_step_ideal'], config['max_step_noisy'])
@@ -634,8 +650,9 @@ def print_configuration_summary(sys, config):
     
     print(f"truc_large      = {config['truc_large']}")
     print(f"truc_optimize   = {config['truc_optimize']}")    
-    print(f"use_truc_model   = {config['use_truc_model']}")
-    print(f"truc_model_name  = {config['truc_model_name']}")
+    print(f"reduced model   = {config['reduced_model']}")
+    if config['reduced_model'] == 'graph_pick':
+        print(f"graph_model_name = {config['graph_model_name']}")
     
     print(f"max_step_ideal  = {config['max_step_ideal']}")
     print(f"max_step_noisy  = {config['max_step_noisy']}")
@@ -842,9 +859,10 @@ def get_optimization_config(gate_type="CNOT", custom_config=None):
 
         # truncation
         truc_large=1000,
-        truc_optimize=240,
-        use_truc_model=True,
-        truc_model_name="n_theta_dress_charge_truc",
+        truc_optimize=220,
+        # use_truc_model=True,
+        reduced_model='charge_pick',
+        # charge_model_name="n_theta_dress_charge_truc",
 
         # qutip options
         max_step_ideal=1e-3,
@@ -933,13 +951,14 @@ def get_optimization_config(gate_type="CNOT", custom_config=None):
             # ]),
             # tg_opt_vec=np.arange(200, 250, 2).tolist(),  
             x0_array=np.array([
-# [29.998501,0.096133,0.070563,-0.035335,-0.032721] ,
-[300.00454,0.018764,0.012331,-0.001994,-0.001895],
+# [29.998501,0.096133,0.070563,-0.035335,-0.032721] , # good
+[29.998501,0.086133,0.070563,-0.035335,-0.032721] , # random
+# [300.00454,0.018764,0.012331,-0.001994,-0.001895],
 # [149.998717,0.039313,0.025856,-0.008901,-0.00847],
 # [149.9928624, 0.0390348, 0.02497799, -0.0085582, -0.00815811],
                 # [200.00347, 0.0213, 0.0139, -0.005, -0.005],
             ]),
-            tg_opt_vec=np.arange(300, 351, step=10).tolist(),             
+            tg_opt_vec=np.arange(30, 31, step=10).tolist(),             
         ))
     else:
         raise ValueError(f"Unknown gate_type: {gate_type}")

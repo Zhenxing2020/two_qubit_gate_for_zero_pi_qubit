@@ -28,12 +28,13 @@ def get_config():
     
     # ---------- Truncation ----------
     cfg["n_truc_list"] = np.arange(500, 901, step=100) # [200] #    
-    cfg["use_truc_model"] = True
+    # cfg["use_truc_model"] = True
+    cfg["reduced_model"] = 'charge_pick' # 'graph_pick', 'lowest_state', 'charge_pick'
 
     # cfg["n_truc_list"] = [200, 400, 600, 800, 1000, 2000, 3000] # np.arange(500, 3001, 500) # [200] #    
     # cfg["use_truc_model"] = False
     
-    cfg["truc_model_name"] = "n_theta_dress_charge_truc"
+    # cfg["graph_model_name"] = "n_theta_dress_charge_truc"
     cfg["calculate_ideal"] = True
     cfg["calculate_noise"] = False
     cfg["max_step_ideal"] = 1e-3
@@ -175,6 +176,8 @@ def load_system_data(cfg):
         data["n_theta1_dress"],
         data["hspace_0"],
         data["hspace_1"],
+        data["hspace_n_theta1"],
+        data["hspace_n_theta2"],
         data["logi_state"],
     ) = hd.load_two_qubit_data(cfg["folder_load"], return_full=False)
 
@@ -227,13 +230,19 @@ def run_one_truncation(n_truc, cfg, data, gate, option_ideal, option_noisy):
     # index_select = [data["hspace_full"].index(i) for i in hspace_select]
     
     ### utils.py stores state indexes
-    if cfg["use_truc_model"]:
-        index_select = ut.truc_model[cfg["truc_model_name"]][:n_truc]
-        hspace_select = [data["hspace_full"][i] for i in index_select]
-    else:
+
+    if cfg["reduced_model"] == 'lowest_state':
         hspace_select = data["hspace_full"][:n_truc]
         index_select = list(range(n_truc))
-
+    elif cfg["reduced_model"] == 'charge_pick':
+        index_select = data["hspace_n_theta1"][:n_truc]
+        hspace_select = [data["hspace_full"][i] for i in index_select]
+    elif cfg["reduced_model"] == 'graph_pick':
+        index_select = ut.truc_model[cfg["graph_model_name"]][:n_truc]
+        hspace_select = [data["hspace_full"][i] for i in index_select]        
+    else:
+        raise ValueError("Unknown reduced_model type. Please choose from 'graph_pick', 'lowest_state', 'charge_pick'.")
+    
     H_drive_select, eket_truc = ut.build_hamiltonian_2q(
         cfg["cz_run"],
         index_select,
