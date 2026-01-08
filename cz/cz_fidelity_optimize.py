@@ -1,278 +1,486 @@
+#!/usr/bin/env python3
+# pyright: reportMissingImports=false
+"""
+CZ Gate Fidelity Optimization for Two-Qubit Zero-Pi Systems
+Modular (non-class) version.
+Implements fidelity optimization for CZ gates using differential evolution.
+All class structures removed; logic is now organized into standalone functions.
+Author: Converted from cz_fidelity_optimize.py
+Date: 2025
+"""
+# ===== Standard Library Imports =====
+import os
 import sys
-sys.path.append('../')
-
-import scqubits as scq
-import pandas as pd
-import qutip as qt
-import numpy as np
-from matplotlib import pyplot as plt
-from qutip.qip.operations import rz, cz_gate
-import cmath
-from tqdm import tqdm
-from matplotlib.colors import LogNorm
-import datetime
-import pytz
-import scqubits.settings as settings
-settings.OVERLAP_THRESHOLD = 0.3
-from joblib import Parallel, delayed
-import itertools
-import scipy.sparse as ssp
-from sympy import symbols
-import scipy as sp
-import utils_2Q_gate_zp as ut
 from datetime import datetime
 import pytz
-import os
-
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-def fidelity_sweep():
-    n_cpu_optimize = 1
-    c_op_list = []
-    args_truc = [H_drive_part, W_20_50, n_cpu_optimize, c_op_list, logi_idx_part]
-    # args_truc2 = [H_drive_part, W_20_50, n_cpu_optimize, c_op_list, logi_idx_part]
-    fidelity = []
-    drive_param = []
-    fidelity_full = []
-    # for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
-    for jdx, tg in tqdm(enumerate(tg_vec)):
-        tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
-        bounds = (tg_bounds, amp_bound, detune_bound)
-        print("\noptimize Time:", datetime.now(pytz.timezone('America/Denver')))
-        # print('args_truc==args_truc2', args_truc==args_truc2)
-        res = sp.optimize.differential_evolution(
-            func=ut.cz_fidelity_log_noise,
-            bounds=bounds,
-            args=args_truc,
-            disp=True,
-            callback=ut.print_soln,
-            init="sobol",
-            workers=workers,
-            popsize=popsize,
-            mutation=mutation,
-            recombination=recombination,
-            tol=tol,
-            # x0=x0_vec[jdx,:3],
-            polish=False, # 'True' will make the for-loop break
-            )
-        print("\nfinish optimize Time:", datetime.now(pytz.timezone('America/Denver')))
-        fidelity.append(res.fun)
-        drive_param.append(res.x.tolist())
-
-        print(res, '\n')
-        print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
-        # print('\ntg = ')
-        # for i in range(0, len(fidelity), 4):
-            # print(', '.join(map(str, np.round(np.array((x0_vec[:,0])[:jdx+1])[i:i+4], 8))), ',')
-        print(f'\nlog of gate error (truc={len_part}) = ')
-        for i in range(0, len(fidelity), 4):
-            print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
-        print(f'\ndrive_param (truc={len_part}) = ')
-        for i in drive_param:
-            print(np.round(i,6).tolist(),',')
-
-        print("Full Time:", datetime.now(pytz.timezone('America/Denver')))
-        n_cpu_parallel = 16
-        tg, drive_amp, detune = drive_param[jdx]
-
-        # arg_all = [tg, drive_amp, detune,
-        #            H_drive_False, W_20_50, n_cpu_parallel, c_op_list, logi_idx_False]
-        # fidelity_full.append(ut.cz_fidelity_log(arg_all))
-
-        arg_all = [tg, drive_amp, detune,
-                   n_cpu_parallel, hspace_False, W_20_50, H_drive_False, logi_idx_False]
-        fidelity_full.append(ut.cz_fidelity_log_old(arg_all))
-
-        print(f'\nlog of gate error (truc={len(eval_tot)}) = ')
-        for i in range(0, len(fidelity_full), 4):
-            print(', '.join(map(str, np.round(fidelity_full[i:i+4], 8))), ',')
-        print('\namp_bounds=', amp_bound, ', detune_bounds=', detune_bound, ', tg_bound=', tg_bound)
-        print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
+# ===== Third-Party Imports =====
+import numpy as np
+import scipy as sp
+from tqdm import tqdm
+import scqubits.settings as settings
+import qutip as qt
+import pandas as pd
+from joblib import Parallel, delayed
+from matplotlib import pyplot as plt
+from matplotlib.colors import LogNorm
+from sympy import symbols
+# ===== Local Imports =====
+sys.path.append('../')
+import utils_2Q_gate_zp as ut
+import ham_data as hd
+# Configure scqubits
+settings.OVERLAP_THRESHOLD = 0.3
 
 
+# ==============================================================
+# SYSTEM INITIALIZATION
+# ==============================================================
+
+def load_system_data(config):
+    """
+    Load system data and construct required elements for optimization.
+
+    This function loads the two-qubit data, selects the Hilbert space
+    (either truncated or full), prepares the drive term and transition
+    frequency, and initializes optimization parameters.
+
+    Parameters
+    ----------
+    config : dict
+        Configuration dictionary containing model, truncation, and file paths.
+
+    Returns
+    -------
+    dict
+        A dictionary containing all necessary system components for optimization:
+        - hspace_full : list
+            Full Hilbert space basis labels.
+        - eket_tot : ndarray
+            Eigenkets of the total system.
+        - eval_tot : ndarray
+            Eigenvalues of the total system.
+        - drive_term : ndarray
+            Drive operator (matrix form).
+        - logi_state : list
+            Logical state labels.
+        - hspace_select : list
+            Truncated Hilbert space used for optimization.
+        - W_20_50 : float
+            Transition frequency between |5-0⟩ and |2-0⟩.
+        - option_ideal, option_noisy : qutip.Options
+            Solver options for ideal and noisy simulations.
+        - pulse_param : ndarray
+            Initial drive parameters for each gate time index.
+    """
+    print("Loading system data...")
+
+    # Load two-qubit system data (returns eigenstates, energies, etc.)
+    (hspace_full, eket_tot, eval_tot, _, n_theta1_dress,
+     _, _, logi_state) = hd.load_two_qubit_data(config['folder_load'], return_full=False)
+
+    # Use the dressed theta_1 term as the drive term
+    drive_term = n_theta1_dress
+
+    # Compute energy difference (transition frequency) between specific states
+    W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
+
+    # Choose Hilbert space truncation: truncated model or full model
+    if config['use_truc_model']:
+        hspace_select = ut.truc_model[config['truc_model_name']][:config['truc_optimize']]
+    else:
+        hspace_select = hspace_full[:config['truc_optimize']]
+
+    # Generate qutip solver options for ideal and noisy simulations
+    option_ideal, option_noisy = ut.get_qutip_options(
+        config['max_step_ideal'], config['max_step_noisy']
+    )
+
+    # Load initial drive parameters corresponding to gate time indices
+    pulse_param = ut.load_drive_params_2q(config['cz_run'], 
+                                          folder=config['folder_pulse'])[config['gate_time_indices'], :]
+
+    # Print summary information
+    print(f"Loaded system data with {len(hspace_full)} total states")
+    print(f"Using {len(hspace_select)} states for optimization")
+    print(f"Transition frequency W_20_50 = {np.round(W_20_50, 3)}")
+
+    # Return all necessary system components in a dictionary
+    return dict(
+        hspace_full=hspace_full,
+        eket_tot=eket_tot,
+        eval_tot=eval_tot,
+        drive_term=drive_term,
+        logi_state=logi_state,
+        hspace_select=hspace_select,
+        W_20_50=W_20_50,
+        option_ideal=option_ideal,
+        option_noisy=option_noisy,
+        pulse_param=pulse_param
+    )
+
+
+def build_hamiltonians(sys, config):
+    """
+    Construct Hamiltonians for truncated and large Hilbert spaces.
+
+    Parameters
+    ----------
+    sys : dict
+        System data dictionary returned from `load_system_data`.
+    config : dict
+        Configuration dictionary containing truncation sizes and run options.
+
+    Returns
+    -------
+    dict
+        A dictionary containing:
+        - H_drive_select : ndarray
+            Drive Hamiltonian for the truncated Hilbert space.
+        - H_drive_large : ndarray
+            Drive Hamiltonian for the large (reference) Hilbert space.
+        - logi_idx_select : list[int]
+            Indices of logical states within the truncated basis.
+        - logi_idx_large : list[int]
+            Indices of logical states within the large basis.
+    """
+    print("Building Hamiltonians...")
+
+    # Identify indices of logical states in the truncated Hilbert space
+    logi_idx_select = [sys['hspace_select'].index(i) for i in sys['logi_state']]
+
+    # Indices of selected Hilbert space within the full space
+    index_select = [sys['hspace_full'].index(i) for i in sys['hspace_select']]
+
+    # Build drive Hamiltonian for truncated space
+    H_drive_select, eket_truc = ut.build_hamiltonian_2q(
+        config['cz_run'], index_select, sys['eval_tot'], sys['eket_tot'], sys['drive_term']
+    )
+
+    # Define the large Hilbert space truncation
+    hspace_large = sys['hspace_full'][:config['truc_large']]
+
+    # Logical state indices and full index list for large space
+    logi_idx_large = [hspace_large.index(i) for i in sys['logi_state']]
+    idx_large = np.arange(config['truc_large']).tolist()
+
+    # Build drive Hamiltonian for the large Hilbert space
+    H_drive_large, _ = ut.build_hamiltonian_2q(
+        config['cz_run'], idx_large, sys['eval_tot'], sys['eket_tot'], sys['drive_term']
+    )
+
+    print("Hamiltonians built successfully")
+
+    # Return both Hamiltonians and their logical indices
+    return dict(
+        H_drive_select=H_drive_select,
+        H_drive_large=H_drive_large,
+        logi_idx_select=logi_idx_select,
+        logi_idx_large=logi_idx_large
+    )
+
+
+# ==============================================================
+# OPTIMIZATION FUNCTIONS
+# ==============================================================
+
+def optimize_single_gate_time(
+    gate_time_idx, system_data, hamiltonians, config, drive_param_list
+):
+    """
+    Optimize gate fidelity for a single gate time using differential evolution.
+
+    Parameters
+    ----------
+    gate_time_idx : int
+        Index of the gate time to be optimized.
+    system_data : dict
+        Dictionary containing system data and initial parameters.
+    hamiltonians : dict
+        Dictionary containing Hamiltonians and logical state indices.
+    drive_param_list : list
+        List of drive parameters for initialization.
+    config : dict
+        Configuration dictionary with optimization parameters.
+
+    Returns
+    -------
+    tuple
+        (fidelity_value, optimized_parameters)
+        fidelity_value : float
+            The optimized fidelity (objective function value).
+        optimized_parameters : list[float]
+            The optimized gate parameters [tg, amp, detune].
+    """
+    # Extract initial gate time and define search bounds
+    tg_initial = system_data['pulse_param'][gate_time_idx, 0]
+    tg_bounds = (tg_initial + config['tg_bound'][0], tg_initial + config['tg_bound'][1])
+    bounds = (tg_bounds, config['amp_bound'], config['detune_bound'])
+
+    # Prepare arguments for fidelity function evaluation
+    args_truc = [
+        hamiltonians['H_drive_select'], system_data['W_20_50'], 1, [],
+        hamiltonians['logi_idx_select'], system_data['option_ideal'], system_data['option_noisy']
+    ]
+
+    print(f"\n--- Optimizing gate time index {gate_time_idx} (tg = {tg_initial:.6f}) ---")
+    ut.print_time()
+
+    params = dict(
+        func=ut.cz_fidelity_log_noise,
+        bounds=bounds,
+        args=args_truc,
+        disp=True,
+        callback=ut.print_soln,
+        init="sobol",
+        workers=config['workers'],
+        popsize=config['popsize'],
+        mutation=config['mutation'],
+        recombination=config['recombination'],
+        tol=config['tol'],
+        polish=False,
+    )
+    
+    if config['use_x0'] == 'from_neighbor':
+        if gate_time_idx == 0:
+            if config['first_x0_from_input']:
+                print("Using first x0 from input for initialization (first gate time)")
+                params['x0'] = system_data['pulse_param'][gate_time_idx, :3]
+            else:
+                print("No x0 for first gate time")
+        else:
+            print("Using first x0 from neighbor for initialization")
+            params['x0'] = [tg_initial] + drive_param_list[-1][1:]
+        
+    elif config['use_x0'] == 'from_input':
+        print("Using x0 from input for initialization")
+        params['x0'] = system_data['pulse_param'][gate_time_idx, :3]
+    else:
+        print("No x0 for all gate times")
+
+    result = sp.optimize.differential_evolution(**params)
+
+    ut.print_time()
+    print(f"Optimization completed for gate time {gate_time_idx}")
+    print(f"Optimized fidelity: {result.fun:.8f}")
+    print(f"Optimized parameters: {result.x}")
+
+    # Return the optimized fidelity and parameters as a tuple
+    return result.fun, result.x.tolist()
+
+
+def run_fidelity_sweep(system_data, hamiltonians, config):
+    """
+    Run fidelity optimization across all gate times.
+
+    Iterates through each gate time index, performs independent optimization,
+    and stores fidelity and optimized parameters. Intermediate results are
+    printed and optionally saved at each step.
+
+    Parameters
+    ----------
+    system_data : dict
+        Dictionary containing system and initialization data.
+    hamiltonians : dict
+        Dictionary containing Hamiltonians and logical indices.
+    config : dict
+        Configuration dictionary with optimization settings.
+
+    Returns
+    -------
+    tuple
+        (fidelity_list, drive_param_list)
+        fidelity_list : list[float]
+            List of optimized fidelities for each gate time.
+        drive_param_list : list[list[float]]
+            Corresponding optimized drive parameters.
+    """
+    print("Starting fidelity optimization sweep...")
+
+    # Containers for fidelity and optimized drive parameters
+    fidelity_list, drive_param_list = [], []
+    fidelity_large_list = []
+
+    # Iterate over all gate times to optimize
+    if config['tg_reverse']:
+        system_data['pulse_param'] = system_data['pulse_param'][::-1]
+
+    for jdx in tqdm(range(len(system_data['pulse_param'])), desc="Optimizing gate times"):
+        
+        fidelity, drive_params = optimize_single_gate_time(jdx, system_data, hamiltonians, config, drive_param_list)
+        fidelity_list.append(fidelity)
+        drive_param_list.append(drive_params)
+
+        # Print or save intermediate results
+        print_intermediate_results(fidelity_list, drive_param_list, jdx, config)
+
+        # Evaluate fidelity in the large Hilbert space for reference
+        ut.print_time()
+        fidelity_large = check_pulse_in_large(drive_params, system_data, hamiltonians, config)
+        fidelity_large_list.append(fidelity_large)   
+        ut.print_fidelity(f'f_{config["truc_large"]}', fidelity_large_list, num_digits=8)
+        
+        ut.print_time()
+
+    print("Fidelity optimization sweep completed!")
+
+
+def check_pulse_in_large(drive_params, system_data, hamiltonians, config):
+    """
+    Check pulse fidelity in the large Hilbert space.
+
+    Parameters
+    ----------
+    drive_params : list
+        Drive parameters [tg, drive_amp, detune].
+
+    Returns
+    -------
+    float
+        Fidelity value in the large Hilbert space.
+    """
+    tg, drive_amp, detune = drive_params
+    n_cpu_parallel = 16
+
+    arg_all = [tg, drive_amp, detune,
+               n_cpu_parallel, np.arange(config['truc_large']), system_data['W_20_50'], 
+               hamiltonians['H_drive_large'], hamiltonians['logi_idx_large']]
+    fidelity_large = ut.cz_fidelity_log_old(arg_all)
+    return fidelity_large
+
+# ==============================================================
+# PRINTING AND REPORTING
+# ==============================================================
+
+def print_configuration_summary(system_data, config):
+    """Print a summary of the current configuration."""
+    print("\n" + "=" * 60)
+    print("CZ FIDELITY OPTIMIZER CONFIGURATION")
+    print("=" * 60)
+    print(f"Start time: {datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    print(f"\nTruncation parameters:")
+    print(f"  - Large truncation: {config['truc_large']}")
+    print(f"  - Optimization truncation: {config['truc_optimize']}")
+    print(f"\nOptimization bounds:")
+    print(f"  - Amplitude bounds: {config['amp_bound']}")
+    print(f"  - Detuning bounds: {config['detune_bound']}")
+    print(f"  - Gate time bounds: {config['tg_bound']}")
+    print(f"\nDifferential evolution parameters:")
+    print(f"  - Workers: {config['workers']}")
+    print(f"  - Population size: {config['popsize']}")
+    print(f"  - Recombination: {config['recombination']}")
+    print(f"  - Tolerance: {config['tol']}")
+    print(f"  - Mutation: {config['mutation']}")
+    print(f"\nSystem parameters:")
+    print(f"  - Transition frequency W_20_50: {np.round(system_data['W_20_50'], 3)}")
+    print(f"  - Number of gate times to optimize: {len(system_data['pulse_param'])}")
+    print(f"  - Hilbert space size (optimization): {len(system_data['hspace_select'])}")
+    print(f"  - Hilbert space size (total): {len(system_data['hspace_full'])}")
+    print(f"  - reverse tg optimization: {config['tg_reverse']}")
+    print(f"  - use_x0: {config['use_x0']}")
+    print(f"  - folder pulse: {config['folder_pulse']}")
+    ut.print_pulse_params(f"param_input", system_data['pulse_param'])        
+
+    print("=" * 60)
+
+def print_intermediate_results(fidelity_list, drive_param_list, current_idx, config):
+    """Print intermediate optimization results."""
+    print(f"\n--- Results after {current_idx + 1} optimizations ---")
+        
+    ut.print_pulse_params(f"param_optimized", drive_param_list)        
+    ut.print_fidelity(f'f_{config["truc_optimize"]}', fidelity_list, num_digits=8)        
+
+# ==============================================================
+# CONFIGURATION AND SETUP
+# ==============================================================
+
+def get_optimization_config(custom_config=None):
+    """
+    Return the optimization parameter configuration.
+
+    If `custom_config` (dict) is provided, it overrides the corresponding
+    entries in the default configuration.
+
+    Parameters
+    ----------
+    custom_config : dict, optional
+        User-specified configuration values to override defaults.
+
+    Returns
+    -------
+    config : dict
+        The final optimization parameter configuration.
+    """
+    # Default configuration
+    config = {
+        'truc_large': 1000,
+        'truc_optimize': 300,
+        'use_truc_model': False,
+        'truc_model_name': 'cz_short_500_detune1',
+        'max_step_ideal': 1e-3,
+        'max_step_noisy': 1e-3,
+        'tg_bound': (-0.01, 0.01),
+        'workers': 50,
+        'popsize': 10,
+        'recombination': 0.7,
+        'tol': 0.01,
+        'mutation': (0.5, 1),
+        'folder_load': '../../data/_truc_3000',
+        'cz_run': True,
+        'folder_pulse': 'data/npz/cz_pulse_neighbor.txt',
+        'tg_reverse': False,
+        'use_x0': 'from_input',  # Options: None, 'from_neighbor', 'from_input'
+        # if use 'from_neighbor', the first one will use from input, make sure it gives nice fidelity
+        'first_x0_from_input': True,
+        
+        # 'gate_time_indices': np.arange(10,20).tolist(),
+        # 'amp_bound': (0.035, 0.045), # (0., 0.1),
+        # 'detune_bound': (0.02, 0.1), # (-0.1, -0.05),
+        
+        # 'gate_time_indices': np.arange(20,30).tolist(),
+        # 'amp_bound': (0.01, 0.1), 
+        # 'detune_bound': (0.03, 0.1),                  
+        
+        # 'gate_time_indices': (np.arange(144,175)-20).tolist(),
+        'gate_time_indices': (np.arange(20,50) - 20).tolist(),
+        'amp_bound': (0.01, 0.05), 
+        'detune_bound': (0.001, 0.04),                    
+    }
+
+    # Override defaults with user-provided configuration
+    if custom_config:
+        config.update(custom_config)
+
+    return config
+
+# ==============================================================
+# MAIN EXECUTION
+# ==============================================================
+
+def main():
+    """Main function to run CZ fidelity optimization."""
+    print(f"Starting {os.path.basename(__file__)}")
+    ut.print_time()
+
+    # Step 1: Load optimization configuration (default + user overrides)
+    config = get_optimization_config()
+
+    # Step 2: Load system data including eigenstates, energies, logical states, etc.
+    system_data = load_system_data(config)
+
+    # Step 3: Build Hamiltonians for both truncated and large Hilbert spaces
+    hamiltonians = build_hamiltonians(system_data, config)
+
+    # Step 4: Print summary of configuration and loaded system parameters
+    print_configuration_summary(system_data, config)
+
+    # Step 5: Run fidelity optimization sweep across all specified gate times
+    run_fidelity_sweep(system_data, hamiltonians, config)
+
+    print_configuration_summary(system_data, config)
+
+    print("\n" + "=" * 60)
+    print("OPTIMIZATION COMPLETED")
+    print("=" * 60)
 
 if __name__ == '__main__':
-    print(os.path.basename(__file__)) # Print the name of the current Python file
-    print("Start Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
-    truc1, truc_tot, charge_pick = 300, 1000, True
-    truc_full = 1000
-
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick={charge_pick}/'
-    eval_tot = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    hspace_full = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
-    n_theta0_dress = 2*np.pi* np.load(folder+'n_theta0_dress.npy')
-    n_theta1_dress = 2*np.pi* np.load(folder+'n_theta1_dress.npy')
-    truc_list = np.arange(truc_full)
-    hspace_full = hspace_full[:truc_full]
-    eval_tot = eval_tot[:truc_full]
-    n_theta0_dress = ut.truncate_2(n_theta0_dress, truc_list)
-    n_theta1_dress = ut.truncate_2(n_theta1_dress, truc_list)
-
-    folder = f'../../data/3ncut_two_zeropi/truc1={truc1}_truc2={truc_tot}_pick=False/'
-    eval_False = 2*np.pi* pd.read_csv(folder+ 'eval_tot.txt').to_numpy().flatten()
-    hspace_False = pd.read_csv(folder+ 'hspace_full.txt').to_numpy().flatten().tolist()
-    n_theta0_False = qt.Qobj(2*np.pi* np.load(folder+'n_theta0_dress.npy'))
-    n_theta1_False = qt.Qobj(2*np.pi* np.load(folder+'n_theta1_dress.npy'))
-
-    # amp_bound, detune_bound, tg_bound = [(0.0085, 0.0106), (0.013, 0.0175), (-0.01, 0.01)] # tg141-157
-    # amp_bound, detune_bound, tg_bound = [(0.008, 0.0092), (0.013, 0.0155), (-0.01, 0.01)] # tg160-171
-    # amp_bound, detune_bound, tg_bound = [(0.007, 0.0088), (0.0128, 0.0142), (-0.01, 0.01)] # tg173-185
-    # amp_bound, detune_bound, tg_bound = [(0.007, 0.008), (0.012, 0.0132), (-0.01, 0.01)] # tg186-195
-    amp_bound, detune_bound, tg_bound = [(0., 0.08), (-0.1, 0.1), (-0.01, 0.01)] # tg195-201
-
-    # tg_vec = [141, 145, 149, 151, 153, 154, 157]
-    # tg_vec = [160, 161, 162, 163, 165, 168, 170, 171,]
-    # tg_vec = [173, 174, 177, 179, 180, 182, 184, 185]
-    # tg_vec = np.arange(186, 195, 1)
-    tg_vec = [20, 92] #np.arange(195, 201, 1)
-    # cz = pd.read_csv('data/data_cz_3ncut_truc1=300.txt')
-    # x0_vec = cz[['tg', 'drive_amp', 'detune']].to_numpy()[2::3,:]
-    # x0_vec = np.array([
-# [20.040941, 0.045968, 0.030859, -0.74640732],
-#  [26.095068, 0.045891, 0.015649, -0.37350652],
-#  [32.050555, 0.037113, 0.011292, -0.42044296],
-#  [38.050827, 0.035562, 0.022828, -0.56293183],
-#  [44.037972, 0.031932, 0.023962, -0.95698284],
-#  [50.062652, 0.02695, 0.026935, -1.16069812],
-#  [56.089236, 0.022853, 0.026795, -1.03691684],
-#  [62.061714, 0.020772, 0.017392, -1.05329768],
-#  [68.04014, 0.018304, 0.015964, -1.20314488],
-#  [74.048199, 0.016257, 0.014902, -1.32245501],
-    # ])
-
-
-    print('gate_time_vector:', np.array(tg_vec).tolist()) if 'tg_vec' in globals() else None
-    # for i in x0_vec:
-    #     print(i.tolist(), ',')
-
-    workers, popsize = 50, 10
-    recombination, tol, mutation = [0.7, 0.01, (0.5, 1.0)]
-    drive_term = n_theta1_dress
-    logi_state = ['0-0', '0-2', '2-0', '2-2']
-    # W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
-    # W_20_50 = eval_tot[hspace_full.index('0-1')] - eval_tot[hspace_full.index('0-0')]
-    W_20_50 = eval_tot[hspace_full.index('0-1')] - eval_tot[hspace_full.index('0-0')]
-
-    hspace_part = [
-'0-0', '5-0', '0-2', '2-0', '2-2', '5-2', '5-1', '0-1', '2-1', '1-0' ,
-'0-5', '2-5', '1-2', '9-0', '4-0', '2-4', '5-5', '1-1', '5-4', '1-5' ,
-'9-2', '0-4', '4-2', '2-8', '0-8', '9-1', '2-12', '2-9', '0-9', '0-12' ,
-'12-0', '2-16', '0-16', '5-8', '1-8', '4-5', '2-13', '2-21', '0-18', '2-20' ,
-'9-4', '4-9', '8-0', '2-18', '0-21', '2-24', '1-4', '18-0', '5-26', '0-13' ,
-
-'13-0', '0-26', '15-0', '2-26', '1-12', '5-16', '8-1', '0-24', '15-1', '2-35' ,
-'15-4', '2-33', '2-45', '0-33', '2-39', '0-45', '5-12', '0-39', '5-9', '8-12' ,
-'5-33', '12-2', '4-4', '1-9', '4-1', '5-34', '2-30', '2-46', '1-16', '0-34' ,
-'2-34', '8-2', '5-21', '2-52', '0-52', '0-42', '2-42', '2-59', '0-59', '5-18' ,
-'0-65', '5-24', '2-55', '0-55', '0-20', '9-8', '8-9', '22-0', '1-25', '8-5' ,
-
-# '12-1', '4-8', '2-53', '2-36', '2-25', '5-20', '5-13', '9-24', '15-8', '1-30' ,
-# '0-25', '1-20', '5-25', '9-5', '1-13', '1-24', '13-2', '1-33', '18-1', '0-68' ,
-# '18-2', '20-0', '2-44', '9-12', '4-25', '9-9', '5-30', '0-83', '5-39', '9-16' ,
-# '0-36', '0-73', '12-4', '18-5', '22-2', '15-16', '1-21', '5-35', '9-13', '2-60' ,
-# '2-57', '15-2', '15-5', '2-28', '13-1', '4-12', '0-35', '9-20', '2-54', '1-18' ,
-
-# '0-81', '24-1', '4-39', '0-30', '1-26', '8-4', '4-16', '12-5', '1-35', '8-8' ,
-# '24-0', '12-9', '5-44', '0-77', '4-21', '0-57', '5-28', '1-39', '25-0', '8-18' ,
-# '1-28', '4-44', '33-0', '5-42', '12-12', '0-54', '13-12', '9-26', '4-24', '20-9' ,
-# '8-26', '24-4', '8-16', '0-46', '13-4', '1-34', '37-1', '0-44', '18-16', '22-4' ,
-# '1-45', '0-78', '9-25', '5-36', '24-9', '1-44', '4-35', '18-8', '0-53', '1-60' ,
-    ]
-    H0_full = qt.Qobj(np.diag(eval_tot))
-    H0_False = qt.Qobj(np.diag(eval_False))
-    logi_idx_False = [hspace_False.index(i) for i in logi_state]
-    H_drive_False = [H0_False, [n_theta1_False, ut.drive_gauss_A] ]
-
-    index_part = [hspace_full.index(i) for i in hspace_part]
-    len_part = len(hspace_part)
-    H0_part = ut.truncate_2( H0_full, index_part)
-    n_theta1_part = ut.truncate_2(n_theta1_dress, index_part)
-    H_drive_part = [H0_part, [n_theta1_part, ut.drive_gauss_A] ]
-    logi_idx_part = [hspace_part.index(i) for i in logi_state]
-
-    print('\ntruc1=', truc1, ', truc_tot=', truc_tot, ', charge_pick=', charge_pick)
-    print('truc_tot_2=', truc_full)
-    print('amp_bounds=', amp_bound, ', detune_bounds=', detune_bound, ', tg_bound=', tg_bound)
-    print('W_20_50 = ', np.round(W_20_50, 3))
-    print('workers=', workers, ', popsize=', popsize)
-    print('recombination=', recombination, ', tol=', tol, ', mutation=', mutation)
-
-    fidelity_sweep()
-
-    print('workers=',workers, ', popsize=',popsize)
-    print('recombination=',recombination, ', tol=',tol, ', mutation=',mutation)
-
-
-
-
-
-###################################################################
-## Optimize fidelity with differential evolution and sweep
-###################################################################
-# def fidelity_sweep_x0():
-#     cz = pd.read_csv('data/data_cz_fidelity_sesolve.txt')
-#     # cz = pd.read_csv('data/data_cz_fidelity_sesolve_select.txt')
-#     n_cpu = 1
-#     args_truc = [n_cpu, hspace_truc, W_20_50, H_drive_truc, logic_idx_truc]
-#     fidelity = []
-#     drive_param = []
-#     fidelity_full = []
-#     # for jdx, tg in tqdm(enumerate(x0_vec[:,0])):
-#     for jdx, tg in tqdm(enumerate(tg_vec)):
-#         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
-#         x0 = cz[['tg','drive_amp','detune']].iloc[jdx].to_numpy()
-#         bounds = (tg_bounds, amp_bound, detune_bound)
-#         res = sp.optimize.differential_evolution(
-#             func=ut.cz_fidelity_optimize,
-#             bounds=bounds,
-#             args=args_truc,
-#             disp=True,
-#             callback=ut.print_soln,
-#             init="sobol",
-#             workers=workers,
-#             popsize=popsize,
-#             mutation=mutation,
-#             recombination=recombination,
-#             tol=tol,
-#             x0=x0,
-#             polish=False, # 'True' will make the for-loop break
-#             )
-#         fidelity.append(res.fun)
-#         drive_param.append(res.x.tolist())
-
-#         print(res, '\n')
-#         print('\ntg = ', np.array(tg_vec[:jdx+1]).tolist())
-
-#         print(f'\nlog of gate error (truc={truc_len}) = ')
-#         for i in range(0, len(fidelity), 4):
-#             print(', '.join(map(str, np.round(fidelity[i:i+4], 8))), ',')
-
-#         print(f'\ndrive_param (truc={truc_len}) = ')
-#         for i in drive_param:
-#             print(np.round(i,6).tolist(),',')
-
-#         n_cpu_full = 50
-#         tg, drive_amp, detune = drive_param[jdx]
-#         arg_all = [tg, drive_amp, detune, n_cpu_full, hspace_full, W_20_50, H_drive_full, logic_idx_full]
-#         fidelity_full.append(ut.cz_fidelity(arg_all))
-#         print(f'\nlog of gate error (truc={len(eval_tot)}) = ')
-#         for i in range(0, len(fidelity_full), 4):
-#             print(', '.join(map(str, np.round(fidelity_full[i:i+4], 8))), ',')
-#         print('\namp_bounds=', amp_bound, ', detune_bounds=', detune_bound, ', tg_bound=', tg_bound)
-#         print("Current Mountain Time:", datetime.now(pytz.timezone('America/Denver')))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    main()

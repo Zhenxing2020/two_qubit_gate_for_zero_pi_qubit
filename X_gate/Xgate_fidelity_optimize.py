@@ -64,8 +64,8 @@ def fidelity_de():
         print(np.round(res.x, 6).tolist())
         print(f"Full system error (truc_full={n_full}):")
         print(', '.join(map(str, np.round(fidelity_full[-4:], 8))))
-        ut.print_data(f'f_optimize', fidelity)
-        ut.print_data(f'f_optimize', fidelity_full)
+        ut.print_fidelity(f'f_optimize', fidelity)
+        ut.print_fidelity(f'f_optimize', fidelity_full)
         ut.print_time()
 
 if __name__ == '__main__':
