@@ -98,52 +98,76 @@ Loader note
 
 ### a) Single Qubit X Gate
 
-<!-- Instructions for optimizing and analyzing single-qubit X gate implementations -->
-
 #### Setup
+- Activate the environment (see Environment Requirements above).
+- Change into the gate folder before running:
+  - `cd X_gate`
 
 #### Running Optimization
+- Run the optimizer script from this folder:
+  - `python Xgate_fidelity_optimize.py`
 
 #### Analysis
+- Run the fidelity/analysis helper after optimization:
+  - `python get_fidelity_xgate.py`
 
 #### Output Files
+- Optimization outputs are written under `X_gate/data/` (filenames set by the script).
 
 
 ### b) Two Qubit CZ Gate
 
-<!-- Instructions for optimizing and analyzing two-qubit controlled-Z gate implementations -->
-
 #### Setup
+- Activate the environment (see Environment Requirements above).
+- Change into the gate folder before running:
+  - `cd cz`
 
 #### Running Optimization
+- Run the optimizer script from this folder:
+  - `python cz_fidelity_optimize.py`
 
 #### Analysis
+- Run the analysis script for CZ (fill in the specific filename you use):
+  - `python <cz_analysis_script>.py`
 
 #### Output Files
+- Optimization outputs are written under `cz/data/` (filenames set by the script).
 
 ### c) Two Qubit CNOT Gate
 
-<!-- Instructions for optimizing and analyzing two-qubit CNOT gate implementations -->
-
 #### Setup
+- Activate the environment (see Environment Requirements above).
+- Change into the gate folder before running:
+  - `cd cnot`
 
 #### Running Optimization
+- Run the optimizer script from this folder:
+  - `python cnot_fidelity_optimize.py`
 
 #### Analysis
+- Run the analysis script for CNOT (fill in the specific filename you use):
+  - `python <cnot_analysis_script>.py`
 
 #### Output Files
+- Optimization outputs are written under `cnot/data/` (filenames set by the script).
 
 ### d) Two Qubit X Gate on Each Qubit
 
-<!-- Instructions for optimizing and analyzing simultaneous X gates on both qubits -->
-
 #### Setup
+- Activate the environment (see Environment Requirements above).
+- Change into the gate folder before running:
+  - `cd <two_qubit_x_folder>`
 
 #### Running Optimization
+- Run the optimizer script from this folder (fill in the specific filename you use):
+  - `python <two_qubit_x_optimize_script>.py`
 
 #### Analysis
+- Run the analysis script (fill in the specific filename you use):
+  - `python <two_qubit_x_analysis_script>.py`
 
 #### Output Files
+- Optimization outputs are written under the corresponding `data/` folder.
 
 ## File Structure
 
