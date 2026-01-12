@@ -107,10 +107,6 @@ Loader note
 - Run the optimizer script from this folder:
   - `python Xgate_fidelity_optimize.py`
 
-#### Analysis
-- Run the fidelity/analysis helper after optimization:
-  - `python get_fidelity_xgate.py`
-
 #### Output Files
 - Optimization outputs are written under `X_gate/data/` (filenames set by the script).
 
@@ -126,10 +122,6 @@ Loader note
 - Run the optimizer script from this folder:
   - `python cz_fidelity_optimize.py`
 
-#### Analysis
-- Run the analysis script for CZ (fill in the specific filename you use):
-  - `python <cz_analysis_script>.py`
-
 #### Output Files
 - Optimization outputs are written under `cz/data/` (filenames set by the script).
 
@@ -144,10 +136,6 @@ Loader note
 - Run the optimizer script from this folder:
   - `python cnot_fidelity_optimize.py`
 
-#### Analysis
-- Run the analysis script for CNOT (fill in the specific filename you use):
-  - `python <cnot_analysis_script>.py`
-
 #### Output Files
 - Optimization outputs are written under `cnot/data/` (filenames set by the script).
 
@@ -161,10 +149,6 @@ Loader note
 #### Running Optimization
 - Run the optimizer script from this folder (fill in the specific filename you use):
   - `python <two_qubit_x_optimize_script>.py`
-
-#### Analysis
-- Run the analysis script (fill in the specific filename you use):
-  - `python <two_qubit_x_analysis_script>.py`
 
 #### Output Files
 - Optimization outputs are written under the corresponding `data/` folder.
