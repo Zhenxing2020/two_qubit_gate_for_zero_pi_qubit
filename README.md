@@ -107,6 +107,10 @@ Loader note
 - Run the optimizer script from this folder:
   - `python Xgate_fidelity_optimize.py`
 
+#### Check Fidelity
+- To calculate fidelity of optimized pulses, run the fidelity checker:
+  - `python get_fidelity_xgate.py`
+
 #### Output Files
 - Optimization outputs are written under `X_gate/data/` (filenames set by the script).
 
@@ -122,6 +126,13 @@ Loader note
 - Run the optimizer script from this folder:
   - `python cz_fidelity_optimize.py`
 
+#### Check Fidelity
+- To calculate fidelity of optimized pulses, run the fidelity checker from the `cz` folder:
+  - `python get_fidelity_2q.py`
+- **Note:** This script can be used for both CZ and CNOT gates. To switch between gates, modify the `get_config()` function in `get_fidelity_2q.py`:
+  - Set `cfg["cz_run"] = True` for CZ gate
+  - Set `cfg["cz_run"] = False` for CNOT gate
+
 #### Output Files
 - Optimization outputs are written under `cz/data/` (filenames set by the script).
 
@@ -135,6 +146,14 @@ Loader note
 #### Running Optimization
 - Run the optimizer script from this folder:
   - `python cnot_fidelity_optimize.py`
+
+#### Check Fidelity
+- To calculate fidelity of optimized pulses, run the fidelity checker from the `cz` folder:
+  - `cd ../cz`
+  - `python get_fidelity_2q.py`
+- **Note:** This script can be used for both CZ and CNOT gates. To switch between gates, modify the `get_config()` function in `get_fidelity_2q.py`:
+  - Set `cfg["cz_run"] = True` for CZ gate
+  - Set `cfg["cz_run"] = False` for CNOT gate
 
 #### Output Files
 - Optimization outputs are written under `cnot/data/` (filenames set by the script).
@@ -164,7 +183,7 @@ Loader note
 │   └── cnot_fidelity_optimize.py
 ├── cz/                     # CZ gate implementations
 │   ├── data/               # CZ optimization results
-│   └── get_fidelity_cz.py
+│   └── get_fidelity_2q.py  # Fidelity checker for CZ and CNOT gates
 ├── figure/                 # Figure generation and plotting code
 ├── data_fig/              # Data files for figures
 ├── utils_2Q_gate_zp.py    # Utility functions for two-qubit gates
