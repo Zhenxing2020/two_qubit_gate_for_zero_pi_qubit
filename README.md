@@ -177,12 +177,14 @@ Loader note
 ```
 ├── X_gate/                 # Single qubit X gate implementations
 │   ├── data/               # X gate optimization results
+│   └── Xgate_fidelity_optimize.py
 │   └── get_fidelity_xgate.py
 ├── cnot/                   # CNOT gate implementations
 │   ├── data/               # CNOT optimization results
 │   └── cnot_fidelity_optimize.py
 ├── cz/                     # CZ gate implementations
 │   ├── data/               # CZ optimization results
+│   └── cz_fidelity_optimize.py
 │   └── get_fidelity_2q.py  # Fidelity checker for CZ and CNOT gates
 ├── figure/                 # Figure generation and plotting code
 ├── data_fig/              # Data files for figures
