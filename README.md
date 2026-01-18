@@ -34,6 +34,12 @@ or
 ```bash
 python ham_data.py --data-type two
 ```
+or a more detailed example 
+```bash
+nohup time python ham_data.py --yaml 'data/params.yaml'  --data-type single > 'data/gen_q1_flux.txt' &
+```
+where 'nohup' ensures to run code that you want to continue after you disconnect from server. Ignore it if you are using your local computer.
+
 Hamiltonian data is saved to .npz files, which can be read directly or using the helper functions
 ```python
 load_single_qubit_data
