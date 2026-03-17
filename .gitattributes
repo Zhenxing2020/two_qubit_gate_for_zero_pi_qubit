@@ -25,3 +25,14 @@
 
 # Jupyter notebooks - always use remote version during merge
 *.ipynb merge=theirs
+
+# Large numeric data should be stored via Git LFS.
+# These rules are ready; run `git lfs install` in this repo first.
+data/**/*.npz filter=lfs diff=lfs merge=lfs -text
+data/**/*.npy filter=lfs diff=lfs merge=lfs -text
+cz/data/**/*.npz filter=lfs diff=lfs merge=lfs -text
+cz/data/**/*.npy filter=lfs diff=lfs merge=lfs -text
+cnot/data/**/*.npz filter=lfs diff=lfs merge=lfs -text
+cnot/data/**/*.npy filter=lfs diff=lfs merge=lfs -text
+xgate/data/**/*.npz filter=lfs diff=lfs merge=lfs -text
+xgate/data/**/*.npy filter=lfs diff=lfs merge=lfs -text
