@@ -1,6 +1,11 @@
 import os
 import sys
-sys.path.append('../')
+from pathlib import Path
+
+GATE_DIR = Path(__file__).resolve().parents[1]
+PROJECT_DIR = GATE_DIR.parent
+sys.path.append(str(PROJECT_DIR))
+os.chdir(GATE_DIR)
 import numpy as np
 import utils_2Q_gate_zp as ut
 

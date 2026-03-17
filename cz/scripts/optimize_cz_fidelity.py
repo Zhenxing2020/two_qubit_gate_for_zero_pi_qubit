@@ -25,7 +25,12 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 from sympy import symbols
 # ===== Local Imports =====
-sys.path.append('../')
+from pathlib import Path
+
+GATE_DIR = Path(__file__).resolve().parents[1]
+PROJECT_DIR = GATE_DIR.parent
+sys.path.append(str(PROJECT_DIR))
+os.chdir(GATE_DIR)
 import utils_2Q_gate_zp as ut
 import ham_data as hd
 # Configure scqubits

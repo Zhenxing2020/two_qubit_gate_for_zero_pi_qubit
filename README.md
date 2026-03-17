@@ -107,14 +107,14 @@ Loader note
 #### Setup
 - Activate the environment (see Environment Requirements above).
 - Change into the gate folder before running:
-  - `cd X_gate`
+  - `cd xgate`
 
 #### Running Optimization
 - Run the optimizer script from this folder:
   - `python Xgate_fidelity_optimize.py`
 
 #### Output Files
-- Optimization outputs are written under `X_gate/data/` (filenames set by the script).
+- Optimization outputs are written under `xgate/data/` (filenames set by the script).
 
 
 ### b) Two Qubit CZ Gate
@@ -162,7 +162,7 @@ Loader note
 ## File Structure
 
 ```
-├── X_gate/                 # Single qubit X gate implementations
+├── xgate/                  # Single qubit X gate implementations
 │   ├── data/               # X gate optimization results
 │   └── get_fidelity_xgate.py
 ├── cnot/                   # CNOT gate implementations
