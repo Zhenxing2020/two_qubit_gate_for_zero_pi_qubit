@@ -145,7 +145,6 @@ def run_xgate_fidelity(args):
         f_noise = Parallel(n_jobs=parallel_jobs)(
             delayed(ut.xgate_fidelity_log_noise)(args_indep, *noisy_args) for args_indep in params
         )
-        ut.print_fidelity(f"f_{args.t1}us_{n_hspace}", f_noise, num_digits=8)
         ut.print_fidelity(f"f_{int(args.t1)}us_{n_hspace}", f_noise, num_digits=8)
 
 
@@ -239,24 +238,28 @@ def build_parser():
     parser.add_argument("--drive-theta", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--qubit-0", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--n-full", type=int, default=150)
-    parser.add_argument("--t1", type=float, default=3.0, help="T1 in us; Tphi follows T1.")
-    parser.add_argument("--charge-truc", action=argparse.BooleanOptionalAction, default=False)
+
+    parser.add_argument("--t1", type=float, default=170, help="T1 in us; Tphi follows T1.")
+    parser.add_argument("--charge-truc", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--calculate-ideal", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--calculate-noise", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--num-cpus", type=int, default=4)
-    parser.add_argument("--parallel-jobs", type=int, default=0, help="<=0 means number of selected tg rows.")
+    parser.add_argument("--parallel-jobs", type=int, default=50, help="<=0 means number of selected tg rows.")
     parser.add_argument("--apply-decay", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--apply-dephase", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--max-step-ideal", type=float, default=None)
-    parser.add_argument("--max-step-noisy", type=float, default=None)
-    parser.add_argument("--tg-list", type=_parse_tg_list, default=list(range(18))[::4], help="Gate row indices: '0,3,5' or '0:18'.")
+    parser.add_argument("--apply-dephase", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument("--max-step-ideal", type=float, default=1e-3)
+    parser.add_argument("--max-step-noisy", type=float, default=3e-4)
+    parser.add_argument("--tg-list", type=_parse_tg_list, 
+                        default=list(range(18)), 
+                        # default=list(range(18))[::4], 
+                        help="Gate row indices: '0,3,5' or '0:18'.")
 
     parser.add_argument("--pop-tg", type=float, default=828.759495)
     parser.add_argument("--pop-drive-amp-a", type=float, default=0.013563)
     parser.add_argument("--pop-drive-amp-b", type=float, default=0.034964)
     parser.add_argument("--pop-detune-a", type=float, default=-0.003029)
     parser.add_argument("--pop-detune-b", type=float, default=-0.003182)
-    parser.add_argument("--pop-max-step-ideal", type=float, default=1e-4)
+    parser.add_argument("--pop-max-step-ideal", type=float, default=1e-3)
     parser.add_argument("--pop-max-step-noisy", type=float, default=3e-4)
     return parser
 

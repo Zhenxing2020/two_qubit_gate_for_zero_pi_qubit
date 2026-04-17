@@ -85,8 +85,8 @@ def main():
     params_path = "params.yaml"
     subtract_ground = True
 
-    output_path = "data/data_flux_derivative_q1_eval_300_cpu_100.npz"
-    evals_count = 300
+    output_path = "data/data_flux_derivative_q1_eval_500_cpu_100.npz"
+    evals_count = 500
     num_cpus = 100
 
     spec_data, meta = build_spec_data(

@@ -1,0 +1,107 @@
+get_fidelity_xgate.py
+NUMEXPR_NUM_THREADS = 1
+MKL_NUM_THREADS = 1
+
+Current China Time: 2026-03-23 20:11:57.766150+08:00
+drive_phi= False ; drive_theta = True ; n_full = 150 ; charge_truc = False
+T1 = Tphi = 3 μs, num_cpus = 4
+calculate_ideal = True, calculate_noise = True
+apply_decay = True, apply_dephase = True
+n_hspace = 150 ;   n_job =  1
+
+hspace (150\150) = np.array([
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ,
+10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ,
+20, 21, 22, 23, 24, 25, 26, 27, 28, 29 ,
+30, 31, 32, 33, 34, 35, 36, 37, 38, 39 ,
+40, 41, 42, 43, 44, 45, 46, 47, 48, 49 ,
+50, 51, 52, 53, 54, 55, 56, 57, 58, 59 ,
+60, 61, 62, 63, 64, 65, 66, 67, 68, 69 ,
+70, 71, 72, 73, 74, 75, 76, 77, 78, 79 ,
+80, 81, 82, 83, 84, 85, 86, 87, 88, 89 ,
+90, 91, 92, 93, 94, 95, 96, 97, 98, 99 ,
+100, 101, 102, 103, 104, 105, 106, 107, 108, 109 ,
+110, 111, 112, 113, 114, 115, 116, 117, 118, 119 ,
+120, 121, 122, 123, 124, 125, 126, 127, 128, 129 ,
+130, 131, 132, 133, 134, 135, 136, 137, 138, 139 ,
+140, 141, 142, 143, 144, 145, 146, 147, 148, 149 ,
+])
+
+params = np.array([
+[59.087483, 0.068953, 0.018674, 0.001617, 0.002406] ,
+])
+RuntimeWarning: invalid value encountered in sqrt
+ /home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/../utils_2Q_gate_zp.py: 966
+f_ideal_150 = np.array([
+-5.15065593 ,
+])
+
+Current China Time: 2026-03-23 20:12:08.507053+08:00
+np.shape(jump_t1)= (11175, 150, 150) ; np.shape(jump_tphi)= (150, 150, 150)
+UserWarning: zvode: Repeated convergence failures. (Perhaps bad Jacobian supplied or wrong choice of MF or tolerances.)
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/integrate/_ode.py: 1011UserWarning: zvode: Repeated convergence failures. (Perhaps bad Jacobian supplied or wrong choice of MF or tolerances.)
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/integrate/_ode.py: 1011UserWarning: zvode: Repeated convergence failures. (Perhaps bad Jacobian supplied or wrong choice of MF or tolerances.)
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/integrate/_ode.py: 1011UserWarning: zvode: Repeated convergence failures. (Perhaps bad Jacobian supplied or wrong choice of MF or tolerances.)
+ /home/zlqed/anaconda3/lib/python3.11/site-packages/scipy/integrate/_ode.py: 1011multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/home/zlqed/anaconda3/lib/python3.11/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/../utils_2Q_gate_zp.py", line 1276, in parallel_mesolve
+    output = qt.mesolve(
+             ^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/qutip/mesolve.py", line 244, in mesolve
+    res = _generic_ode_solve(func, ode_args, rho0, tlist, e_ops, options,
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/qutip/mesolve.py", line 501, in _generic_ode_solve
+    raise Exception("ODE integration error: Try to increase "
+Exception: ODE integration error: Try to increase the allowed number of substeps by increasing the nsteps parameter in the Options class.
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/get_fidelity_xgate.py", line 245, in <module>
+    xgate_fidelity_decay_all()
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/get_fidelity_xgate.py", line 123, in xgate_fidelity_decay_all
+    f_noise = Parallel(n_jobs=n_job)(delayed(ut.xgate_fidelity_log_noise)(args_indep, *args) for args_indep in params)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/parallel.py", line 1085, in __call__
+    if self.dispatch_one_batch(iterator):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/parallel.py", line 901, in dispatch_one_batch
+    self._dispatch(tasks)
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/parallel.py", line 819, in _dispatch
+    job = self._backend.apply_async(batch, callback=cb)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/_parallel_backends.py", line 208, in apply_async
+    result = ImmediateResult(func)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/_parallel_backends.py", line 597, in __init__
+    self.results = batch()
+                   ^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/parallel.py", line 288, in __call__
+    return [func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/parallel.py", line 288, in <listcomp>
+    return [func(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/../utils_2Q_gate_zp.py", line 1108, in xgate_fidelity_log_noise
+    propagator = get_propagator(H_qbt_drive, tlist, num_cpus, 
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/../utils_2Q_gate_zp.py", line 1181, in get_propagator
+    output = qt.parallel.parallel_map(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/qutip/parallel.py", line 235, in parallel_map
+    return [ar.get() for ar in async_res]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/site-packages/qutip/parallel.py", line 235, in <listcomp>
+    return [ar.get() for ar in async_res]
+            ^^^^^^^^
+  File "/home/zlqed/anaconda3/lib/python3.11/multiprocessing/pool.py", line 774, in get
+    raise self._value
+Exception: ODE integration error: Try to increase the allowed number of substeps by increasing the nsteps parameter in the Options class.
+Command exited with non-zero status 1
+118.36user 4.65system 0:42.11elapsed 292%CPU (0avgtext+0avgdata 5867348maxresident)k
+0inputs+216outputs (0major+2162362minor)pagefaults 0swaps

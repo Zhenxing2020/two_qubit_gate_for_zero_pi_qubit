@@ -953,7 +953,11 @@ def construct_c_ops_xgate(n_hspace, drive_truc, Gamma_t1, gamma_dephase_new, tph
     """
     gamma_decay_new = Gamma_t1 * np.abs(drive_truc.full()) ** 2 # 
     # the dephasing rate is calculated in some file for 50μs for 2 state, the line below change dephasing coeffs to the input tphi (170, 30, 3μs)
+    
+    # print('gamma_dephase_new=', gamma_dephase_new)
     gamma_dephase_new = gamma_dephase_new * 50 / tphi
+    # print('gamma_dephase_new after scaling=', gamma_dephase_new)
+    
     jump_t1, jump_tphi = [], []
     if apply_decay:
         for i in range(1, n_hspace):
@@ -964,12 +968,10 @@ def construct_c_ops_xgate(n_hspace, drive_truc, Gamma_t1, gamma_dephase_new, tph
             if state in list(state_idx_tphi):
                 idx = list(state_idx_tphi).index(state) 
                 jump_tphi.append(np.sqrt(2 * gamma_dephase_new[idx]) * qt.basis(n_hspace, i).proj())
-            else:
-                jump_tphi.append(qt.Qobj(np.zeros((n_hspace, n_hspace))))    
+            # else:
+            #     jump_tphi.append(qt.Qobj(np.zeros((n_hspace, n_hspace))))    
     print('np.shape(jump_t1)=',  np.shape(jump_t1), '; np.shape(jump_tphi)=',  np.shape(jump_tphi))
     return jump_t1 + jump_tphi
-
-
 
 
 def zero_pi_initialize(drive_phi, drive_theta, truncation=10, ncut=60, phi_cut=200):
@@ -1355,8 +1357,6 @@ def get_w_trans(evals, hspace_full, n_op, state_pop):
     return w_trans, n_trans, trans_int
 
 
-
-
 def get_jump_op(state_i, *args):
     truc1, gamma_decay, gamma_dephase, eket_tot = args
     # t_1
@@ -1652,8 +1652,6 @@ def compare_two_lists(list1, list2):
                   num_each_row=10, n_make_blank_line=50)    
 
 
-
-
 def max_index_2d_array(arr, arr_name=None):
     row, col = np.unravel_index(np.argmax(arr), arr.shape)
     print(f'{arr_name}.shape = {np.shape(arr)}, '
@@ -1670,7 +1668,7 @@ def get_qutip_options(max_step_ideal, max_step_noisy, num_cpus=1, print_flag=Fal
         nsteps_ideal = 1e5  # Set nsteps to a large number for parallel execution
 
     if max_step_noisy != 0:
-        nsteps_noisy = int(1/ max_step_noisy )  # Set nsteps to a large number for serial execution
+        nsteps_noisy = 1e5 # int(1/ max_step_noisy )  # Set nsteps to a large number for serial execution
     else:
         nsteps_noisy = 1e5  # Set nsteps to a large number for parallel execution        
 
@@ -1733,7 +1731,7 @@ def load_qubit_data_xgate(qubit_0 = True, folder = '../../data/3ncut_one_zeropi/
     #### data loading functions ######################################################
     ##############################################################################################
 
-def load_dephasing_data_xgate(drive_theta):
+def load_dephasing_data_xgate(drive_theta, q0 = True):
     """
     Load dephasing rates calculated for 50μs.
 
@@ -1743,10 +1741,19 @@ def load_dephasing_data_xgate(drive_theta):
     Returns:
         np.ndarray: Dephasing rates for each state.
     """
-    gamma_file = 'data/data_gamma_theta_500.txt' if drive_theta else 'data/data_gamma_phi_500.txt'
-    gamma_new = pd.read_csv(gamma_file)
-    gamma_dephase = gamma_new['tphi_50us_02'].to_numpy()
-    state_idx = gamma_new['hspace'].to_numpy()
+    # print('use 1st order dephasing data')
+    # gamma_file = 'data/data_gamma_theta_500.txt' if drive_theta else 'data/data_gamma_phi_500.txt'
+    # gamma_new = pd.read_csv(gamma_file)
+    # gamma_dephase = gamma_new['tphi_50us_02'].to_numpy()
+    # state_idx = gamma_new['hspace'].to_numpy()
+
+    print('use 2nd order dephasing data, correct 50us factor')
+    gamma_file = '../data/data_flux_derivative_q0_eval_500.npz' if q0 else '../data/data_flux_derivative_q1_eval_500.npz'
+    gamma_new = np.load(gamma_file)
+    gamma_dephase_label = 'gamma_phi_1us_02_theta_mode' if drive_theta else 'gamma_phi_1us_02_phi_mode'
+    gamma_dephase = np.abs(gamma_new[gamma_dephase_label]) / 50
+    state_idx_label = 'hspace_theta_256' if drive_theta else 'hspace_phi_263'
+    state_idx = gamma_new[state_idx_label]
     return state_idx, gamma_dephase
 
 def load_drive_params_xgate(drive_theta):
@@ -1760,7 +1767,7 @@ def load_drive_params_xgate(drive_theta):
         np.ndarray: Parameters array. different rows mean different gate time. 
         columns mean 'tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
     """
-    folder = 'data_xgate_theta_3ncut_mstep_3e4.txt' if drive_theta else 'data_xgate_phi_3ncut.txt'
+    folder = 'data_xgate_theta_3ncut_mstep_3e4.txt' if drive_theta else 'data_xgate_phi_3ncut_mstep_1e3.txt'
     f_xgate = pd.read_csv('../figure/data/' + folder)
     return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
 
@@ -1833,6 +1840,74 @@ def load_noise_data_2q(t1_tphi_other,
     gamma_dephase_02_q1 = gamma_q1['tphi_02'].to_numpy() *50 /t1_tphi_other
     return n_theta0, n_theta1, gamma_dephase_02_q0, gamma_dephase_02_q1
 
+hspace_theta_256 = [
+0, 1, 2, 4, 5, 7, 8, 11, 12, 16 ,
+17, 18, 21, 23, 25, 27, 30, 31, 32, 33 ,
+37, 38, 40, 41, 42, 45, 46, 47, 48, 51 ,
+52, 56, 59, 62, 63, 64, 65, 67, 72, 73 ,
+74, 76, 78, 79, 82, 83, 85, 87, 88, 90 ,
+
+92, 93, 96, 97, 98, 102, 103, 106, 107, 112 ,
+114, 118, 119, 120, 121, 122, 123, 124, 127, 128 ,
+131, 132, 133, 134, 137, 138, 142, 143, 150, 151 ,
+154, 155, 156, 157, 158, 161, 162, 163, 166, 170 ,
+171, 174, 175, 176, 177, 179, 180, 186, 187, 188 ,
+
+191, 192, 195, 196, 199, 202, 203, 206, 207, 208 ,
+210, 213, 214, 218, 219, 220, 221, 222, 225, 226 ,
+230, 231, 232, 236, 237, 238, 242, 243, 246, 247 ,
+248, 251, 252, 258, 259, 260, 262, 263, 264, 270 ,
+271, 274, 275, 279, 280, 281, 283, 284, 285, 288 ,
+
+289, 290, 294, 296, 297, 298, 299, 300, 301, 302 ,
+307, 308, 312, 313, 314, 315, 324, 325, 326, 327 ,
+328, 333, 334, 337, 338, 339, 340, 345, 346, 347 ,
+348, 350, 351, 354, 355, 358, 359, 364, 365, 366 ,
+367, 372, 373, 374, 375, 376, 377, 378, 381, 384 ,
+
+385, 388, 389, 390, 398, 399, 400, 401, 407, 408 ,
+410, 411, 413, 414, 418, 419, 420, 425, 426, 427 ,
+428, 431, 432, 433, 436, 437, 438, 439, 442, 446 ,
+447, 450, 451, 452, 453, 454, 455, 459, 460, 463 ,
+464, 467, 468, 472, 473, 474, 475, 476, 486, 488 ,
+
+489, 492, 493, 494, 496, 497 ,
+]
+
+hspace_phi_263 = [
+0, 2, 3, 4, 8, 9, 10, 11, 15, 16 ,
+18, 19, 20, 23, 24, 25, 28, 31, 33, 35 ,
+37, 39, 40, 42, 43, 46, 47, 49, 51, 53 ,
+55, 56, 57, 60, 62, 64, 66, 67, 69, 70 ,
+73, 76, 77, 79, 81, 83, 85, 86, 88, 91 ,
+
+92, 95, 96, 98, 100, 101, 102, 104, 106, 108 ,
+110, 112, 113, 116, 118, 120, 121, 123, 126, 128 ,
+130, 132, 133, 136, 137, 139, 141, 143, 145, 146 ,
+148, 151, 153, 154, 156, 158, 159, 162, 164, 166 ,
+167, 169, 170, 173, 174, 176, 179, 181, 183, 185 ,
+
+186, 188, 190, 192, 194, 196, 198, 200, 202, 205 ,
+206, 208, 209, 212, 213, 216, 218, 220, 222, 223 ,
+226, 227, 229, 230, 232, 234, 237, 239, 241, 242 ,
+245, 246, 248, 250, 252, 253, 255, 257, 259, 262 ,
+264, 265, 267, 269, 271, 273, 275, 277, 279, 281 ,
+
+282, 283, 286, 288, 290, 291, 293, 294, 297, 299 ,
+302, 303, 305, 306, 308, 310, 313, 315, 317, 319 ,
+320, 322, 325, 326, 328, 330, 332, 333, 336, 337 ,
+340, 341, 343, 346, 348, 349, 350, 352, 354, 357 ,
+358, 361, 363, 364, 366, 368, 370, 372, 374, 376 ,
+
+378, 379, 382, 384, 386, 388, 390, 391, 393, 395 ,
+397, 398, 400, 403, 405, 407, 409, 411, 414, 415 ,
+417, 418, 420, 422, 424, 426, 428, 430, 432, 435 ,
+436, 438, 441, 442, 444, 445, 447, 449, 451, 453 ,
+455, 457, 460, 461, 464, 465, 468, 469, 471, 472 ,
+
+474, 476, 478, 480, 482, 484, 487, 488, 491, 492 ,
+494, 497, 498 ,
+]
 
 truc_model = {}
 # truc_model['n_theta_dress_charge_truc'] = [

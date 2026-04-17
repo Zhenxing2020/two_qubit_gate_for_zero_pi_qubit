@@ -248,7 +248,7 @@ def normalize_eigenvector_phases(eigenvectors):
     return normalized_evecs
 
 
-def save_two_qubit_data(params, folder_save):
+def save_two_qubit_data(params, folder_save, get_flux_derivative=False):
     """
     Generate and save two-qubit quantum system data including 
     eigenstates, operators, and Hilbert space information.
@@ -305,7 +305,6 @@ def save_two_qubit_data(params, folder_save):
         print(f"hamiltonian (transformed vars): {zp.sym_hamiltonian(return_expr=True)}", file=f)
         print("-", file=f)
         print(str(zp), file=f)
-
     
     # Extract g_theta1theta2 coupling strength
     i_for_inv = []
@@ -335,12 +334,53 @@ def save_two_qubit_data(params, folder_save):
 
     print("Circuit and parameters set. Beginning calculations...")
 
+    ######################################################################################
+    if get_flux_derivative:
+        # get flux derivative data
+        flux_vec = [0] + list(np.logspace(-6, -5, 5))
+        zp0 = zp.subsystems[0].get_spectrum_vs_paramvals(
+            "Φ1", flux_vec, evals_count=500, num_cpus=4, subtract_ground=True
+        )
+        x0 = np.array(zp0.param_vals, dtype=float)
+        y0 = np.array(zp0.energy_table, dtype=float)
+        dx0 = np.diff(x0)
+        dy0 = np.diff(y0, axis=0)
+        dydx0 = dy0 / dx0[:, None]
+        d2ydx2_0 = np.diff(dydx0, axis=0) / dx0[:-1, None]
+
+        zp1 = zp.subsystems[1].get_spectrum_vs_paramvals(
+            "Φ2", flux_vec, evals_count=500, num_cpus=4, subtract_ground=True
+        )
+        x1 = np.array(zp1.param_vals, dtype=float)
+        y1 = np.array(zp1.energy_table, dtype=float)
+        dx1 = np.diff(x1)
+        dy1 = np.diff(y1, axis=0)
+        dydx1 = dy1 / dx1[:, None]
+        d2ydx2_1 = np.diff(dydx1, axis=0) / dx1[:-1, None]
+
+        flux_npz_path = Path(folder_save, "flux_derivative_subsystems.npz")
+        np.savez(
+            flux_npz_path,
+            flux_vec=flux_vec,
+            y_zp0=y0,
+            d2ydx2_zp0=d2ydx2_0,
+            y_zp1=y1,
+            d2ydx2_zp1=d2ydx2_1,
+        )
+        return flux_npz_path
+    else:   
+        pass
+
+    ######################################################################################
     # Calculate subsystem eigenvalues/vectors
     eval1, evecs1 = zp.subsystems[0].eigensys(params["truc1"])
-    evecs1 = np.array(normalize_eigenvector_phases(evecs1.T))
     eval2, evecs2 = zp.subsystems[1].eigensys(params["truc2"])
-    evecs2 = np.array(normalize_eigenvector_phases(evecs2.T))
     print("Finished calculating subsystem eigensystems.")
+    print(f"evecs1.shape = {evecs1.shape}, evecs2.shape = {evecs2.shape}")
+    print(f"eval1.shape = {eval1.shape}, eval2.shape = {eval2.shape}")
+        
+    evecs1 = np.array(normalize_eigenvector_phases(evecs1.T))
+    evecs2 = np.array(normalize_eigenvector_phases(evecs2.T))
 
     # ntheta and nphi operators in single qubit bare basis
     n_theta1 = (evecs1 @ getattr(zp.subsystems[0], f"n{params['theta_mode1']+1}_operator")() @ evecs1.conj().T)
@@ -874,7 +914,9 @@ if __name__ == "__main__":
     if args.data_type in ['two', 'both']:
         start_time = time()
         print("Generating two qubit data...")
-        save_two_qubit_data(params, folder_save=Path(DATA_FOLDER, args.out))
+        # save_two_qubit_data(params, folder_save=Path(DATA_FOLDER, args.out))
+
+        save_two_qubit_data(params, folder_save=Path(DATA_FOLDER, args.out), get_flux_derivative=True)
         print("Two qubit data saved. Time taken: {:.2f} seconds".format(time() - start_time))
 
 
