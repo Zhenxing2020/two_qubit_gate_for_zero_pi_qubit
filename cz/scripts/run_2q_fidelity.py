@@ -1,11 +1,11 @@
 import os
 import sys
+import threading
+import time
 from pathlib import Path
 import numpy as np
-import qutip as qt
+import psutil
 from joblib import Parallel, delayed
-
-from pathlib import Path
 
 GATE_DIR = Path(__file__).resolve().parents[1]
 PROJECT_DIR = GATE_DIR.parent
@@ -19,6 +19,71 @@ import ham_data as hd
 settings.OVERLAP_THRESHOLD = 0.3
 
 
+class MemoryMonitor:
+    """
+    Track peak memory for this Python process and all child processes.
+
+    tracemalloc only sees Python allocations in the current process, while this
+    script spends most memory in NumPy/QuTiP native allocations and joblib
+    workers. RSS/PSS from psutil is closer to what the OS reports.
+    """
+    def __init__(self, interval=0.2):
+        self.interval = interval
+        self.proc = psutil.Process(os.getpid())
+        self.running = False
+        self.thread = None
+        self.peak_rss = 0
+        self.peak_pss = 0
+
+    def _get_process_tree_memory(self):
+        procs = [self.proc] + self.proc.children(recursive=True)
+        total_rss = 0
+        total_pss = 0
+
+        for proc in procs:
+            try:
+                mem = proc.memory_full_info()
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+            total_rss += mem.rss
+            total_pss += getattr(mem, "pss", mem.rss)
+
+        return total_rss, total_pss
+
+    def _watch(self):
+        while self.running:
+            rss, pss = self._get_process_tree_memory()
+            self.peak_rss = max(self.peak_rss, rss)
+            self.peak_pss = max(self.peak_pss, pss)
+            time.sleep(self.interval)
+
+    def start(self):
+        self.running = True
+        self.thread = threading.Thread(target=self._watch, daemon=True)
+        self.thread.start()
+
+    def stop(self):
+        self.running = False
+        if self.thread is not None:
+            self.thread.join()
+
+        rss, pss = self._get_process_tree_memory()
+        self.peak_rss = max(self.peak_rss, rss)
+        self.peak_pss = max(self.peak_pss, pss)
+
+    def peak_gb(self):
+        return {
+            "rss": self.peak_rss / 1024**3,
+            "pss": self.peak_pss / 1024**3,
+        }
+
+    def print_summary(self, label):
+        peak = self.peak_gb()
+        print(f"[{label}] Peak RSS: {peak['rss']:.2f} GB")
+        print(f"[{label}] Peak PSS: {peak['pss']:.2f} GB")
+
+
 # ============================================================
 # Configuration
 # ============================================================
@@ -29,11 +94,11 @@ def get_config():
     cfg = {}
 
     # ---------- General ----------
-    cfg["cz_run"] = True # True for CZ, False for CNOT
+    cfg["cz_run"] = False # True for CZ, False for CNOT
     
     # ---------- Truncation ----------
     # cfg["n_truc_list"] = np.arange(50, 201, step=10) # [200] #    
-    cfg["n_truc_list"] = np.arange(300, 901, step=100) # [200] #    
+    cfg["n_truc_list"] = np.array([55, 240]) # np.arange(300, 901, step=100) # [200] #    
     # cfg["use_truc_model"] = True
     cfg["reduced_model"] = 'charge_pick' # 'graph_pick', 'lowest_state', 'charge_pick'
 
@@ -47,20 +112,21 @@ def get_config():
     cfg["max_step_noisy"] = 1e-3
     
     # ---------- Noise options ----------
-    if cfg["calculate_noise"]:
-        cfg["apply_decay"] = True
-        cfg["apply_dephase"] = True
-        cfg["decay_enlarge"] = 1
-        cfg["filter_ratio"] = 0.3
-
-        # ---------- Time / noise ----------
-        cfg["t1_tphi_other"] = 3  # us
+    cfg["apply_decay"] = True
+    cfg["apply_dephase"] = True
+    cfg["decay_enlarge"] = 1
+    cfg["filter_ratio"] = 0.3
+    cfg["t1_tphi_other"] = 170  # us
+    cfg["noise_dephase_path"] = "../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz"
+    cfg["noise_csv_folder"] = "../../data/3ncut_two_zeropi/truc1=500"
 
     # ---------- Parallel ----------
-    cfg["num_cpus"] = 4 # 16
+    cfg["tg_para"] = False
+    cfg["num_cpus_ideal"] = 4
+    cfg["num_cpus_noisy"] = 16
 
     # ---------- Data ----------
-    cfg["folder_load"] = '../data/December_17_2025_Sorted_Untruc'
+    cfg["folder_load"] = '../data/Two_qubit_data_Sorted_Truc'
     # cfg["folder_load"] = "../../data/_truc_3000"
 
     # ---------- Pulse parameters ----------
@@ -75,14 +141,7 @@ def get_config():
     #     cfg["tg_list"] = np.arange(33)#[:1] # [0::6]
     #     cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], ]  # [1::4,]
     
-    if cfg["cz_run"]:
-        folder = 'data/npz/cz_pulse_neighbor.txt'
-        cfg["tg_list"] = np.arange(180)[0::6]
-        cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], ]  # [1::4,] 
-    else:
-        folder = '../cnot/data/cnot_fidelity_npz.txt'
-        cfg["tg_list"] = np.arange(26)#[:1] # [0::6]
-        cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], ]  # [1::4,]
+
 
     #     cfg["params"] = np.array([
     # ### CNOT From charge-truc=400        
@@ -125,7 +184,6 @@ def get_config():
     cfg["n_job"] = 10 # len(cfg["tg_list"])    
     return cfg
 
-
 # ============================================================
 # Load system data
 # ============================================================
@@ -138,6 +196,8 @@ def load_system_data(cfg):
         data["hspace_full"],
         data["eket_tot"],
         data["eval_tot"],
+        data["n_theta0"],
+        data["n_theta1"],
         data["n_theta0_dress"],
         data["n_theta1_dress"],
         data["hspace_0"],
@@ -181,6 +241,116 @@ def select_gate_quantities(cfg, data):
     return gate
 
 
+def run_gate_fidelity(
+    cfg,
+    H_drive_select,
+    gate,
+    c_op_list,
+    logi_idx_select,
+    option_ideal,
+    option_noisy,
+):
+    """
+    Run CZ or CNOT fidelity using the selected collapse operators.
+    """
+    num_cpus = cfg["num_cpus_noisy"] if len(c_op_list) else cfg["num_cpus_ideal"]
+
+    if cfg["cz_run"]:
+        args_common = [
+            H_drive_select,
+            gate["W_20_50"],
+            num_cpus,
+            c_op_list,
+            logi_idx_select,
+            option_ideal,
+            option_noisy,
+        ]
+        return Parallel(n_jobs=cfg["n_job"])(
+            delayed(ut.cz_fidelity_log_noise)(p, *args_common)
+            for p in cfg["params"]
+        )
+
+    args_common = [
+        H_drive_select,
+        gate["W_0_2"],
+        gate["W_1_2"],
+        num_cpus,
+        c_op_list,
+        logi_idx_select,
+        gate["mid_state"],
+        option_ideal,
+        option_noisy,
+    ]
+    return Parallel(n_jobs=cfg["n_job"])(
+        delayed(ut.cnot_fidelity_log_noise)(p, *args_common)
+        for p in cfg["params"]
+    )
+
+
+def build_collapse_ops(cfg, data, eket_truc):
+    """
+    Build two-qubit collapse operators for noisy CZ/CNOT simulations.
+    """
+    noise_dephase_path = Path(cfg["noise_dephase_path"])
+    if noise_dephase_path.exists():
+        noise_data = np.load(noise_dephase_path)
+        gamma_dephase_02_q0 = np.abs(noise_data["q0"] / cfg["t1_tphi_other"])
+        gamma_dephase_02_q1 = np.abs(noise_data["q1"] / cfg["t1_tphi_other"])
+        print(f"noise source = {noise_dephase_path}")
+    # else:
+    #     noise_csv_folder = Path(cfg["noise_csv_folder"])
+    #     gamma_q0 = np.genfromtxt(
+    #         noise_csv_folder / "data_gamma_qubit0.txt",
+    #         delimiter=",",
+    #         names=True,
+    #     )
+    #     gamma_q1 = np.genfromtxt(
+    #         noise_csv_folder / "data_gamma_qubit1.txt",
+    #         delimiter=",",
+    #         names=True,
+    #     )
+    #     gamma_dephase_02_q0 = np.abs(gamma_q0["tphi_02"] * 50 / cfg["t1_tphi_other"])
+    #     gamma_dephase_02_q1 = np.abs(gamma_q1["tphi_02"] * 50 / cfg["t1_tphi_other"])
+    #     print(f"noise source = {noise_csv_folder}")
+
+    n_theta0 = data["n_theta0"] / (2 * np.pi)
+    n_theta1 = data["n_theta1"] / (2 * np.pi)
+
+    Gamma = 1 / 1e3 / cfg["t1_tphi_other"]
+    Gamma_decay_q0 = Gamma / (n_theta0[4, 8] ** 2)
+    Gamma_decay_q1 = Gamma / (n_theta1[4, 8] ** 2)
+
+    transition_a, n_theta0_trunc = ut.get_transitions_for_collapse(
+        data["hspace_0"],
+        n_theta0,
+        filter_ratio=cfg["filter_ratio"],
+    )
+    transition_b, n_theta1_trunc = ut.get_transitions_for_collapse(
+        data["hspace_1"],
+        n_theta1,
+        filter_ratio=cfg["filter_ratio"],
+    )
+
+    c_op_list = ut.construct_c_ops_2q(
+        data["dim_0"],
+        data["dim_1"],
+        n_theta0_trunc,
+        n_theta1_trunc,
+        gamma_dephase_02_q0,
+        gamma_dephase_02_q1,
+        eket_truc,
+        Gamma_decay_q0,
+        Gamma_decay_q1,
+        transition_a,
+        transition_b,
+        cfg["apply_decay"],
+        cfg["apply_dephase"],
+        cfg["decay_enlarge"],
+    )
+    # print(f"len(c_op_list) = {len(c_op_list)}")
+    return c_op_list
+
+
 # ============================================================
 # One truncation run
 # ============================================================
@@ -209,6 +379,10 @@ def run_one_truncation(n_truc, cfg, data, gate, option_ideal, option_noisy):
     else:
         raise ValueError("Unknown reduced_model type. Please choose from 'graph_pick', 'lowest_state', 'charge_pick'.")
     
+    ut.print_fidelity(f'hspace_select (len={len(hspace_select)})', 
+                    hspace_select, num_each_row=10)
+    ut.print_fidelity(f'index_select (len={n_truc})', index_select, num_each_row=10)
+
     H_drive_select, eket_truc = ut.build_hamiltonian_2q(
         cfg["cz_run"],
         index_select,
@@ -219,44 +393,34 @@ def run_one_truncation(n_truc, cfg, data, gate, option_ideal, option_noisy):
 
     logi_idx_select = [hspace_select.index(i) for i in data["logi_state"]]
 
-    # ---------- Ideal ----------
+    results = {}
+
     if cfg["calculate_ideal"]:
-        c_op_list = []
+        results["ideal"] = run_gate_fidelity(
+            cfg,
+            H_drive_select,
+            gate,
+            [],
+            logi_idx_select,
+            option_ideal,
+            option_noisy,
+        )
+        ut.print_fidelity(f"f_ideal_{n_truc}", results["ideal"], num_digits=8)
 
-        if cfg["cz_run"]:
-            args_common = [
-                H_drive_select,
-                gate["W_20_50"],
-                cfg["num_cpus"],
-                c_op_list,
-                logi_idx_select,
-                option_ideal,
-                option_noisy,
-            ]
-            f_list = Parallel(n_jobs=cfg["n_job"])(
-                delayed(ut.cz_fidelity_log_noise)(p, *args_common)
-                for p in cfg["params"]
-            )
-        else:
-            args_common = [
-                H_drive_select,
-                gate["W_0_2"],
-                gate["W_1_2"],
-                cfg["num_cpus"],
-                c_op_list,
-                logi_idx_select,
-                gate["mid_state"],
-                option_ideal,
-                option_noisy,
-            ]
-            f_list = Parallel(n_jobs=cfg["n_job"])(
-                delayed(ut.cnot_fidelity_log_noise)(p, *args_common)
-                for p in cfg["params"]
-            )
+    if cfg["calculate_noise"]:
+        c_op_list = build_collapse_ops(cfg, data, eket_truc)
+        print(f'np.shape(c_op_list) = {np.shape(c_op_list)}')     
+        results["noise"] = run_gate_fidelity(
+            cfg,
+            H_drive_select,
+            gate,
+            c_op_list,
+            logi_idx_select,
+            option_ideal,
+            option_noisy,
+        )
 
-        return f_list
-
-    return None
+    return results
 
 
 def print_config(cfg, max_array_rows=50):
@@ -303,8 +467,34 @@ def main():
     print(os.path.basename(__file__))
     ut.print_time()
 
+    ################################################################
     cfg = get_config()
+    cfg["cz_run"] = True # True for CZ, False for CNOT
+    cfg["t1_tphi_other"] = 170  # us
+    cfg["n_truc_list"] = [55, 150,] # np.arange(200, 401, step=10) # [100] # [60, 90, 120] # [70, 100, 130] # [80, 110, 140] #
+    #  [60, 90, 120] # np.arange(60, 241, step=20).tolist() + [500,1000]   
+    cfg["reduced_model"] = 'charge_pick' # 'graph_pick', 'lowest_state', 'charge_pick'
+    cfg["calculate_ideal"] = True
+    cfg["calculate_noise"] = True    
+    cfg["apply_decay"] = True
+    cfg["apply_dephase"] = True
+    cfg["decay_enlarge"] = 1
+    cfg["filter_ratio"] = 0.3 # default is 0.3    
+    cfg["tg_para"] = True
+
+    if cfg["cz_run"]:
+        folder = 'data/npz/cz_pulse_neighbor.txt'
+        cfg["tg_list"] = [ 72] # [0, 36, 72, 108, 144] # [72] # [72,179] # [0, 45, 90, 135, 179] # np.arange(180)[0::6].tolist() +[179] #np.array([135, 179]) #np.arange(180)[0::6]
+        cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], ]  # [1::4,] 
+    else:
+        folder = '../cnot/data/cnot_fidelity_npz.txt'
+        cfg["tg_list"] = [15,32] # np.arange(32)[1::6] 
+        cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], ]  # [1::4,]
+    ################################################################
+
+    ut.print_fidelity("params", cfg["params"].tolist(), num_each_row=1)
     print_config(cfg)
+
     data = load_system_data(cfg)
     gate = select_gate_quantities(cfg, data)
 
@@ -312,20 +502,112 @@ def main():
         cfg["max_step_ideal"], cfg["max_step_noisy"]
     )
 
-    ut.print_fidelity("params", cfg["params"].tolist(), num_each_row=1)
 
-    f_all = []
+    f_ideal_all = []
+    f_noise_all = []
+    memory_stats = []
+    tg_list_all = list(np.atleast_1d(cfg["tg_list"]))
+    params_all = np.atleast_2d(cfg["params"])
+
+    if len(tg_list_all) != len(params_all):
+        raise ValueError(
+            f"tg_list length ({len(tg_list_all)}) does not match "
+            f"params length ({len(params_all)})."
+        )
+
     for n_truc in cfg["n_truc_list"]:
         print(f"\n===== n_truc = {n_truc} =====")
-        f = run_one_truncation(
-            n_truc, cfg, data, gate, option_ideal, option_noisy
-        )
-        ut.print_fidelity(f"f_ideal_{n_truc}", f, num_digits=8)
-        f_all.append(f)
-        ut.print_time()
+        if cfg["tg_para"]:
+            label = f"n_truc={n_truc}, all tg"
+            mem = MemoryMonitor(interval=0.2)
+            mem.start()
+            try:
+                results = run_one_truncation(
+                    n_truc, cfg, data, gate, option_ideal, option_noisy
+                )
+            finally:
+                mem.stop()
+                print("\n===== Memory usage =====")
+                mem.print_summary(label)
+                peak = mem.peak_gb()
+                memory_stats.append(
+                    {
+                        "n_truc": n_truc,
+                        "tg": "all",
+                        "peak_rss_gb": peak["rss"],
+                        "peak_pss_gb": peak["pss"],
+                    }
+                )
 
-    ut.print_fidelity("fidelity_list", f_all, num_each_row=1, num_digits=8)
+            if "ideal" in results:
+                # ut.print_fidelity(f"f_ideal_{n_truc}", results["ideal"], num_digits=8)
+                f_ideal_all.append(results["ideal"])
+            if "noise" in results:
+                ut.print_fidelity(
+                    f"f_{cfg['t1_tphi_other']}us_{n_truc}",
+                    results["noise"],
+                    num_digits=8,
+                )
+                f_noise_all.append(results["noise"])
+            ut.print_time()
+            print("\n" + "=" * 60 + "\n")
+        else:
+            for tg, params in zip(tg_list_all, params_all):
+                cfg_run = cfg.copy()
+                cfg_run["tg_list"] = [tg.item() if isinstance(tg, np.generic) else tg]
+                cfg_run["params"] = np.atleast_2d(params)
+                cfg_run["n_job"] = 1
 
+                tg_label = cfg_run["tg_list"][0]
+                label = f"n_truc={n_truc}, tg={tg_label}"
+                print(f"\n----- {label} -----")
+
+                mem = MemoryMonitor(interval=0.2)
+                mem.start()
+                try:
+                    results = run_one_truncation(
+                        n_truc, cfg_run, data, gate, option_ideal, option_noisy
+                    )
+                finally:
+                    mem.stop()
+                    print("\n===== Memory usage =====")
+                    mem.print_summary(label)
+                    peak = mem.peak_gb()
+                    memory_stats.append(
+                        {
+                            "n_truc": n_truc,
+                            "tg": tg_label,
+                            "peak_rss_gb": peak["rss"],
+                            "peak_pss_gb": peak["pss"],
+                        }
+                    )
+
+                if "ideal" in results:
+                    # ut.print_fidelity(f"f_ideal_{n_truc}", results["ideal"], num_digits=8)
+                    f_ideal_all.append(results["ideal"])
+                if "noise" in results:
+                    ut.print_fidelity(
+                        f"f_{cfg['t1_tphi_other']}us_{n_truc}_tg{tg_label}",
+                        results["noise"],
+                        num_digits=8,
+                    )
+                    f_noise_all.append(results["noise"])
+                ut.print_time()
+                print("\n" + "=" * 60 + "\n")
+
+    if memory_stats:
+        print("\n===== Memory usage by n_truc and tg =====")
+        for stat in memory_stats:
+            print(
+                "n_truc={n_truc}, tg={tg}: "
+                "Peak RSS={peak_rss_gb:.2f} GB, "
+                "Peak PSS={peak_pss_gb:.2f} GB".format(**stat)
+            )
+
+    if f_ideal_all:
+        ut.print_fidelity("fidelity_ideal_list", f_ideal_all, num_each_row=1, num_digits=8)
+    if f_noise_all:
+        ut.print_fidelity("fidelity_noise_list", f_noise_all, num_each_row=1, num_digits=8)
 
 if __name__ == "__main__":
     main()

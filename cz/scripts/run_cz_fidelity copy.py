@@ -27,7 +27,7 @@ if __name__ == '__main__':
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    n_truc_list = [350] # [55] # [200, 250, 1000] # np.arange(100, 1001, 50) #
+    n_truc_list = [55] # [200, 250, 1000] # np.arange(100, 1001, 50) #
     cz_run = True # True  # whether to use CZ gate or CNOT gate
     
     # 300_2000_True; 300_2000_False
@@ -43,18 +43,17 @@ if __name__ == '__main__':
     filter_ratio = 0.3
 
     t1_tphi_other = 170 # μs
-    tg_list = [135, 179] # [  0,  45,  90, 135, 179] #np.arange(180)[0::43] # [0::6] # [  0,  45,  90, 135, 179] # np.arange(180) #[0::3]
+    tg_list = [  0,  45,  90, 135, 179] #np.arange(180)[0::43] # [0::6] # [  0,  45,  90, 135, 179] # np.arange(180) #[0::3]
     # np.arange(181)[0::6] # [2, 9, 16, 23, 30] # Select the first row for testing
     max_step_ideal, max_step_noisy = 1e-3, 1e-3 # Set max_step to 0 for parallel execution
-    num_cpus_ideal, num_cpus_noisy = 4, 16 # Number of CPUs per tg for ideal/noisy propagators
-    n_job = len(tg_list) # Number of tg values processed in parallel
+    num_cpus, n_job = 16, len(tg_list) # Number of CPUs and jobs for parallel processing
 
     if use_truc_model:
         folder_load = '../data/Two_qubit_data_Sorted_Truc'
     else:
         folder_load = '../../data/_truc_3000'
     data = hd.load_two_qubit_data(folder_load, return_full=False)
-    [hspace_full, eket_tot, eval_tot, n_theta0, n_theta1, n_theta0_dress, n_theta1_dress, 
+    [hspace_full, eket_tot, eval_tot, n_theta0_dress, n_theta1_dress, 
     hspace_0, hspace_1, hspace_n_theta1, hspace_n_theta2, logi_state] = data
 
     dim_0 = len(hspace_0)
@@ -86,7 +85,7 @@ if __name__ == '__main__':
     print(f'use_truc_model = {use_truc_model}, truc_model_name = {truc_model_name}')
     print(f"t1_tphi_other = {t1_tphi_other}")
     # print(f"truc_one_qubit = {truc_one_qubit}, truc_full={truc_full}, charge_pick={charge_pick}")
-    print('num_cpus_ideal=', num_cpus_ideal, ', num_cpus_noisy=', num_cpus_noisy, ', n_job=', n_job)
+    print('num_cpus=', num_cpus, ', n_job=', n_job)
     ut.print_fidelity(f'params', params.tolist(), num_each_row=1)    
 
     f_list = []
@@ -112,13 +111,13 @@ if __name__ == '__main__':
         if calculate_ideal: # ideal fidelity
             c_op_list = []
             if cz_run:
-                arg_select = [H_drive_select, W_20_50, num_cpus_ideal, c_op_list, 
+                arg_select = [H_drive_select, W_20_50, num_cpus, c_op_list, 
                                 logi_idx_select, option_ideal, option_noisy]
                 f_ideal = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)
                                                     (args_indep, *arg_select)
                                                 for args_indep in params)
             else:
-                arg_select = [H_drive_select, W_0_2, W_1_2, num_cpus_ideal, c_op_list, 
+                arg_select = [H_drive_select, W_0_2, W_1_2, num_cpus, c_op_list, 
                                 logi_idx_select, mid_state, option_ideal, option_noisy]
                 f_ideal = Parallel(n_jobs=n_job)(delayed(ut.cnot_fidelity_log_noise)
                                                     (args_indep, *arg_select)
@@ -127,12 +126,18 @@ if __name__ == '__main__':
             ut.print_time()
 
         if calculate_noise: # Noisey fidelity       
+            ###################################
+            # [n_theta0, n_theta1, gamma_dephase_02_q0, gamma_dephase_02_q1
+            # ] = ut.load_noise_data_2q(t1_tphi_other) 
 
             data = np.load('../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz')
-            gamma_dephase_02_q0 = np.abs(data['q0'] /t1_tphi_other)
-            gamma_dephase_02_q1 = np.abs(data['q1'] /t1_tphi_other)
-            n_theta0 = n_theta0 / (2*np.pi)
-            n_theta1 = n_theta1 / (2*np.pi)
+            gamma_dephase_02_q0 = data['q0'] /t1_tphi_other
+            gamma_dephase_02_q1 = data['q1'] /t1_tphi_other
+
+            n_theta0 = n_theta0_dress[:n_truc,:n_truc]
+            n_theta1 = n_theta1_dress[:n_truc,:n_truc]
+            gamma_dephase_02_q0 = gamma_dephase_02_q0[:n_truc]
+            gamma_dephase_02_q1 = gamma_dephase_02_q1[:n_truc]
 
             Gamma = 1 / 1e3 / t1_tphi_other
             Gamma_decay_q0 = Gamma / (n_theta0[4,8]**2)
@@ -149,7 +154,7 @@ if __name__ == '__main__':
                                                 apply_decay, apply_dephase, decay_enlarge )     
             print(f'np.shape(c_op_list) = {np.shape(c_op_list)}')     
 
-            arg_select = [H_drive_select, W_20_50, num_cpus_noisy, c_op_list, logi_idx_select, 
+            arg_select = [H_drive_select, W_20_50, num_cpus, c_op_list, logi_idx_select, 
                         option_ideal, option_noisy]
             
             f_noise = Parallel(n_jobs=n_job)(delayed(ut.cz_fidelity_log_noise)

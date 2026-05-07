@@ -23,6 +23,14 @@ import utils_2Q_gate_zp as ut
 
 settings.OVERLAP_THRESHOLD = 0.3
 
+# Unit convention used by this script and the imported `ut.*` helpers:
+# - simulation time (`tg`, `pop_tg`, `tlist`, `max_step`) is in ns
+# - coherence time (`t1`, `tphi`) is in us
+# - transition / drive frequencies (`w_trans_*`, `drive_freq_*`) are angular frequencies in rad/ns
+#   because `ut.load_qubit_data_xgate()` converts spectra to `2*pi*GHz`
+# - user-facing detunings (`detune_*`) are in GHz and converted to rad/ns via `2*pi*detune`
+# - decay / dephasing rates are therefore in 1/ns
+
 
 def _parse_tg_list(text: str):
     """Parse gate-index list from '0,3,5' or '0:18'."""
@@ -49,9 +57,12 @@ def _build_hamiltonian_inputs(
     charge_truc: bool,
     qubit_0: bool,
 ):
+    # `t1` is provided in us, so `gamma_t1` is converted to a rate in 1/ns.
     gamma_t1 = 1 / 1e3 / t1
     tphi = t1
+    # `ut.load_qubit_data_xgate()` returns `evals`, `n_theta`, `n_phi` in rad/ns.
     evals, n_theta, n_phi, logi_state = _load_qubit_data(qubit_0=qubit_0)
+    # `ut.compute_drive_xgate()` returns transition frequencies in rad/ns.
     w_trans_1, w_trans_2, drive_term, gamma_t1_mat = ut.compute_drive_xgate(
         evals, n_theta, n_phi, drive_phi, drive_theta, gamma_t1
     )
@@ -75,10 +86,12 @@ def run_xgate_fidelity(args):
     max_step_ideal = args.max_step_ideal
     max_step_noisy = args.max_step_noisy
     if max_step_ideal is None or max_step_noisy is None:
+        # QuTiP solver step size in ns.
         default_step = 3e-4 if args.drive_theta else 1e-3
         max_step_ideal = max_step_ideal or default_step
         max_step_noisy = max_step_noisy or default_step
 
+    # `ut.get_qutip_options()` expects `max_step_*` in ns.
     option_ideal, option_noisy = ut.get_qutip_options(max_step_ideal, max_step_noisy)
     setup = _build_hamiltonian_inputs(
         drive_phi=args.drive_phi,
@@ -88,6 +101,8 @@ def run_xgate_fidelity(args):
         charge_truc=args.charge_truc,
         qubit_0=args.qubit_0,
     )
+    # `ut.load_drive_params_xgate()` returns rows as:
+    # [tg (ns), drive_amp_A, drive_amp_B, detune_A (GHz), detune_B (GHz)].
     params_all = ut.load_drive_params_xgate(args.drive_theta)
     params = params_all[args.tg_list, :]
     n_hspace = len(setup["hspace"])
@@ -158,6 +173,7 @@ def run_xgate_population(args):
         qubit_0=args.qubit_0,
     )
     n_hspace = len(setup["hspace"])
+    # Population-mode solver step sizes are also in ns.
     option_ideal = qt.Options(max_step=args.pop_max_step_ideal, nsteps=1 / args.pop_max_step_ideal, store_states=True, num_cpus=1)
     option_noisy = qt.Options(max_step=args.pop_max_step_noisy, nsteps=1 / args.pop_max_step_noisy, store_states=True, num_cpus=1)
     print("drive_phi=", args.drive_phi, "; drive_theta =", args.drive_theta, "; n_full =", args.n_full, "; charge_truc =", args.charge_truc)
@@ -165,13 +181,13 @@ def run_xgate_population(args):
     print(f"calculate_ideal = {args.calculate_ideal}")
     ut.print_fidelity(f"hspace ({args.n_full}/{n_hspace})", setup["hspace"], num_each_row=10)
 
-    tlist = np.linspace(0, args.pop_tg, num=5 * int(args.pop_tg))
+    tlist = np.linspace(0, args.pop_tg, num=5 * int(args.pop_tg))  # ns
     pulse_args = {
-        "drive_amp_A": args.pop_drive_amp_a,
-        "drive_freq_A": setup["w_trans_1"] + 2 * np.pi * args.pop_detune_a,
-        "drive_amp_B": args.pop_drive_amp_b,
-        "drive_freq_B": setup["w_trans_2"] + 2 * np.pi * args.pop_detune_b,
-        "gate_time": args.pop_tg,
+        "drive_amp_A": args.pop_drive_amp_a,  # effective drive amplitude used with `drive_term`
+        "drive_freq_A": setup["w_trans_1"] + 2 * np.pi * args.pop_detune_a,  # rad/ns = rad/ns + 2*pi*GHz
+        "drive_amp_B": args.pop_drive_amp_b,  # effective drive amplitude used with `drive_term`
+        "drive_freq_B": setup["w_trans_2"] + 2 * np.pi * args.pop_detune_b,  # rad/ns = rad/ns + 2*pi*GHz
+        "gate_time": args.pop_tg,  # ns
     }
     states = [qt.basis(n_hspace, i) for i in range(n_hspace)]
     c_op_list = None
@@ -201,6 +217,7 @@ def run_xgate_population(args):
             options=option_ideal if args.calculate_ideal else option_noisy,
         )
 
+    print('np.shape(c_op_list)=',  np.shape(c_op_list))
     state_phi = [0, 2, 9, 10, 19, 33, 37, 47]
     state_phi_theta = [0, 2, 9]
     state_theta = [0, 2, 7, 25]
@@ -232,47 +249,85 @@ def run_xgate_population(args):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(description="Run X-gate simulations with explicit CLI parameters.")
+    parser = argparse.ArgumentParser(description="Run X-gate simulations.")
     parser.add_argument("--mode", choices=["fidelity", "population"], default="fidelity")
-    parser.add_argument("--drive-phi", action=argparse.BooleanOptionalAction, default=False)
-    parser.add_argument("--drive-theta", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--qubit-0", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--n-full", type=int, default=150)
-
-    parser.add_argument("--t1", type=float, default=170, help="T1 in us; Tphi follows T1.")
-    parser.add_argument("--charge-truc", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--calculate-ideal", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--calculate-noise", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--num-cpus", type=int, default=4)
-    parser.add_argument("--parallel-jobs", type=int, default=50, help="<=0 means number of selected tg rows.")
-    parser.add_argument("--apply-decay", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--apply-dephase", action=argparse.BooleanOptionalAction, default=False)
-    parser.add_argument("--max-step-ideal", type=float, default=1e-3)
-    parser.add_argument("--max-step-noisy", type=float, default=3e-4)
-    parser.add_argument("--tg-list", type=_parse_tg_list, 
-                        default=list(range(18)), 
-                        # default=list(range(18))[::4], 
-                        help="Gate row indices: '0,3,5' or '0:18'.")
-
-    parser.add_argument("--pop-tg", type=float, default=828.759495)
-    parser.add_argument("--pop-drive-amp-a", type=float, default=0.013563)
-    parser.add_argument("--pop-drive-amp-b", type=float, default=0.034964)
-    parser.add_argument("--pop-detune-a", type=float, default=-0.003029)
-    parser.add_argument("--pop-detune-b", type=float, default=-0.003182)
-    parser.add_argument("--pop-max-step-ideal", type=float, default=1e-3)
-    parser.add_argument("--pop-max-step-noisy", type=float, default=3e-4)
     return parser
 
 
 def main():
     parser = build_parser()
-    args = parser.parse_args()
+    parsed_args = parser.parse_args()
+    mode = parsed_args.mode
+
+    # Keep simulation inputs here so they are easier to read and edit.
+    common_args = {
+        "mode": mode,
+        "drive_phi": True,
+        "drive_theta": False,
+        "qubit_0": True,
+        # "n_full": 150, # 150 for theta, 300 for phi
+        "t1": 30,  # us
+        "charge_truc": True,
+        "calculate_ideal": True, # must set to False if run experiment noisy xgate 
+        "calculate_noise": True,
+        "num_cpus": 4,
+        "parallel_jobs": 20,
+        "apply_decay": True,
+        "apply_dephase": True,
+    }
+
+    ### run experiment noisy xgate
+    # common_args = {
+    #     "mode": mode,
+    #     "drive_phi": True,
+    #     "drive_theta": True,
+    #     "qubit_0": True,
+    #     # "n_full": 150, # 150 for theta, 300 for phi
+    #     "t1": 3,  # us
+    #     "charge_truc": True,
+    #     "calculate_ideal": False, # must set to False if run experiment noisy xgate 
+    #     "calculate_noise": True,
+    #     "num_cpus": 4,
+    #     "parallel_jobs": 40,
+    #     "apply_decay": True,
+    #     "apply_dephase": True,
+    # }
+    fidelity_args = {
+        # "tg_list": list(range(18)),
+        "tg_list": list(range(18)), #[::4], # [:1] 
+
+        "max_step_ideal": 1e-3,  # ns 3e-4 for theta, 1e-3 for phi
+        "max_step_noisy": 1e-3,  # ns 3e-4 for theta, 1e-3 for phi
+    }
+    if common_args["drive_theta"] and common_args["drive_phi"]:
+        common_args["n_full"] = 50   # 或更大
+    elif common_args["drive_theta"]:
+        common_args["n_full"] = 150
+        fidelity_args = {
+            "max_step_ideal": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
+            "max_step_noisy": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi        
+        }
+    elif common_args["drive_phi"]:
+        common_args["n_full"] = 300
+
+    population_args = {
+        "pop_tg": 828.759495,  # ns
+        "pop_drive_amp_a": 0.013563,  # effective drive amplitude used with `ut.build_hamiltonian_xgate()`
+        "pop_drive_amp_b": 0.034964,  # effective drive amplitude used with `ut.build_hamiltonian_xgate()`
+        "pop_detune_a": -0.003029,  # GHz; converted to rad/ns with `2*pi*detune`
+        "pop_detune_b": -0.003182,  # GHz; converted to rad/ns with `2*pi*detune`
+        "pop_max_step_ideal": 3e-4,  # ns
+        "pop_max_step_noisy": 3e-4,  # ns
+    }
+    args = argparse.Namespace(**common_args, **fidelity_args, **population_args)
+
     if not args.drive_phi and not args.drive_theta:
         parser.error("At least one drive must be enabled: --drive-theta or --drive-phi.")
 
     print(os.path.basename(__file__))
     print("NUMEXPR_NUM_THREADS =", os.environ.get("NUMEXPR_NUM_THREADS"))
     print("MKL_NUM_THREADS =", os.environ.get("MKL_NUM_THREADS"))
+    print("fidelity_args =", fidelity_args)
     ut.print_time()
 
     if args.mode == "fidelity":

@@ -1,0 +1,143 @@
+run_2q_fidelity.py
+
+Current China Time: 2026-05-03 22:23:23.734091+08:00
+
+============================================================
+ Configuration 
+============================================================
+
+[cz_run]
+    True
+
+[n_truc_list]
+    [60, 90, 120]
+
+[reduced_model]
+    charge_pick
+
+[calculate_ideal]
+    True
+
+[calculate_noise]
+    True
+
+[max_step_ideal]
+    0.001
+
+[max_step_noisy]
+    0.001
+
+[apply_decay]
+    True
+
+[apply_dephase]
+    True
+
+[decay_enlarge]
+    1
+
+[filter_ratio]
+    0.3
+
+[t1_tphi_other]
+    170
+
+[noise_dephase_path]
+    ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+
+[noise_csv_folder]
+    ../../data/3ncut_two_zeropi/truc1=500
+
+[num_cpus_ideal]
+    4
+
+[num_cpus_noisy]
+    16
+
+[folder_load]
+    ../data/Two_qubit_data_Sorted_Truc
+
+[n_job]
+    10
+
+[tg_list]
+    [72]
+
+[params]
+    type: np.ndarray, shape=(1, 3)
+      [91.948301, 0.017913, 0.02519]
+
+============================================================
+
+
+params = np.array([
+[91.948301, 0.017913, 0.02519] ,
+])
+
+===== n_truc = 60 =====
+
+f_ideal_60 = np.array([
+-3.06910213 ,
+])
+noise source = ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+len(c_op_list) = 367
+
+f_ideal_60 = np.array([
+-3.06910213 ,
+])
+
+f_170us_60 = np.array([
+-3.00592657 ,
+])
+
+Current China Time: 2026-05-03 23:07:41.908537+08:00
+
+===== n_truc = 90 =====
+
+f_ideal_90 = np.array([
+-2.98349280 ,
+])
+noise source = ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+len(c_op_list) = 367
+
+f_ideal_90 = np.array([
+-2.98349280 ,
+])
+
+f_170us_90 = np.array([
+-2.92759864 ,
+])
+
+Current China Time: 2026-05-04 01:29:37.052651+08:00
+
+===== n_truc = 120 =====
+
+f_ideal_120 = np.array([
+-2.94068041 ,
+])
+noise source = ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+len(c_op_list) = 367
+
+f_ideal_120 = np.array([
+-2.94068041 ,
+])
+
+f_170us_120 = np.array([
+-2.88649123 ,
+])
+
+Current China Time: 2026-05-04 07:23:04.418774+08:00
+
+fidelity_ideal_list = np.array([
+[-3.06910213396159] ,
+[-2.9834928013497275] ,
+[-2.9406804064949252] ,
+])
+
+fidelity_noise_list = np.array([
+[-3.0059265739498366] ,
+[-2.9275986405315373] ,
+[-2.886491232317168] ,
+])
+425498.30user 20878.93system 8:59:45elapsed 1378%CPU (0avgtext+0avgdata 4998640maxresident)k
+54120inputs+40outputs (6787major+7319684929minor)pagefaults 0swaps

@@ -1,0 +1,52 @@
+run_cz_fidelity.py
+NUMEXPR_NUM_THREADS = 1
+MKL_NUM_THREADS = 1
+
+Current China Time: 2026-04-30 17:27:20.360803+08:00
+Using CZ gate with W_20_50 = 15.991864479678007
+calculate_ideal = True, calculate_noise = True
+apply_decay=True, apply_dephase=True
+filter_ratio = 0.3, decay_enlarge = 1
+use_truc_model = True, truc_model_name = charge_pick
+t1_tphi_other = 3
+num_cpus= 16 , n_job= 1
+
+params = np.array([
+[20.0396, 0.042986, 0.024999] ,
+])
+
+hspace_select (len=50) = np.array([
+'0-0', '0-1', '1-0', '0-2', '2-0', '0-4', '4-0', '1-1', '0-5', '2-1' ,
+'5-0', '1-2', '0-8', '2-2', '8-0', '1-4', '4-1', '0-9', '2-4', '9-0' ,
+'1-5', '5-1', '4-2', '0-12', '2-5', '1-8', '5-2', '12-0', '0-13', '0-16' ,
+'8-1', '4-4', '13-0', '15-0', '2-8', '1-9', '9-1', '8-2', '5-4', '4-5' ,
+'0-18', '2-9', '1-12', '0-20', '18-0', '0-21', '9-2', '12-1', '5-5', '0-24' ,
+])
+
+index_select (len=50) = np.array([
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ,
+10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ,
+20, 21, 22, 23, 24, 25, 26, 27, 28, 29 ,
+30, 31, 32, 33, 34, 35, 36, 37, 38, 39 ,
+40, 41, 42, 43, 44, 45, 46, 47, 48, 49 ,
+])
+
+f_ideal_50 = np.array([
+-0.21059780 ,
+])
+
+Current China Time: 2026-04-30 17:27:21.935758+08:00
+np.shape(c_op_list) = (367, 50, 50)
+
+f_3us_50 = np.array([
+-0.21171885 ,
+])
+
+Current China Time: 2026-04-30 17:32:30.671597+08:00
+n_truc_list = [50]
+
+fidelity_list = np.array([
+[-0.2105977989959573] ,
+])
+3331.17user 263.25system 5:16.12elapsed 1137%CPU (0avgtext+0avgdata 1927324maxresident)k
+33912inputs+24outputs (297major+124460488minor)pagefaults 0swaps

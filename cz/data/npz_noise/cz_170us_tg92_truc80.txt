@@ -1,0 +1,122 @@
+run_2q_fidelity.py
+
+Current China Time: 2026-05-03 22:22:07.222990+08:00
+
+============================================================
+ Configuration 
+============================================================
+
+[cz_run]
+    True
+
+[n_truc_list]
+    [80, 110, 140]
+
+[reduced_model]
+    charge_pick
+
+[calculate_ideal]
+    True
+
+[calculate_noise]
+    True
+
+[max_step_ideal]
+    0.001
+
+[max_step_noisy]
+    0.001
+
+[apply_decay]
+    True
+
+[apply_dephase]
+    True
+
+[decay_enlarge]
+    1
+
+[filter_ratio]
+    0.3
+
+[t1_tphi_other]
+    170
+
+[noise_dephase_path]
+    ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+
+[noise_csv_folder]
+    ../../data/3ncut_two_zeropi/truc1=500
+
+[num_cpus_ideal]
+    4
+
+[num_cpus_noisy]
+    16
+
+[folder_load]
+    ../data/Two_qubit_data_Sorted_Truc
+
+[n_job]
+    10
+
+[tg_list]
+    [72]
+
+[params]
+    type: np.ndarray, shape=(1, 3)
+      [91.948301, 0.017913, 0.02519]
+
+============================================================
+
+
+params = np.array([
+[91.948301, 0.017913, 0.02519] ,
+])
+
+===== n_truc = 80 =====
+
+f_ideal_80 = np.array([
+-3.05249609 ,
+])
+noise source = ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+len(c_op_list) = 367
+
+f_ideal_80 = np.array([
+-3.05249609 ,
+])
+
+f_170us_80 = np.array([
+-2.98871430 ,
+])
+
+Current China Time: 2026-05-04 01:05:29.424840+08:00
+
+===== n_truc = 110 =====
+
+f_ideal_110 = np.array([
+-2.93471718 ,
+])
+noise source = ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+len(c_op_list) = 367
+
+f_ideal_110 = np.array([
+-2.93471718 ,
+])
+
+f_170us_110 = np.array([
+-2.88193753 ,
+])
+
+Current China Time: 2026-05-04 07:07:55.454664+08:00
+
+===== n_truc = 140 =====
+
+f_ideal_140 = np.array([
+-2.93440534 ,
+])
+noise source = ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:310: UserWarning: resource_tracker: There appear to be 13 leaked semlock objects to clean up at shutdown
+  warnings.warn(
+/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:310: UserWarning: resource_tracker: There appear to be 19 leaked folder objects to clean up at shutdown
+  warnings.warn(

@@ -1,0 +1,85 @@
+run_2q_fidelity.py
+
+Current China Time: 2026-05-04 11:10:51.806699+08:00
+
+============================================================
+ Configuration 
+============================================================
+
+[cz_run]
+    True
+
+[n_truc_list]
+    [300]
+
+[reduced_model]
+    charge_pick
+
+[calculate_ideal]
+    True
+
+[calculate_noise]
+    True
+
+[max_step_ideal]
+    0.001
+
+[max_step_noisy]
+    0.001
+
+[apply_decay]
+    True
+
+[apply_dephase]
+    True
+
+[decay_enlarge]
+    1
+
+[filter_ratio]
+    0.3
+
+[t1_tphi_other]
+    170
+
+[noise_dephase_path]
+    ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+
+[noise_csv_folder]
+    ../../data/3ncut_two_zeropi/truc1=500
+
+[num_cpus_ideal]
+    4
+
+[num_cpus_noisy]
+    16
+
+[folder_load]
+    ../data/Two_qubit_data_Sorted_Truc
+
+[n_job]
+    10
+
+[tg_list]
+    [72, 179]
+
+[params]
+    type: np.ndarray, shape=(2, 3)
+      [91.948301, 0.017913, 0.02519]
+      [198.998445, 0.007127, 0.012024]
+
+============================================================
+
+
+params = np.array([
+[91.948301, 0.017913, 0.02519] ,
+[198.998445, 0.007127, 0.012024] ,
+])
+
+===== n_truc = 300 =====
+/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:310: UserWarning: resource_tracker: There appear to be 308 leaked file objects to clean up at shutdown
+  warnings.warn(
+/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:310: UserWarning: resource_tracker: There appear to be 20 leaked semlock objects to clean up at shutdown
+  warnings.warn(
+/home/zlqed/anaconda3/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:310: UserWarning: resource_tracker: There appear to be 7 leaked folder objects to clean up at shutdown
+  warnings.warn(

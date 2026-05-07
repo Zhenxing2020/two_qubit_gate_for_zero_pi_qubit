@@ -605,6 +605,8 @@ def load_two_qubit_data(folder_load, return_full=False):
         hspace_full = data['hspace_full'].tolist()
         eket_tot = data['evecs_tot']
         eval_tot = 2*np.pi*data['evals_tot']
+        n_theta0 = 2*np.pi*data['n_theta1']
+        n_theta1 = 2*np.pi*data['n_theta2']
         n_theta0_dress = 2*np.pi*data['n_theta1_dressed']
         n_theta1_dress = 2*np.pi*data['n_theta2_dressed']
         hspace_0 = data['hspace_1_charge'].tolist()
@@ -612,7 +614,7 @@ def load_two_qubit_data(folder_load, return_full=False):
         hspace_n_theta1 = data['hspace_n_theta1'].tolist()
         hspace_n_theta2 = data['hspace_n_theta2'].tolist()
         logi_state = ['0-0', '0-2', '2-0', '2-2']
-        return [hspace_full, eket_tot, eval_tot, n_theta0_dress, 
+        return [hspace_full, eket_tot, eval_tot, n_theta0, n_theta1, n_theta0_dress, 
             n_theta1_dress, hspace_0, hspace_1, hspace_n_theta1, hspace_n_theta2, logi_state]
 
 def load_1q_data_for_2q(folder_load):

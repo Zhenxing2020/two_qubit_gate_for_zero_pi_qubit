@@ -1,0 +1,103 @@
+run_2q_fidelity.py
+
+Current China Time: 2026-05-01 17:14:16.070870+08:00
+
+============================================================
+ Configuration 
+============================================================
+
+[cz_run]
+    False
+
+[n_truc_list]
+    type: np.ndarray, shape=(1,)
+    preview: [55]
+
+[reduced_model]
+    charge_pick
+
+[calculate_ideal]
+    True
+
+[calculate_noise]
+    True
+
+[max_step_ideal]
+    0.001
+
+[max_step_noisy]
+    0.001
+
+[apply_decay]
+    True
+
+[apply_dephase]
+    True
+
+[decay_enlarge]
+    1
+
+[filter_ratio]
+    0.3
+
+[t1_tphi_other]
+    170
+
+[noise_dephase_path]
+    ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+
+[noise_csv_folder]
+    ../../data/3ncut_two_zeropi/truc1=500
+
+[num_cpus_ideal]
+    4
+
+[num_cpus_noisy]
+    16
+
+[folder_load]
+    ../data/Two_qubit_data_Sorted_Truc
+
+[tg_list]
+    type: np.ndarray, shape=(2,)
+    preview: [18, 32]
+
+[params]
+    type: np.ndarray, shape=(2, 5)
+      [209.999963, 0.027811, 0.018316, -0.005361, -0.005105]
+      [350.00857, 0.016105, 0.010552, -0.001759, -0.001678]
+
+[n_job]
+    10
+
+============================================================
+
+
+params = np.array([
+[209.999963, 0.027811, 0.018316, -0.005361, -0.005105] ,
+[350.00857, 0.016105, 0.010552, -0.001759, -0.001678] ,
+])
+
+===== n_truc = 55 =====
+noise source = ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+len(c_op_list) = 367
+
+f_ideal_55 = np.array([
+-0.31312048, -0.60821981 ,
+])
+
+f_170us_55 = np.array([
+-0.31310998, -0.60758029 ,
+])
+
+Current China Time: 2026-05-01 19:17:00.632404+08:00
+
+fidelity_ideal_list = np.array([
+[-0.3131204762570482, -0.6082198132076223] ,
+])
+
+fidelity_noise_list = np.array([
+[-0.3131099822415088, -0.6075802924367695] ,
+])
+156955.27user 2041.50system 2:02:50elapsed 2157%CPU (0avgtext+0avgdata 3232444maxresident)k
+8inputs+16outputs (798major+457391805minor)pagefaults 0swaps
