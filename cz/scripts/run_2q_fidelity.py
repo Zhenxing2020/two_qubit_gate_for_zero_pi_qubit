@@ -470,8 +470,8 @@ def main():
     ################################################################
     cfg = get_config()
     cfg["cz_run"] = True # True for CZ, False for CNOT
-    cfg["t1_tphi_other"] = 170  # us
-    cfg["n_truc_list"] = [55, 150,] # np.arange(200, 401, step=10) # [100] # [60, 90, 120] # [70, 100, 130] # [80, 110, 140] #
+    cfg["t1_tphi_other"] = 3  # us
+    cfg["n_truc_list"] = [55] # np.arange(200, 401, step=10) # [100] # [60, 90, 120] # [70, 100, 130] # [80, 110, 140] #
     #  [60, 90, 120] # np.arange(60, 241, step=20).tolist() + [500,1000]   
     cfg["reduced_model"] = 'charge_pick' # 'graph_pick', 'lowest_state', 'charge_pick'
     cfg["calculate_ideal"] = True
@@ -480,11 +480,13 @@ def main():
     cfg["apply_dephase"] = True
     cfg["decay_enlarge"] = 1
     cfg["filter_ratio"] = 0.3 # default is 0.3    
-    cfg["tg_para"] = True
+    cfg["tg_para"] = False
 
     if cfg["cz_run"]:
         folder = 'data/npz/cz_pulse_neighbor.txt'
-        cfg["tg_list"] = [ 72] # [0, 36, 72, 108, 144] # [72] # [72,179] # [0, 45, 90, 135, 179] # np.arange(180)[0::6].tolist() +[179] #np.array([135, 179]) #np.arange(180)[0::6]
+        cfg["tg_list"] =  [0,  30,  60,  90, 120, 150] # np.arange(0, 179, step=6).tolist()  # [0, 36, 72, 108, 144] # [72] # [72,179] # [0, 45, 90, 135, 179] 
+        # [0,  30,  60,  90, 120, 150] [0, 45, 72, 90, 135, 179]
+        # np.arange(180)[0::6].tolist() +[179] #np.array([135, 179]) #np.arange(180)[0::6]
         cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], ]  # [1::4,] 
     else:
         folder = '../cnot/data/cnot_fidelity_npz.txt'
