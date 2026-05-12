@@ -118,7 +118,6 @@ def get_config():
     cfg["filter_ratio"] = 0.3
     cfg["t1_tphi_other"] = 170  # us
     cfg["noise_dephase_path"] = "../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz"
-    cfg["noise_csv_folder"] = "../../data/3ncut_two_zeropi/truc1=500"
 
     # ---------- Parallel ----------
     cfg["tg_para"] = False
@@ -292,26 +291,10 @@ def build_collapse_ops(cfg, data, eket_truc):
     Build two-qubit collapse operators for noisy CZ/CNOT simulations.
     """
     noise_dephase_path = Path(cfg["noise_dephase_path"])
-    if noise_dephase_path.exists():
-        noise_data = np.load(noise_dephase_path)
-        gamma_dephase_02_q0 = np.abs(noise_data["q0"] / cfg["t1_tphi_other"])
-        gamma_dephase_02_q1 = np.abs(noise_data["q1"] / cfg["t1_tphi_other"])
-        print(f"noise source = {noise_dephase_path}")
-    # else:
-    #     noise_csv_folder = Path(cfg["noise_csv_folder"])
-    #     gamma_q0 = np.genfromtxt(
-    #         noise_csv_folder / "data_gamma_qubit0.txt",
-    #         delimiter=",",
-    #         names=True,
-    #     )
-    #     gamma_q1 = np.genfromtxt(
-    #         noise_csv_folder / "data_gamma_qubit1.txt",
-    #         delimiter=",",
-    #         names=True,
-    #     )
-    #     gamma_dephase_02_q0 = np.abs(gamma_q0["tphi_02"] * 50 / cfg["t1_tphi_other"])
-    #     gamma_dephase_02_q1 = np.abs(gamma_q1["tphi_02"] * 50 / cfg["t1_tphi_other"])
-    #     print(f"noise source = {noise_csv_folder}")
+    noise_data = np.load(noise_dephase_path)
+    gamma_dephase_02_q0 = np.abs(noise_data["q0"] / cfg["t1_tphi_other"])
+    gamma_dephase_02_q1 = np.abs(noise_data["q1"] / cfg["t1_tphi_other"])
+    print(f"noise source = {noise_dephase_path}")
 
     n_theta0 = data["n_theta0"] / (2 * np.pi)
     n_theta1 = data["n_theta1"] / (2 * np.pi)
@@ -470,8 +453,8 @@ def main():
     ################################################################
     cfg = get_config()
     cfg["cz_run"] = True # True for CZ, False for CNOT
-    cfg["t1_tphi_other"] = 3  # us
-    cfg["n_truc_list"] = [55] # np.arange(200, 401, step=10) # [100] # [60, 90, 120] # [70, 100, 130] # [80, 110, 140] #
+    cfg["t1_tphi_other"] = 170  # us
+    cfg["n_truc_list"] = [60] # np.arange(200, 401, step=10) # [100] # [60, 90, 120] # [70, 100, 130] # [80, 110, 140] #
     #  [60, 90, 120] # np.arange(60, 241, step=20).tolist() + [500,1000]   
     cfg["reduced_model"] = 'charge_pick' # 'graph_pick', 'lowest_state', 'charge_pick'
     cfg["calculate_ideal"] = True
@@ -484,7 +467,8 @@ def main():
 
     if cfg["cz_run"]:
         folder = 'data/npz/cz_pulse_neighbor.txt'
-        cfg["tg_list"] =  [0,  30,  60,  90, 120, 150] # np.arange(0, 179, step=6).tolist()  # [0, 36, 72, 108, 144] # [72] # [72,179] # [0, 45, 90, 135, 179] 
+        cfg["tg_list"] = np.arange(6, 179, step=12).tolist()  
+        # [0, 36, 72, 108, 144] # [72] # [72,179] # [0, 45, 90, 135, 179] 
         # [0,  30,  60,  90, 120, 150] [0, 45, 72, 90, 135, 179]
         # np.arange(180)[0::6].tolist() +[179] #np.array([135, 179]) #np.arange(180)[0::6]
         cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], ]  # [1::4,] 

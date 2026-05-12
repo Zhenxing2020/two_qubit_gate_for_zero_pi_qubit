@@ -73,7 +73,6 @@ def get_config():
     cfg["filter_ratio"] = 0.3
     cfg["t1_tphi_other"] = 3  # us
     cfg["noise_dephase_path"] = "../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz"
-    cfg["noise_csv_folder"] = "../../data/3ncut_two_zeropi/truc1=500"
 
     # ---------- Data ----------
     cfg["folder_load"] = "../data/Two_qubit_data_Sorted_Truc"
@@ -354,7 +353,7 @@ def main():
     cfg["cz_run"] = True  # True for CZ, False for CNOT
     cfg["calculate_ideal"] = True
     cfg["calculate_noise"] = False
-    cfg["n_truc_list"] = [200]
+    cfg["n_truc_list"] = [1000]
     cfg["reduced_model"] = "lowest_state"  # "charge_pick", "lowest_state", or "graph_pick"
     cfg["graph_model_name"] = "n_theta_dress_charge_truc"
     cfg["max_step_ideal"] = 1e-3
