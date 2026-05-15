@@ -1,0 +1,29 @@
+run_xgate_fidelity.py
+NUMEXPR_NUM_THREADS = 1
+MKL_NUM_THREADS = 1
+fidelity_args = {'tg_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 'max_step_ideal': 0.001, 'max_step_noisy': 0.001}
+
+Current China Time: 2026-05-14 15:53:03.293785+08:00
+drive_phi= True ; drive_theta = True ; n_full = 50 ; charge_truc = True
+T1 = Tphi = 170 us, tg = 829
+calculate_ideal = True
+
+hspace (50/50) = np.array([
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ,
+10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ,
+20, 21, 22, 23, 24, 25, 26, 27, 28, 29 ,
+30, 31, 32, 33, 34, 35, 36, 37, 38, 39 ,
+40, 41, 42, 43, 44, 45, 46, 47, 48, 49 ,
+])
+np.shape(c_op_list)= ()
+
+Top 10 values: [0.4719, 0.4716, 0.0546, 0.0014, 0.0002, 0.0002, 0.0, 0.0, 0.0, 0.0]
+State of large population: [ 0  2  9 33 10 19 25 15 31 23]
+
+Top 10 values: [0.4724, 0.4704, 0.0553, 0.0014, 0.0002, 0.0002, 0.0, 0.0, 0.0, 0.0]
+State of large population: [ 2  0  9 33 10 19 25 15 31 23]
+data saved in data/population/population_phi=True_theta=True_tg=829_T1=170us_n=50_20260514_035514.txt
+
+Current China Time: 2026-05-14 15:55:15.034825+08:00
+134.04user 1.24system 2:15.30elapsed 99%CPU (0avgtext+0avgdata 862564maxresident)k
+0inputs+824outputs (0major+283165minor)pagefaults 0swaps

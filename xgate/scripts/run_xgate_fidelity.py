@@ -18,7 +18,7 @@ XGATE_DIR = Path(__file__).resolve().parents[1]
 PROJECT_DIR = XGATE_DIR.parent
 sys.path.append(str(PROJECT_DIR))
 os.chdir(XGATE_DIR)
-
+from datetime import datetime
 import utils_2Q_gate_zp as ut
 
 settings.OVERLAP_THRESHOLD = 0.3
@@ -103,14 +103,18 @@ def run_xgate_fidelity(args):
     )
     # `ut.load_drive_params_xgate()` returns rows as:
     # [tg (ns), drive_amp_A, drive_amp_B, detune_A (GHz), detune_B (GHz)].
-    params_all = ut.load_drive_params_xgate(args.drive_theta)
+    params_all = ut.load_drive_params_xgate(args.drive_theta, args.drive_phi)
     params = params_all[args.tg_list, :]
     n_hspace = len(setup["hspace"])
     n_job = len(params)
     parallel_jobs = n_job if args.parallel_jobs <= 0 else args.parallel_jobs
+    solver_num_cpus = args.num_cpus
+    if parallel_jobs != 1 and args.num_cpus != 1:
+        # Avoid nested process pools: joblib parallelizes over gate times.
+        solver_num_cpus = 1
 
     print("drive_phi=", args.drive_phi, "; drive_theta =", args.drive_theta, "; n_full =", args.n_full, "; charge_truc =", args.charge_truc)
-    print(f"T1 = Tphi = {args.t1} us, num_cpus = {args.num_cpus}")
+    print(f"T1 = Tphi = {args.t1} us, num_cpus = {solver_num_cpus}")
     print(f"calculate_ideal = {args.calculate_ideal}, calculate_noise = {args.calculate_noise}")
     print(f"apply_decay = {args.apply_decay}, apply_dephase = {args.apply_dephase}")
     print("n_hspace =", n_hspace, "; n_job =", n_job, "; parallel_jobs =", parallel_jobs)
@@ -122,7 +126,7 @@ def run_xgate_fidelity(args):
             setup["h_qbt_drive"],
             setup["w_trans_1"],
             setup["w_trans_2"],
-            args.num_cpus,
+            solver_num_cpus,
             [],
             setup["logi_idx"],
             option_ideal,
@@ -151,7 +155,7 @@ def run_xgate_fidelity(args):
             setup["h_qbt_drive"],
             setup["w_trans_1"],
             setup["w_trans_2"],
-            args.num_cpus,
+            solver_num_cpus,
             c_op_list,
             setup["logi_idx"],
             option_ideal,
@@ -241,8 +245,9 @@ def run_xgate_population(args):
 
     output_dir = Path("data/population")
     output_dir.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = output_dir / (
-        f"population_phi={args.drive_phi}_theta={args.drive_theta}_tg={args.pop_tg:.0f}_{args.t1}us_n={n_hspace}.txt"
+        f"population_phi={args.drive_phi}_theta={args.drive_theta}_tg={args.pop_tg:.0f}_T1={args.t1}us_n={n_hspace}_{ts}.txt"
     )
     pd.DataFrame(pop_save, columns=columns).to_csv(output_file, sep=",", index=False, header=True)
     print(f"data saved in {output_file}")
@@ -263,10 +268,10 @@ def main():
     common_args = {
         "mode": mode,
         "drive_phi": True,
-        "drive_theta": False,
+        "drive_theta": True,
         "qubit_0": True,
         # "n_full": 150, # 150 for theta, 300 for phi
-        "t1": 30,  # us
+        "t1": 3,  # us
         "charge_truc": True,
         "calculate_ideal": True, # must set to False if run experiment noisy xgate 
         "calculate_noise": True,
@@ -300,16 +305,21 @@ def main():
         "max_step_noisy": 1e-3,  # ns 3e-4 for theta, 1e-3 for phi
     }
     if common_args["drive_theta"] and common_args["drive_phi"]:
-        common_args["n_full"] = 50   # 或更大
-    elif common_args["drive_theta"]:
-        common_args["n_full"] = 150
-        fidelity_args = {
-            "max_step_ideal": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
-            "max_step_noisy": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi        
-        }
-    elif common_args["drive_phi"]:
+        common_args["n_full"] = 150   # default=50
+
+    elif common_args["drive_phi"] and not common_args["drive_theta"]:
+        fidelity_args["tg_list"] = list(range(19)) #[::4], # [:1] 
         common_args["n_full"] = 300
 
+    elif common_args["drive_theta"] and not common_args["drive_phi"]:
+        fidelity_args["tg_list"] = list(range(18)) #[::4], # [:1] 
+        common_args["n_full"] = 150
+        fidelity_args.update(
+            {
+                "max_step_ideal": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
+                "max_step_noisy": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
+            }
+        )
     population_args = {
         "pop_tg": 828.759495,  # ns
         "pop_drive_amp_a": 0.013563,  # effective drive amplitude used with `ut.build_hamiltonian_xgate()`

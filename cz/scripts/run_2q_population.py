@@ -56,7 +56,7 @@ def get_config():
     # ---------- Solver ----------
     cfg["max_step_ideal"] = 1e-3
     cfg["max_step_noisy"] = 1e-3
-    cfg["num_cpus"] = 1
+    cfg["num_cpus"] = 4
     cfg["samples_per_ns"] = 1
 
     # ---------- Plot / save ----------
@@ -350,7 +350,7 @@ def main():
 
     cfg = get_config()
 
-    cfg["cz_run"] = True  # True for CZ, False for CNOT
+    cfg["cz_run"] = False  # True for CZ, False for CNOT
     cfg["calculate_ideal"] = True
     cfg["calculate_noise"] = False
     cfg["n_truc_list"] = [1000]
@@ -358,16 +358,16 @@ def main():
     cfg["graph_model_name"] = "n_theta_dress_charge_truc"
     cfg["max_step_ideal"] = 1e-3
     cfg["max_step_noisy"] = 1e-3
-    cfg["num_cpus"] = 1
+    cfg["num_cpus"] = 4
     cfg["samples_per_ns"] = 1
     # ---------- Pulse parameters ----------
     if cfg["cz_run"]:
-        folder = "data/npz/cz_pulse_neighbor.txt"
-        cfg["tg_list"] = [72] # tg need to add another 20ns
+        folder = "../figure/data/data_cz_fidelity_npz_select.txt"
+        cfg["tg_list"] = [12] # tg need to add another 20ns
         cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], :]
     else:
-        folder = "../cnot/data/cnot_fidelity_npz.txt"
-        cfg["tg_list"] = [0]
+        folder = "../cnot/data/data_cnot_fidelity_npz.txt"
+        cfg["tg_list"] = [14]
         cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], :]
 
     ut.print_fidelity("params", np.atleast_2d(cfg["params"]).tolist(), num_each_row=1)

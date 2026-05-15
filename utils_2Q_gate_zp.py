@@ -1756,7 +1756,7 @@ def load_dephasing_data_xgate(drive_theta, q0 = True):
     state_idx = gamma_new[state_idx_label]
     return state_idx, gamma_dephase
 
-def load_drive_params_xgate(drive_theta):
+def load_drive_params_xgate(drive_theta, drive_phi):
     """
     Load X-gate drive parameters from a CSV file.
 
@@ -1767,6 +1767,14 @@ def load_drive_params_xgate(drive_theta):
         np.ndarray: Parameters array. different rows mean different gate time. 
         columns mean 'tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2'
     """
+
+    if drive_phi and not drive_theta:
+        folder = 'data_xgate_phi_3ncut_mstep_1e3.txt'
+    elif drive_theta and not drive_phi:
+        folder = 'data_xgate_theta_3ncut_mstep_3e4.txt'
+    else:
+        folder = 'data_xgate_theta_3ncut_mstep_3e4.txt'
+
     folder = 'data_xgate_theta_3ncut_mstep_3e4.txt' if drive_theta else 'data_xgate_phi_3ncut_mstep_1e3.txt'
     f_xgate = pd.read_csv('../figure/data/' + folder)
     return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
