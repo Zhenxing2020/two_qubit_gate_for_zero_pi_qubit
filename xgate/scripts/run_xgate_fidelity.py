@@ -178,8 +178,8 @@ def run_xgate_population(args):
     )
     n_hspace = len(setup["hspace"])
     # Population-mode solver step sizes are also in ns.
-    option_ideal = qt.Options(max_step=args.pop_max_step_ideal, nsteps=1 / args.pop_max_step_ideal, store_states=True, num_cpus=1)
-    option_noisy = qt.Options(max_step=args.pop_max_step_noisy, nsteps=1 / args.pop_max_step_noisy, store_states=True, num_cpus=1)
+    option_ideal = qt.Options(max_step=args.max_step_ideal, nsteps=1 / args.max_step_ideal, store_states=True, num_cpus=2)
+    option_noisy = qt.Options(max_step=args.max_step_noisy, nsteps=1 / args.max_step_noisy, store_states=True, num_cpus=4)
     print("drive_phi=", args.drive_phi, "; drive_theta =", args.drive_theta, "; n_full =", args.n_full, "; charge_truc =", args.charge_truc)
     print(f"T1 = Tphi = {args.t1} us, tg = {args.pop_tg:.0f}")
     print(f"calculate_ideal = {args.calculate_ideal}")
@@ -255,7 +255,7 @@ def run_xgate_population(args):
 
 def build_parser():
     parser = argparse.ArgumentParser(description="Run X-gate simulations.")
-    parser.add_argument("--mode", choices=["fidelity", "population"], default="fidelity")
+    parser.add_argument("--mode", choices=["fidelity", "population"], default="population")
     return parser
 
 
@@ -267,16 +267,16 @@ def main():
     # Keep simulation inputs here so they are easier to read and edit.
     common_args = {
         "mode": mode,
-        "drive_phi": True,
+        "drive_phi": False,
         "drive_theta": True,
         "qubit_0": True,
         # "n_full": 150, # 150 for theta, 300 for phi
         "t1": 3,  # us
         "charge_truc": True,
         "calculate_ideal": True, # must set to False if run experiment noisy xgate 
-        "calculate_noise": True,
+        "calculate_noise": False,
         "num_cpus": 4,
-        "parallel_jobs": 20,
+        "parallel_jobs": 1,
         "apply_decay": True,
         "apply_dephase": True,
     }
@@ -298,37 +298,82 @@ def main():
     #     "apply_dephase": True,
     # }
     fidelity_args = {
-        # "tg_list": list(range(18)),
-        "tg_list": list(range(18)), #[::4], # [:1] 
-
-        "max_step_ideal": 1e-3,  # ns 3e-4 for theta, 1e-3 for phi
-        "max_step_noisy": 1e-3,  # ns 3e-4 for theta, 1e-3 for phi
+        "max_step_ideal": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
+        "max_step_noisy": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
     }
+        ################## theta and phi ##################
     if common_args["drive_theta"] and common_args["drive_phi"]:
-        common_args["n_full"] = 150   # default=50
-
-    elif common_args["drive_phi"] and not common_args["drive_theta"]:
-        fidelity_args["tg_list"] = list(range(19)) #[::4], # [:1] 
-        common_args["n_full"] = 300
-
+        fidelity_args["tg_list"] = [0] 
+        common_args["n_full"] = 500   # default=50
+        population_args = {
+            "pop_tg": 828.759495,  # ns
+            "pop_drive_amp_a": 0.013563,  
+            "pop_drive_amp_b": 0.034964,  
+            "pop_detune_a": -0.003029,  # GHz; 
+            "pop_detune_b": -0.003182,  # GHz;
+        }        
+        ################## theta ##################
     elif common_args["drive_theta"] and not common_args["drive_phi"]:
         fidelity_args["tg_list"] = list(range(18)) #[::4], # [:1] 
-        common_args["n_full"] = 150
+        common_args["n_full"] = 1000 # default=150 for fidelity, 1000 for population
+        population_args = {
+            "pop_tg": 25.020473,  # ns
+            "pop_drive_amp_a": 0.180208,  
+            "pop_drive_amp_b": 0.046132,  
+            "pop_detune_a": -0.003789,  # GHz; 
+            "pop_detune_b": 0.001544,  # GHz;
+        }        
+        ################## phi ##################
+    elif common_args["drive_phi"] and not common_args["drive_theta"]:
+        fidelity_args["tg_list"] = list(range(19))  
+        common_args["n_full"] = 300
         fidelity_args.update(
             {
-                "max_step_ideal": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
-                "max_step_noisy": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
-            }
-        )
-    population_args = {
-        "pop_tg": 828.759495,  # ns
-        "pop_drive_amp_a": 0.013563,  # effective drive amplitude used with `ut.build_hamiltonian_xgate()`
-        "pop_drive_amp_b": 0.034964,  # effective drive amplitude used with `ut.build_hamiltonian_xgate()`
-        "pop_detune_a": -0.003029,  # GHz; converted to rad/ns with `2*pi*detune`
-        "pop_detune_b": -0.003182,  # GHz; converted to rad/ns with `2*pi*detune`
-        "pop_max_step_ideal": 3e-4,  # ns
-        "pop_max_step_noisy": 3e-4,  # ns
-    }
+                "max_step_ideal": 1e-3,  # ns 3e-4 for theta, 1e-3 for phi
+                "max_step_noisy": 1e-3,  # ns 3e-4 for theta, 1e-3 for phi
+            })   
+        population_args = {
+            "pop_tg": 120.004766,  # ns
+            "pop_drive_amp_a": 0.209273,  
+            "pop_drive_amp_b": 0.104767,  
+            "pop_detune_a": 0.341188,  # GHz; 
+            "pop_detune_b": 0.360503,  # GHz;
+        }    
+
+    if args.mode == "population":    
+        common_args["n_full"] = 1000
+            ################## theta and phi ##################
+        if common_args["drive_theta"] and common_args["drive_phi"]:
+            fidelity_args["tg_list"] = [0] 
+            common_args["n_full"] = 500   # default=50
+            population_args = {
+                "pop_tg": 828.759495,  # ns
+                "pop_drive_amp_a": 0.013563,  
+                "pop_drive_amp_b": 0.034964,  
+                "pop_detune_a": -0.003029,  # GHz; 
+                "pop_detune_b": -0.003182,  # GHz;
+            }        
+            ################## theta ##################
+        elif common_args["drive_theta"] and not common_args["drive_phi"]:
+            fidelity_args["tg_list"] = [3] #[::4], # [:1] 
+            # population_args = {
+            #     "pop_tg": 25.020473,  # ns
+            #     "pop_drive_amp_a": 0.180208,  
+            #     "pop_drive_amp_b": 0.046132,  
+            #     "pop_detune_a": -0.003789,  # GHz; 
+            #     "pop_detune_b": 0.001544,  # GHz;
+            # }        
+            ################## phi ##################
+        elif common_args["drive_phi"] and not common_args["drive_theta"]:
+            fidelity_args["tg_list"] = [10]
+            # population_args = {
+            #     "pop_tg": 120.004766,  # ns
+            #     "pop_drive_amp_a": 0.209273,  
+            #     "pop_drive_amp_b": 0.104767,  
+            #     "pop_detune_a": 0.341188,  # GHz; 
+            #     "pop_detune_b": 0.360503,  # GHz;
+            # }  
+
     args = argparse.Namespace(**common_args, **fidelity_args, **population_args)
 
     if not args.drive_phi and not args.drive_theta:
@@ -337,6 +382,7 @@ def main():
     print(os.path.basename(__file__))
     print("NUMEXPR_NUM_THREADS =", os.environ.get("NUMEXPR_NUM_THREADS"))
     print("MKL_NUM_THREADS =", os.environ.get("MKL_NUM_THREADS"))
+    print("mode =", args.mode)
     print("fidelity_args =", fidelity_args)
     ut.print_time()
 

@@ -1773,9 +1773,9 @@ def load_drive_params_xgate(drive_theta, drive_phi):
     elif drive_theta and not drive_phi:
         folder = 'data_xgate_theta_3ncut_mstep_3e4.txt'
     else:
-        folder = 'data_xgate_theta_3ncut_mstep_3e4.txt'
+        return np.array([[828.759495, 0.013563, 0.034964, -0.003029, -0.003182]])
 
-    folder = 'data_xgate_theta_3ncut_mstep_3e4.txt' if drive_theta else 'data_xgate_phi_3ncut_mstep_1e3.txt'
+    folder = 'data_xgate_theta_mstep_3e4_npz.txt' if drive_theta else 'data_xgate_phi_3ncut_mstep_1e3.txt'
     f_xgate = pd.read_csv('../figure/data/' + folder)
     return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
 

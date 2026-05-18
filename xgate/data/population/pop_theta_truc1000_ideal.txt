@@ -1,0 +1,19 @@
+run_xgate_fidelity.py
+NUMEXPR_NUM_THREADS = 1
+MKL_NUM_THREADS = 1
+mode = population
+fidelity_args = {'max_step_ideal': 0.0003, 'max_step_noisy': 0.0003, 'tg_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}
+
+Current China Time: 2026-05-15 14:58:55.148969+08:00
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/scripts/run_xgate_fidelity.py", line 363, in <module>
+    main()
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/scripts/run_xgate_fidelity.py", line 357, in main
+    run_xgate_population(args)
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/scripts/run_xgate_fidelity.py", line 171, in run_xgate_population
+    setup = _build_hamiltonian_inputs(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: _build_hamiltonian_inputs() missing 1 required positional argument: 'charge_truc'
+Command exited with non-zero status 1
+1.76user 0.38system 0:02.14elapsed 99%CPU (0avgtext+0avgdata 320380maxresident)k
+0inputs+8outputs (0major+57252minor)pagefaults 0swaps

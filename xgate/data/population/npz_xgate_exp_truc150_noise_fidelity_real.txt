@@ -1,12 +1,14 @@
 run_xgate_fidelity.py
 NUMEXPR_NUM_THREADS = 1
 MKL_NUM_THREADS = 1
-fidelity_args = {'tg_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 'max_step_ideal': 0.001, 'max_step_noisy': 0.001}
+fidelity_args = {'max_step_ideal': 0.0003, 'max_step_noisy': 0.0003, 'tg_list': [0]}
 
-Current China Time: 2026-05-14 16:08:22.104136+08:00
+Current China Time: 2026-05-15 10:14:37.393256+08:00
 drive_phi= True ; drive_theta = True ; n_full = 150 ; charge_truc = True
-T1 = Tphi = 170 us, tg = 829
-calculate_ideal = False
+T1 = Tphi = 3 us, num_cpus = 1
+calculate_ideal = True, calculate_noise = True
+apply_decay = True, apply_dephase = True
+n_hspace = 150 ; n_job = 1 ; parallel_jobs = 20
 
 hspace (150/150) = np.array([
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ,
@@ -25,17 +27,23 @@ hspace (150/150) = np.array([
 130, 131, 132, 133, 134, 135, 136, 137, 138, 139 ,
 140, 141, 142, 143, 144, 145, 146, 147, 148, 149 ,
 ])
+
+params = np.array([
+[828.759495, 0.013563, 0.034964, -0.003029, -0.003182] ,
+])
+
+f_ideal_150 = np.array([
+-2.93948030 ,
+])
+
+Current China Time: 2026-05-15 10:22:51.438289+08:00
 use 2nd order dephasing data, correct 50us factor
 np.shape(jump_t1)= (11175, 150, 150) ; np.shape(jump_tphi)= (78, 150, 150)
-np.shape(c_op_list)= (11253, 150, 150)
 
-Top 10 values: [0.4793, 0.4655, 0.0527, 0.0017, 0.0003, 0.0002, 0.0002, 0.0001, 0.0001, 0.0001]
-State of large population: [ 0  2  9 33 10 19 55  4  8 25]
+f_3us_150 = np.array([
+-0.91315773 ,
+])
 
-Top 10 values: [0.4801, 0.4645, 0.0528, 0.0017, 0.0002, 0.0002, 0.0002, 0.0001, 0.0001, 0.0001]
-State of large population: [ 2  0  9 33 10 19 55  4  8 25]
-data saved in data/population/population_phi=True_theta=True_tg=829_T1=170us_n=150_20260515_162450.txt
-
-Current China Time: 2026-05-16 04:24:50.829107+08:00
-130465.51user 118.90system 36:16:32elapsed 99%CPU (0avgtext+0avgdata 9660928maxresident)k
-0inputs+816outputs (0major+64586849minor)pagefaults 0swaps
+Current China Time: 2026-05-17 07:19:54.452074+08:00
+162259.39user 85.43system 45:05:22elapsed 100%CPU (0avgtext+0avgdata 31320480maxresident)k
+0inputs+24outputs (81major+58556831minor)pagefaults 0swaps
