@@ -1706,8 +1706,9 @@ def get_dressed_states_index(top_index, hspace_0, hspace_1):
     hspace_full = [f"{hspace_0[idx[0]]}-{hspace_1[idx[1]]}" for idx in index_array]
     return hspace_full
 
-def load_qubit_data_xgate(qubit_0 = True, folder = '../../data/3ncut_one_zeropi/'):
+def load_qubit_data_xgate(qubit_0 = True, folder = '../figure/data/'):
     """
+    folder = '../../data/3ncut_one_zeropi/'
     Loads the energy spectrum and matrix elements (n_theta, n_phi) for the 0-π qubit.
     The function "generate_data()" in sigmaX_fidelity_import_paras.py can generate the data
 
@@ -1829,7 +1830,8 @@ def load_drive_params_2q(cz_run, folder=None):
         params = pd.read_csv(folder)[['tg', 'drive_amp', 'detune']].to_numpy()
     else:
         if folder is None:
-            folder = '../cnot/data/data_cnot_fidelity_3ncut.txt'
+            # folder = '../cnot/data/data_cnot_fidelity_3ncut.txt'
+            folder = '../figure/data/data_cnot_fidelity_npz.txt'
         params = pd.read_csv(folder)[['tg', 'drive_amp_1', 'drive_amp_2', 
                                       'detune_1', 'detune_2']].to_numpy()
     return params
