@@ -1,6 +1,6 @@
-# Two-Qubit Gate Implementation for Zero-π Qubits
+# Two-Qubit Gate Implementation for 0-π Qubits
 
-This repository contains code for optimizing and analyzing quantum gates implemented on zero-π qubits, including single-qubit X gates and two-qubit gates (CZ, CNOT, and simultaneous X gates).
+This repository contains code for optimizing and analyzing quantum gates implemented on 0-π qubits, including single-qubit X gates and two-qubit gates (CZ, CNOT, and simultaneous X gates).
 
 ## Environment Requirements
 
@@ -102,80 +102,88 @@ Loader note
 
 ## Running Instructions
 
+Activate the environment first, then run each gate script from its gate directory.
+
 ### a) Single Qubit X Gate
 
-#### Setup
-- Activate the environment (see Environment Requirements above).
-- Change into the gate folder before running:
-  - `cd xgate`
+The X-gate fidelity and population simulations are run by:
 
-#### Running Optimization
-- Run the optimizer script from this folder:
-  - `python Xgate_fidelity_optimize.py`
+```bash
+cd xgate
+python scripts/run_xgate_fidelity.py
+```
 
-#### Output Files
-- Optimization outputs are written under `xgate/data/` (filenames set by the script).
+The script configuration is edited in `xgate/scripts/run_xgate_fidelity.py`, inside `main()`.
+Set `mode = "fidelity"` or `mode = "population"` and update the drive, truncation,
+coherence, and timestep settings there before running.
 
+Key settings in `common_args`:
+- `mode`: choose `"fidelity"` or `"population"`.
+- `drive_phi`, `drive_theta`: select the drive channel. Use only one for a pure phi/theta drive, or set both to `True` for the combined drive.
+- `qubit_0`: choose which qubit is driven when loading the single-qubit X-gate data.
+- `t1`: relaxation/coherence time in us; the script also uses this value for `tphi`.
+- `charge_truc`: enable charge-based Hilbert-space truncation before time evolution.
+- `calculate_ideal`, `calculate_noise`: turn ideal/noisy simulations on or off.
+- `num_cpus`, `parallel_jobs`: control CPU usage for the QuTiP solver and joblib parallel runs.
+- `apply_decay`, `apply_dephase`: include or exclude decay and dephasing channels in noisy simulations.
 
-### b) Two Qubit CZ Gate
-
-#### Setup
-- Activate the environment (see Environment Requirements above).
-- Change into the gate folder before running:
-  - `cd cz`
-
-#### Running Optimization
-- Run the optimizer script from this folder:
-  - `python cz_fidelity_optimize.py`
-
-#### Output Files
-- Optimization outputs are written under `cz/data/` (filenames set by the script).
-
-### c) Two Qubit CNOT Gate
-
-#### Setup
-- Activate the environment (see Environment Requirements above).
-- Change into the gate folder before running:
-  - `cd cnot`
-
-#### Running Optimization
-- Run the optimizer script from this folder:
-  - `python cnot_fidelity_optimize.py`
+After `common_args`, the script selects gate-specific parameters for theta, phi, or combined theta+phi drives. Update `tg_list`, `n_full`, `max_step_ideal`, `max_step_noisy`, and the `population_args` values in the matching drive branch.
 
 #### Output Files
-- Optimization outputs are written under `cnot/data/` (filenames set by the script).
+- X-gate outputs are written under `xgate/data/`.
 
-### d) Two Qubit X Gate on Each Qubit
 
-#### Setup
-- Activate the environment (see Environment Requirements above).
-- Change into the gate folder before running:
-  - `cd <two_qubit_x_folder>`
+### b) Two-Qubit CZ and CNOT Gates
 
-#### Running Optimization
-- Run the optimizer script from this folder (fill in the specific filename you use):
-  - `python <two_qubit_x_optimize_script>.py`
+CZ and CNOT fidelity simulations are now combined in one script:
+
+```bash
+cd cz
+python scripts/run_2q_fidelity.py
+```
+
+The script configuration is edited in `cz/scripts/run_2q_fidelity.py`, inside `main()`.
+Set `cfg["cz_run"] = True` for CZ or `cfg["cz_run"] = False` for CNOT, then update
+`cfg["tg_list"]`, `cfg["n_truc_list"]`, coherence settings, and model options as needed.
+
+Key settings in `cfg`:
+- `cz_run`: set `True` for CZ and `False` for CNOT.
+- `t1_tphi_other`: relaxation/dephasing time in us for noisy two-qubit simulations.
+- `n_truc_list`: list of truncation sizes to test.
+- `reduced_model`: choose the reduced Hilbert-space selection rule, such as `"charge_pick"`, `"graph_pick"`, or `"lowest_state"`.
+- `calculate_ideal`, `calculate_noise`: turn ideal/noisy fidelity calculations on or off.
+- `apply_decay`, `apply_dephase`: include or exclude decay and dephasing collapse operators.
+- `decay_enlarge`, `filter_ratio`: tune the noisy collapse-operator construction.
+- `tg_para`: set `True` to parallelize over the full `tg_list`; set `False` to run each gate time separately with memory reporting.
+- `tg_list`: choose rows from the pulse-parameter table.
+- `params`: pulse parameters loaded from the CZ or CNOT data file according to `tg_list`.
+
+For CZ, the default pulse table is `cz/data/npz/cz_pulse_neighbor.txt`. For CNOT, the script currently loads `../figure/data/data_cnot_fidelity_npz.txt`. Keep `tg_list` and `params` aligned: the number of selected gate times must match the number of selected parameter rows.
 
 #### Output Files
-- Optimization outputs are written under the corresponding `data/` folder.
+- Two-qubit outputs and input pulse tables are stored under `cz/data/`.
 
 ## File Structure
 
 ```
-├── xgate/                  # Single qubit X gate implementations
-│   ├── data/               # X gate optimization results
-│   └── get_fidelity_xgate.py
-├── cnot/                   # CNOT gate implementations
-│   ├── data/               # CNOT optimization results
-│   └── cnot_fidelity_optimize.py
-├── cz/                     # CZ gate implementations
-│   ├── data/               # CZ optimization results
-│   └── get_fidelity_cz.py
-├── figure/                 # Figure generation and plotting code
-├── data_fig/              # Data files for figures
-├── utils_2Q_gate_zp.py    # Utility functions for two-qubit gates
-├── .gitignore             # Git ignore file for data and cache files
-└── README.md              # This file
+├── cz/                         # Combined CZ and CNOT gate simulations
+│   ├── data/                    # Two-qubit pulse tables and simulation data
+│   └── scripts/
+│       └── run_2q_fidelity.py   # Main CZ/CNOT fidelity entry point
+├── data/                       # Hamiltonian datasets and parameter files
+├── figure/                     # Figure generation notebook and figure data
+│   ├── data/                    # Data used by plotting notebooks
+│   └── pdf_before_inkscape/     # Local-only generated PDF figures
+├── xgate/                      # Single-qubit X gate simulations
+│   ├── data/                    # X-gate fidelity and population outputs
+│   └── scripts/
+│       └── run_xgate_fidelity.py # Main X-gate fidelity/population entry point
+├── env_zp2q.yaml               # Conda environment file
+├── ham_data.py                 # Hamiltonian data generation script
+├── paths.py                    # Shared path helpers
+├── truncation_estimate.py      # Truncation analysis utilities
+├── utils_2Q_gate_zp.py         # Shared utilities for zero-π gate simulations
+└── README.md                   # This file
 ```
 
 ## Citation
