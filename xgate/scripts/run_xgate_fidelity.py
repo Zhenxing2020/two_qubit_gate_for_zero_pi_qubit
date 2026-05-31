@@ -254,7 +254,7 @@ def run_xgate_population(args):
 
 
 def main():
-    mode = "population"
+    mode = "fidelity" # "population"
 
     # Keep simulation inputs here so they are easier to read and edit.
     common_args = {
@@ -265,7 +265,7 @@ def main():
         # "n_full": 150, # 150 for theta, 300 for phi
         "t1": 3,  # us
         "charge_truc": True,
-        "calculate_ideal": False, # must set to False if run experiment noisy xgate 
+        "calculate_ideal": True, # must set to False if run experiment noisy xgate 
         "calculate_noise": True,
         "num_cpus": 4,
         "parallel_jobs": 1,
@@ -301,7 +301,7 @@ def main():
         }        
         ################## phi ##################
     elif common_args["drive_phi"] and not common_args["drive_theta"]:
-        fidelity_args["tg_list"] = list(range(19))  
+        fidelity_args["tg_list"] = [0] # list(range(19))  
         common_args["n_full"] = 50
         fidelity_args.update(
             {

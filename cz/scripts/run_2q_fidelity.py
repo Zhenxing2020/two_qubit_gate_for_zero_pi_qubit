@@ -452,7 +452,7 @@ def main():
 
     ################################################################
     cfg = get_config()
-    cfg["cz_run"] = False # True for CZ, False for CNOT
+    cfg["cz_run"] = True # True for CZ, False for CNOT
     cfg["t1_tphi_other"] = 170  # us
     cfg["n_truc_list"] = [30] # np.arange(200, 401, step=10) # [100] # [60, 90, 120] # [70, 100, 130] # [80, 110, 140] #
     #  [60, 90, 120] # np.arange(60, 241, step=20).tolist() + [500,1000]   
