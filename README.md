@@ -102,9 +102,11 @@ Loader note
 
 ## Running Instructions
 
-Activate the environment first, then run each gate script from its gate directory.
+Activate the environment first. The existing fidelity/population runners below are run
+from their gate directories, while the added optimization/population scripts can be run
+from the repository root because they change into the gate folder internally.
 
-### a) Single Qubit X Gate
+### a) Single Qubit X Gate Fidelity Calculation
 
 The X-gate fidelity and population simulations are run by:
 
@@ -132,8 +134,40 @@ After `common_args`, the script selects gate-specific parameters for theta, phi,
 #### Output Files
 - X-gate outputs are written under `xgate/data/`.
 
+### Required Data Files for the NPZ Workflows
 
-### b) Two-Qubit CZ and CNOT Gates
+The NPZ workflow scripts need the following data files to exist locally:
+
+- `data/Two_qubit_data_Sorted_Truc/two_qubit_data.npz`
+- `data/Two_qubit_data_Sorted_Truc/params_truc.yaml`
+- `data/Two_qubit_data_Sorted_Truc/two_qubit_data_summary.txt`
+- `cz/data/npz/cz_pulse_neighbor.txt`
+- `figure/data/data_cz_fidelity_npz_select.txt`
+- `figure/data/zeropi_0_specdata_truc=1000_3ncut.h5`
+- `figure/data/zeropi_0_n_theta_truc=1000_3ncut.h5`
+- `figure/data/zeropi_0_n_phi_truc=1000_3ncut.h5`
+
+The two-qubit NPZ file is loaded by `ham_data.load_two_qubit_data`. The X-gate optimizer
+loads the three `zeropi_0_*_3ncut.h5` files through `utils_2Q_gate_zp.load_qubit_data_xgate`.
+
+### b) Single-Qubit X Gate Fidelity Optimization
+
+From the repository root:
+
+```bash
+python xgate/scripts/optimize_xgate_fidelity.py
+```
+
+Useful quick-run options:
+
+```bash
+python xgate/scripts/optimize_xgate_fidelity.py --tg-vec 2,3,4 --workers 8 --n-truc 150 --n-full 300
+```
+
+By default this optimizes qubit 0 with theta drive enabled. Use `--no-drive-theta --drive-phi`
+for phi drive, or `--no-qubit-0` for the other qubit.
+
+### c) Two-Qubit CZ and CNOT Gate Fidelities Calculation
 
 CZ and CNOT fidelity simulations are now combined in one script:
 
@@ -163,20 +197,60 @@ For CZ, the default pulse table is `cz/data/npz/cz_pulse_neighbor.txt`. For CNOT
 #### Output Files
 - Two-qubit outputs and input pulse tables are stored under `cz/data/`.
 
+### d) Two-Qubit CZ Gate Fidelity Optimization
+
+From the repository root:
+
+```bash
+python cz/scripts/optimize_cz_fidelity.py
+```
+
+The default configuration reads the two-qubit Hamiltonian data from
+`data/Two_qubit_data_Sorted_Truc` and the initial CZ pulse guesses from
+`cz/data/npz/cz_pulse_neighbor.txt`. Edit `get_optimization_config()` in the script to
+change truncation sizes, gate-time indices, bounds, worker count, or the input pulse file.
+
+### e) CZ Population Simulation
+
+From the repository root:
+
+```bash
+python cz/scripts/run_2q_population.py
+```
+
+The default run loads pulse parameters from `figure/data/data_cz_fidelity_npz_select.txt`,
+simulates the ideal CZ population transfer, and writes CSV/PNG outputs under
+`cz/data/population/`. Set `cfg["calculate_noise"] = True` in the script if noisy
+population dynamics are needed; that also requires `cfg["noise_dephase_path"]`.
+
 ## File Structure
 
 ```
 ├── cz/                         # Combined CZ and CNOT gate simulations
 │   ├── data/                    # Two-qubit pulse tables and simulation data
+│   │   ├── npz/
+│   │   │   └── cz_pulse_neighbor.txt
+│   │   └── population/          # Local generated population outputs
 │   └── scripts/
-│       └── run_2q_fidelity.py   # Main CZ/CNOT fidelity entry point
+│       ├── optimize_cz_fidelity.py
+│       ├── run_2q_fidelity.py   # Main CZ/CNOT fidelity entry point
+│       └── run_2q_population.py
 ├── data/                       # Hamiltonian datasets and parameter files
+│   └── Two_qubit_data_Sorted_Truc/
+│       ├── params_truc.yaml
+│       ├── two_qubit_data_summary.txt
+│       └── two_qubit_data.npz   # Local-only large two-qubit dataset
 ├── figure/                     # Figure generation notebook and figure data
-│   ├── data/                    # Data used by plotting notebooks
+│   ├── data/                    # Data used by plotting notebooks and NPZ workflows
+│   │   ├── data_cz_fidelity_npz_select.txt
+│   │   ├── zeropi_0_specdata_truc=1000_3ncut.h5  # Local-only large X-gate data
+│   │   ├── zeropi_0_n_theta_truc=1000_3ncut.h5   # Local-only large X-gate data
+│   │   └── zeropi_0_n_phi_truc=1000_3ncut.h5     # Local-only large X-gate data
 │   └── pdf_before_inkscape/     # Local-only generated PDF figures
 ├── xgate/                      # Single-qubit X gate simulations
 │   ├── data/                    # X-gate fidelity and population outputs
 │   └── scripts/
+│       ├── optimize_xgate_fidelity.py
 │       └── run_xgate_fidelity.py # Main X-gate fidelity/population entry point
 ├── env_zp2q.yaml               # Conda environment file
 ├── ham_data.py                 # Hamiltonian data generation script
