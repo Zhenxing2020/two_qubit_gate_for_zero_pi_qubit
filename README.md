@@ -106,34 +106,6 @@ Activate the environment first. The existing fidelity/population runners below a
 from their gate directories, while the added optimization/population scripts can be run
 from the repository root because they change into the gate folder internally.
 
-### a) Single Qubit X Gate Fidelity Calculation
-
-The X-gate fidelity and population simulations are run by:
-
-```bash
-cd xgate
-python scripts/run_xgate_fidelity.py
-```
-
-The script configuration is edited in `xgate/scripts/run_xgate_fidelity.py`, inside `main()`.
-Set `mode = "fidelity"` or `mode = "population"` and update the drive, truncation,
-coherence, and timestep settings there before running.
-
-Key settings in `common_args`:
-- `mode`: choose `"fidelity"` or `"population"`.
-- `drive_phi`, `drive_theta`: select the drive channel. Use only one for a pure phi/theta drive, or set both to `True` for the combined drive.
-- `qubit_0`: choose which qubit is driven when loading the single-qubit X-gate data.
-- `t1`: relaxation/coherence time in us; the script also uses this value for `tphi`.
-- `charge_truc`: enable charge-based Hilbert-space truncation before time evolution.
-- `calculate_ideal`, `calculate_noise`: turn ideal/noisy simulations on or off.
-- `num_cpus`, `parallel_jobs`: control CPU usage for the QuTiP solver and joblib parallel runs.
-- `apply_decay`, `apply_dephase`: include or exclude decay and dephasing channels in noisy simulations.
-
-After `common_args`, the script selects gate-specific parameters for theta, phi, or combined theta+phi drives. Update `tg_list`, `n_full`, `max_step_ideal`, `max_step_noisy`, and the `population_args` values in the matching drive branch.
-
-#### Output Files
-- X-gate outputs are written under `xgate/data/`.
-
 ### Required Data Files for the NPZ Workflows
 
 The NPZ workflow scripts need the following data files to exist locally:
@@ -150,7 +122,7 @@ The NPZ workflow scripts need the following data files to exist locally:
 The two-qubit NPZ file is loaded by `ham_data.load_two_qubit_data`. The X-gate optimizer
 loads the three `zeropi_0_*_3ncut.h5` files through `utils_2Q_gate_zp.load_qubit_data_xgate`.
 
-### b) Single-Qubit X Gate Fidelity Optimization
+### a) Single-Qubit X Gate Fidelity Optimization
 
 From the repository root:
 
@@ -167,9 +139,79 @@ python xgate/scripts/optimize_xgate_fidelity.py --tg-vec 2,3,4 --workers 8 --n-t
 By default this optimizes qubit 0 with theta drive enabled. Use `--no-drive-theta --drive-phi`
 for phi drive, or `--no-qubit-0` for the other qubit.
 
-### c) Two-Qubit CZ and CNOT Gate Fidelities Calculation
+### b) Single-Qubit X Gate Population
 
-CZ and CNOT fidelity simulations are now combined in one script:
+The X-gate population simulation is run with `mode = "population"` in
+`xgate/scripts/run_xgate_fidelity.py`:
+
+```bash
+cd xgate
+python scripts/run_xgate_fidelity.py
+```
+
+Edit `common_args` and the matching drive branch in `main()` before running. Key settings
+include `drive_phi`, `drive_theta`, `qubit_0`, `tg_list`, `n_full`, `max_step_ideal`,
+`max_step_noisy`, and the `population_args` values.
+
+### c) Single-Qubit X Gate Fidelity Calculation
+
+The X-gate fidelity calculation uses the same script with `mode = "fidelity"`:
+
+```bash
+cd xgate
+python scripts/run_xgate_fidelity.py
+```
+
+Key settings in `common_args`:
+- `mode`: choose `"fidelity"` for fidelity calculation.
+- `drive_phi`, `drive_theta`: select the drive channel. Use only one for a pure phi/theta drive, or set both to `True` for the combined drive.
+- `qubit_0`: choose which qubit is driven when loading the single-qubit X-gate data.
+- `t1`: relaxation/coherence time in us; the script also uses this value for `tphi`.
+- `charge_truc`: enable charge-based Hilbert-space truncation before time evolution.
+- `calculate_ideal`, `calculate_noise`: turn ideal/noisy simulations on or off.
+- `num_cpus`, `parallel_jobs`: control CPU usage for the QuTiP solver and joblib parallel runs.
+- `apply_decay`, `apply_dephase`: include or exclude decay and dephasing channels in noisy simulations.
+
+X-gate outputs are written under `xgate/data/`.
+
+### d) Two-Qubit CZ/CNOT Gate Fidelity Optimization
+
+From the repository root:
+
+```bash
+python cz/scripts/optimize_2q_fidelity.py
+```
+
+CZ and CNOT optimization are now combined in `cz/scripts/optimize_2q_fidelity.py`.
+Choose the gate by setting `gate_type = "CZ"` or `gate_type = "CNOT"` in `main()`.
+
+For CZ, the default configuration reads the two-qubit Hamiltonian data from
+`data/Two_qubit_data_Sorted_Truc` and the initial pulse guesses from
+`cz/data/npz/cz_pulse_neighbor.txt`. For CNOT, edit the CNOT-specific block in
+`get_optimization_config()` to set `mid_state`, `tg_opt_vec`, `x0_array`, parameter
+bounds, truncation options, and any pulse-file input.
+
+Edit `get_optimization_config()` to change truncation sizes, gate-time indices, bounds,
+worker count, resume behavior, plotting, or result-output locations.
+
+### e) Two-Qubit CZ/CNOT Population Simulation
+
+From the repository root:
+
+```bash
+python cz/scripts/run_2q_population.py
+```
+
+Set `cfg["cz_run"] = True` for CZ or `cfg["cz_run"] = False` for CNOT in
+`cz/scripts/run_2q_population.py`. For CZ, the script loads pulse parameters from
+`figure/data/data_cz_fidelity_npz_select.txt`; for CNOT, it loads from
+`../cnot/data/data_cnot_fidelity_npz.txt`. The run writes CSV/PNG outputs under
+`cz/data/population/`. Set `cfg["calculate_noise"] = True` if noisy population dynamics
+are needed; that also requires `cfg["noise_dephase_path"]`.
+
+### f) Two-Qubit CZ/CNOT Gate Fidelity Calculation
+
+CZ and CNOT fidelity simulations are combined in one script:
 
 ```bash
 cd cz
@@ -194,34 +236,7 @@ Key settings in `cfg`:
 
 For CZ, the default pulse table is `cz/data/npz/cz_pulse_neighbor.txt`. For CNOT, the script currently loads `../figure/data/data_cnot_fidelity_npz.txt`. Keep `tg_list` and `params` aligned: the number of selected gate times must match the number of selected parameter rows.
 
-#### Output Files
-- Two-qubit outputs and input pulse tables are stored under `cz/data/`.
-
-### d) Two-Qubit CZ Gate Fidelity Optimization
-
-From the repository root:
-
-```bash
-python cz/scripts/optimize_cz_fidelity.py
-```
-
-The default configuration reads the two-qubit Hamiltonian data from
-`data/Two_qubit_data_Sorted_Truc` and the initial CZ pulse guesses from
-`cz/data/npz/cz_pulse_neighbor.txt`. Edit `get_optimization_config()` in the script to
-change truncation sizes, gate-time indices, bounds, worker count, or the input pulse file.
-
-### e) CZ Population Simulation
-
-From the repository root:
-
-```bash
-python cz/scripts/run_2q_population.py
-```
-
-The default run loads pulse parameters from `figure/data/data_cz_fidelity_npz_select.txt`,
-simulates the ideal CZ population transfer, and writes CSV/PNG outputs under
-`cz/data/population/`. Set `cfg["calculate_noise"] = True` in the script if noisy
-population dynamics are needed; that also requires `cfg["noise_dephase_path"]`.
+Two-qubit outputs and input pulse tables are stored under `cz/data/`.
 
 ## File Structure
 
@@ -232,7 +247,7 @@ population dynamics are needed; that also requires `cfg["noise_dephase_path"]`.
 │   │   │   └── cz_pulse_neighbor.txt
 │   │   └── population/          # Local generated population outputs
 │   └── scripts/
-│       ├── optimize_cz_fidelity.py
+│       ├── optimize_2q_fidelity.py # Main CZ/CNOT optimization entry point
 │       ├── run_2q_fidelity.py   # Main CZ/CNOT fidelity entry point
 │       └── run_2q_population.py
 ├── data/                       # Hamiltonian datasets and parameter files

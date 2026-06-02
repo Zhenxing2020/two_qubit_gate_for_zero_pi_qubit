@@ -79,12 +79,12 @@ def get_config():
 
     # ---------- Pulse parameters ----------
     if cfg["cz_run"]:
-        folder = "data/npz/cz_pulse_neighbor.txt"
-        cfg["tg_list"] = [72]
+        folder = "../figure/data/data_cz_fidelity_npz_select.txt"
+        cfg["tg_list"] = [0] # [12]
         cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], :]
     else:
-        folder = "../cnot/data/cnot_fidelity_npz.txt"
-        cfg["tg_list"] = [15]
+        folder = "../figure/data/data_cnot_fidelity_npz.txt"
+        cfg["tg_list"] = [0] # [15]
         cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], :]
 
     cfg["output_dir"] = "data/population"

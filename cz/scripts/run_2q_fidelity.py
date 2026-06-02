@@ -466,7 +466,8 @@ def main():
     cfg["tg_para"] = False
 
     if cfg["cz_run"]:
-        folder = 'data/npz/cz_pulse_neighbor.txt'
+        folder = '../figure/data/data_cz_fidelity_npz_select.txt'
+        # folder = 'data/npz/cz_pulse_neighbor.txt'
         cfg["tg_list"] = [0] # np.arange(6, 179, step=12).tolist()  
         # [0, 36, 72, 108, 144] # [72] # [72,179] # [0, 45, 90, 135, 179] 
         # [0,  30,  60,  90, 120, 150] [0, 45, 72, 90, 135, 179]
