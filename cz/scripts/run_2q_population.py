@@ -355,7 +355,7 @@ def main():
     cfg["calculate_noise"] = False
     cfg["n_truc_list"] = [1000]
     cfg["reduced_model"] = "lowest_state"  # "charge_pick", "lowest_state", or "graph_pick"
-    cfg["graph_model_name"] = "n_theta_dress_charge_truc"
+    # cfg["graph_model_name"] = "n_theta_dress_charge_truc"
     cfg["max_step_ideal"] = 1e-3
     cfg["max_step_noisy"] = 1e-3
     cfg["num_cpus"] = 4
