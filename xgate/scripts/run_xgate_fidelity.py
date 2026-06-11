@@ -109,9 +109,9 @@ def run_xgate_fidelity(args):
     n_job = len(params)
     parallel_jobs = n_job if args.parallel_jobs <= 0 else args.parallel_jobs
     solver_num_cpus = args.num_cpus
-    if parallel_jobs != 1 and args.num_cpus != 1:
+    # if parallel_jobs != 1 and args.num_cpus != 1:
         # Avoid nested process pools: joblib parallelizes over gate times.
-        solver_num_cpus = 1
+        # solver_num_cpus = 1
 
     print("drive_phi=", args.drive_phi, "; drive_theta =", args.drive_theta, "; n_full =", args.n_full, "; charge_truc =", args.charge_truc)
     print(f"T1 = Tphi = {args.t1} us, num_cpus = {solver_num_cpus}")
@@ -254,7 +254,7 @@ def run_xgate_population(args):
 
 
 def main():
-    mode = "population"
+    mode = "fidelity" #"population"
 
     # Keep simulation inputs here so they are easier to read and edit.
     common_args = {
@@ -263,12 +263,12 @@ def main():
         "drive_theta": True,
         "qubit_0": True,
         # "n_full": 150, # 150 for theta, 300 for phi
-        "t1": 3,  # us
+        "t1": 170,  # us
         "charge_truc": True,
-        "calculate_ideal": False, # must set to False if run experiment noisy xgate 
+        "calculate_ideal": True, # must set to False if run experiment noisy xgate 
         "calculate_noise": True,
         "num_cpus": 4,
-        "parallel_jobs": 1,
+        "parallel_jobs": 10,
         "apply_decay": True,
         "apply_dephase": True,
     }
@@ -290,8 +290,8 @@ def main():
         }        
         ################## theta ##################
     elif common_args["drive_theta"] and not common_args["drive_phi"]:
-        fidelity_args["tg_list"] = [0] # list(range(18)) #[::4], # [:1] 
-        common_args["n_full"] = 20 # default=150 for fidelity, 1000 for population
+        fidelity_args["tg_list"] =  list(range(18)) #[-10,-1] # [::4], # [:1] 
+        common_args["n_full"] = 300 # default=150 for fidelity, 1000 for population
         population_args = {
             "pop_tg": 25.020473,  # ns
             "pop_drive_amp_a": 0.180208,  
