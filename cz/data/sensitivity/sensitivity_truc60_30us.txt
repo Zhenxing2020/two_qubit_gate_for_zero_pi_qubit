@@ -1,0 +1,82 @@
+sensitivity.py
+
+Current China Time: 2026-06-30 15:51:49.433138+08:00
+
+============================================================
+ Sensitivity Configuration 
+============================================================
+cz_run = True
+reduced_model = charge_pick
+calculate_ideal = False
+calculate_noise = True
+max_step_ideal = 0.001
+max_step_noisy = 0.001
+apply_decay = True
+apply_dephase = True
+decay_enlarge = 1
+filter_ratio = 0.3
+t1_tphi_other = 30
+noise_dephase_path = ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+tg_para = False
+num_cpus_ideal = 4
+num_cpus_noisy = 16
+folder_load = ../data/Two_qubit_data_Sorted_Truc
+n_job = 1
+n_truc = 60
+sweep_points = 5
+tg_span = 10.0
+amp_span = 0.002
+detune_span_mhz = 2.0
+amp_target = all
+detune_target = all
+base_params = [9.1948301e+01 1.7913000e-02 2.5190000e-02]
+output_pdf = data/sensitivity/cz_sensitivity_tg12_amp0.002_det2.0.pdf
+============================================================
+
+
+base_params = np.array([
+[91.948301, 0.017913, 0.02519] ,
+])
+
+hspace_select (len=60) = np.array([
+'0-0', '0-1', '1-0', '0-2', '2-0', '0-4', '4-0', '1-1', '0-5', '2-1' ,
+'5-0', '1-2', '0-8', '2-2', '8-0', '1-4', '4-1', '0-9', '2-4', '9-0' ,
+'1-5', '5-1', '4-2', '0-12', '2-5', '1-8', '5-2', '12-0', '0-13', '0-16' ,
+'8-1', '4-4', '13-0', '15-0', '2-8', '1-9', '9-1', '8-2', '5-4', '4-5' ,
+'0-18', '2-9', '1-12', '0-20', '18-0', '0-21', '9-2', '12-1', '5-5', '0-24' ,
+'4-8', '1-13', '20-0', '8-4', '1-16', '22-0', '2-12', '13-1', '24-0', '0-25' ,
+])
+
+index_select (len=60) = np.array([
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ,
+10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ,
+20, 21, 22, 23, 24, 25, 26, 27, 28, 29 ,
+30, 31, 32, 33, 34, 35, 36, 37, 38, 39 ,
+40, 41, 42, 43, 44, 45, 46, 47, 48, 49 ,
+50, 51, 52, 53, 54, 55, 56, 57, 58, 59 ,
+])
+noise source = ../data/flux_derivative_truc500/gamma_phi_2Q_truc500.npz
+Calculating gate-time sweep...
+
+tg_log_errors = np.array([
+-1.16670260, -1.71109537, -2.85824447, -1.79533612 ,
+-1.33409201 ,
+])
+Calculating amplitude sweep...
+
+amp_log_errors = np.array([
+-1.49463794, -2.03096047, -2.85824447, -2.01148145 ,
+-1.46195266 ,
+])
+Calculating detuning sweep...
+
+detune_log_errors = np.array([
+-2.00727396, -2.44802695, -2.85824447, -2.41989373 ,
+-1.95004051 ,
+])
+Saved PDF: data/sensitivity/cz_sensitivity_tg12_amp0.002_det2.0_0630-1012.pdf
+Saved data: data/sensitivity/cz_sensitivity_tg12_amp0.002_det2.0_0630-1012.npz
+
+Current China Time: 2026-06-30 22:12:04.716732+08:00
+281210.21user 7905.82system 6:20:18elapsed 1266%CPU (0avgtext+0avgdata 3281152maxresident)k
+1432inputs+88outputs (43major+2505409526minor)pagefaults 0swaps
