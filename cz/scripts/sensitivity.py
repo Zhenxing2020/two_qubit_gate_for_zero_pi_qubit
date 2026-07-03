@@ -270,7 +270,7 @@ def main():
     cfg["num_cpus_noisy"] = 16
     cfg["n_job"] = 1
 
-    cfg["sweep_points"] = 31
+    cfg["sweep_points"] = 91
     cfg["tg_span"] = 10.0  # ns
     cfg["amp_span"] = 0.003  # dimensionless drive-amplitude offset
     cfg["detune_span_mhz"] = 3.0  # sweep +/- 2 MHz; fidelity code applies 2*pi
@@ -281,7 +281,7 @@ def main():
 
     if cfg["cz_run"]:
         folder = "../figure/data/data_cz_fidelity_npz_select.txt"
-        tg_idx = 0 # 12-> tg=92ns, 27-> tg=182ns # 0
+        tg_idx = 27 # 12-> tg=92ns, 27-> tg=182ns # 0
         cfg["base_params"] = ut.load_drive_params_2q(
             cfg["cz_run"],
             folder=folder,

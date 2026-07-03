@@ -20,8 +20,12 @@ data/April_21_2026_11_46_17/single_qubit_data.npz
 figure/zeropi_figure_v5_edit.ipynb
 
 # figure/ binary artifacts (generated locally, too large for GitHub)
+# Do not ignore every .npz here: small figure data such as cz_sensitivity.npz
+# should be tracked.  Add only files over GitHub's 100 MB file limit.
 figure/data/*.h5
-figure/data/*.npz
+figure/data/zeropi_0_specdata_truc=1000_3ncut.h5
+# Also keep files over the repository pre-commit 10 MB limit out of git.
+figure/data/zeropi_0_nphi_2pi.npz
 
 # Data and results directories
 # data/
