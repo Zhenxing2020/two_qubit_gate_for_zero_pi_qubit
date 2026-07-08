@@ -313,17 +313,24 @@ def evaluate_fidelity_large(drive_params, system_data, hamiltonians, config):
     gate_type = config['gate_type']
 
     if gate_type == 'CZ':
-        tg, amp, detune = drive_params
-        n_cpu_parallel = 16
-        arg_all = [
-            tg, amp, detune,
-            n_cpu_parallel,
-            np.arange(config['truc_large']),
-            system_data['W_20_50'],
+        # Evaluate on the large Hilbert space with the SAME rigorous fidelity path
+        # as the DE objective (cz_fidelity_log_noise -> cz_fidelity_log: super-
+        # operator propagator, 3-pts/ns time grid), just on the large operators.
+        # The legacy cz_fidelity_log_old used a coarser (1-pt/ns) grid and a
+        # different unitary path, which put a ~1% systematic offset between the
+        # optimized-large and objective/fixed-pulse fidelities. num_cpus follows
+        # the config inner parallelism (this runs in the master, after the DE pool
+        # closes, so a pool here does not nest).
+        args = [
             hamiltonians['H_drive_large'],
+            system_data['W_20_50'],
+            config.get('inner_num_cpus', 1),
+            [],
             hamiltonians['logi_idx_large'],
+            system_data['option_ideal'],
+            system_data['option_noisy'],
         ]
-        return ut.cz_fidelity_log_old(arg_all)
+        return ut.cz_fidelity_log_noise(list(drive_params), *args)
 
     elif gate_type == 'CNOT':
         tg, A1, A2, d1, d2 = drive_params

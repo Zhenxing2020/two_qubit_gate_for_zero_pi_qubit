@@ -6,6 +6,7 @@ import scipy.sparse as ssp
 import sympy as sym
 import yaml
 from pathlib import Path
+from tqdm import tqdm
 
 import sys
 sys.path.append('../')
@@ -248,33 +249,22 @@ def normalize_eigenvector_phases(eigenvectors):
     return normalized_evecs
 
 
-def save_two_qubit_data(params, folder_save, get_flux_derivative=False):
+def _build_circuit(params, summary_file):
     """
-    Generate and save two-qubit quantum system data including 
-    eigenstates, operators, and Hilbert space information.
+    Build and configure the two-qubit Circuit for the given params, write the
+    circuit-description header to summary_file, and extract the theta1-theta2
+    coupling strength g_theta1theta2.
 
-    This function performs:
-    computes single-qubit subsystems, calculates coupling strength, constructs
-    the full Hamiltonian, finds eigenstates, analyzes dressed state decompositions,
-    and saves all data.
+    Must be re-run for every distinct set of params (e.g. every point in a
+    parameter sweep), since it re-derives the full capacitance matrix.
 
-    NOTE: All eigenvalues and operators are saved without the * 2 pi
-
-
-    Parameters
-    ----------
-    params : dict
-        Dictionary containing circuit parameters including YAML template, 
-        transformation matrix, flux values, charge offsets, and analysis thresholds
-    folder_save : str or Path
-        Directory path where output files will be saved
-    
     Returns
     -------
-    None
-        Saves two_qubit_data.npz and summary.txt files to folder_save
+    zp : scq.Circuit
+        Configured circuit with system_hierarchy/subsystem_trunc_dims set.
+    g : complex
+        Coupling strength g_theta1theta2.
     """
-
     # Replace parameters in the YAML template and make Circuit
     yml_with_params = params["zp_yml"]
     for cir_param in ["EJ1", "EJ2", "ECJ1", "ECJ2", "EL1", "EL2", "EC1", "EC2", "Ec0", "Ecc"]:
@@ -293,7 +283,6 @@ def save_two_qubit_data(params, folder_save, get_flux_derivative=False):
         setattr(zp, f"cutoff_ext_{i}", params["phi_cut"])
     zp.set_discretized_phi_range(var_indices=zp.var_categories["extended"], phi_range=params["phi_range"])
 
-    summary_file = str(Path(folder_save, 'two_qubit_data_summary.txt'))
     with open(summary_file, 'w') as f:
         print("Two Qubit Data Summary:", file=f)
         print("scqubits version:", scq.__version__, file=f)
@@ -305,7 +294,7 @@ def save_two_qubit_data(params, folder_save, get_flux_derivative=False):
         print(f"hamiltonian (transformed vars): {zp.sym_hamiltonian(return_expr=True)}", file=f)
         print("-", file=f)
         print(str(zp), file=f)
-    
+
     # Extract g_theta1theta2 coupling strength
     i_for_inv = []
     ith1 = None
@@ -334,60 +323,71 @@ def save_two_qubit_data(params, folder_save, get_flux_derivative=False):
 
     print("Circuit and parameters set. Beginning calculations...")
 
-    ######################################################################################
-    if get_flux_derivative:
-        # get flux derivative data
-        flux_vec = [0] + list(np.logspace(-6, -5, 5))
-        zp0 = zp.subsystems[0].get_spectrum_vs_paramvals(
-            "Φ1", flux_vec, evals_count=500, num_cpus=4, subtract_ground=True
-        )
-        x0 = np.array(zp0.param_vals, dtype=float)
-        y0 = np.array(zp0.energy_table, dtype=float)
-        dx0 = np.diff(x0)
-        dy0 = np.diff(y0, axis=0)
-        dydx0 = dy0 / dx0[:, None]
-        d2ydx2_0 = np.diff(dydx0, axis=0) / dx0[:-1, None]
+    return zp, g
 
-        zp1 = zp.subsystems[1].get_spectrum_vs_paramvals(
-            "Φ2", flux_vec, evals_count=500, num_cpus=4, subtract_ground=True
-        )
-        x1 = np.array(zp1.param_vals, dtype=float)
-        y1 = np.array(zp1.energy_table, dtype=float)
-        dx1 = np.diff(x1)
-        dy1 = np.diff(y1, axis=0)
-        dydx1 = dy1 / dx1[:, None]
-        d2ydx2_1 = np.diff(dydx1, axis=0) / dx1[:-1, None]
 
-        flux_npz_path = Path(folder_save, "flux_derivative_subsystems.npz")
-        np.savez(
-            flux_npz_path,
-            flux_vec=flux_vec,
-            y_zp0=y0,
-            d2ydx2_zp0=d2ydx2_0,
-            y_zp1=y1,
-            d2ydx2_zp1=d2ydx2_1,
-        )
-        return flux_npz_path
-    else:   
-        pass
+def _compute_subsystem1(zp, params):
+    """
+    Diagonalize the qubit-1 subsystem and build its bare n_theta1 operator.
 
-    ######################################################################################
-    # Calculate subsystem eigenvalues/vectors
+    NOTE: qubit-1 data is NOT invariant across a sweep over qubit-2 parameters
+    such as EC2. Although qubit 1's branches never reference qubit-2 params
+    directly, scqubits derives each subsystem Hamiltonian from the inverse of
+    the *full* capacitance matrix, and that inversion mixes EC2 into qubit-1's
+    charging-energy block. Empirically, sweeping EC2 by +30% shifts eval1 by
+    ~MHz and changes n_theta1 matrix elements substantially. So this must be
+    recomputed at every sweep point (it is cheap to store: ~O(truc1^2)).
+
+    Returns
+    -------
+    dict with keys: eval1, evecs1, n_theta1, hspace_1_charge
+    """
     eval1, evecs1 = zp.subsystems[0].eigensys(params["truc1"])
-    eval2, evecs2 = zp.subsystems[1].eigensys(params["truc2"])
-    print("Finished calculating subsystem eigensystems.")
-    print(f"evecs1.shape = {evecs1.shape}, evecs2.shape = {evecs2.shape}")
-    print(f"eval1.shape = {eval1.shape}, eval2.shape = {eval2.shape}")
-        
+    print("Finished calculating subsystem 1 eigensystem.")
+    print(f"evecs1.shape = {evecs1.shape}")
+    print(f"eval1.shape = {eval1.shape}")
+
     evecs1 = np.array(normalize_eigenvector_phases(evecs1.T))
+
+    # ntheta operator in single qubit bare basis
+    n_theta1 = (evecs1 @ getattr(zp.subsystems[0], f"n{params['theta_mode1']+1}_operator")() @ evecs1.conj().T)
+
+    # Reduced model for individual qubit
+    hspace_1_charge = trunc_by_thresh([0, 2], n_theta1, params["charge_thresh"])
+
+    return dict(eval1=eval1, evecs1=evecs1, n_theta1=n_theta1, hspace_1_charge=hspace_1_charge)
+
+
+def _compute_sweep_point(zp, g, subsystem1_data, params, summary_file):
+    """
+    Diagonalize the qubit-2 subsystem, build the full coupled Hamiltonian,
+    solve for the full spectrum, and derive dressed-state quantities.
+
+    Appends the energy-level/dressed-state sections to summary_file.
+
+    Returns
+    -------
+    dict with keys: eval2, evecs2, n_theta2, hspace_2_charge, evals_tot,
+        evecs_tot, hspace_full, top_idx, top_overlap, n_theta1_dressed,
+        n_theta2_dressed, hspace_n_theta1, hspace_n_theta2
+    """
+    eval1 = subsystem1_data["eval1"]
+    n_theta1 = subsystem1_data["n_theta1"]
+    hspace_1_charge = subsystem1_data["hspace_1_charge"]
+
+    ######################################################################################
+    # Calculate subsystem 2 eigenvalues/vectors
+    eval2, evecs2 = zp.subsystems[1].eigensys(params["truc2"])
+    print("Finished calculating subsystem 2 eigensystem.")
+    print(f"evecs2.shape = {evecs2.shape}")
+    print(f"eval2.shape = {eval2.shape}")
+
     evecs2 = np.array(normalize_eigenvector_phases(evecs2.T))
 
-    # ntheta and nphi operators in single qubit bare basis
-    n_theta1 = (evecs1 @ getattr(zp.subsystems[0], f"n{params['theta_mode1']+1}_operator")() @ evecs1.conj().T)
+    # ntheta operator in single qubit bare basis
     n_theta2 = (evecs2 @ getattr(zp.subsystems[1], f"n{params['theta_mode2']+1}_operator")() @ evecs2.conj().T)
 
-    # Reduced models for individual qubits
-    hspace_1_charge = trunc_by_thresh([0, 2], n_theta1, params["charge_thresh"])
+    # Reduced model for individual qubit
     hspace_2_charge = trunc_by_thresh([0, 2], n_theta2, params["charge_thresh"])
 
     if params["trunc_before_tensor"]:
@@ -478,8 +478,10 @@ def save_two_qubit_data(params, folder_save, get_flux_derivative=False):
             ket2 = f"|{i2},{j2}⟩"
             try:
                 print(f"{ket1} ↔ {ket2}: {np.abs(np.round(eval_zero[idx1] - eval_zero[idx2], 3))} GHz", file=f)
-            except:
-                breakpoint()
+            except Exception as e:
+                # Do NOT drop into a debugger here -- under nohup/joblib that
+                # hangs or crashes the whole run. Just note the missing state.
+                print(f"{ket1} ↔ {ket2}: (unavailable: {e})", file=f)
     
         print("-- CZ gate --", file=f)
         for s1, s2 in [("2-2", "2-5"), ("0-2", "0-5"),
@@ -557,25 +559,414 @@ def save_two_qubit_data(params, folder_save, get_flux_derivative=False):
         print(f"hspace2_charge (single qubit) size : {len(hspace_2_charge)}", file=f)
         print(f"hspace_n_theta1 (two qubit) size: {len(hspace_n_theta1)}", file=f)
         print(f"hspace_n_theta2 (two qubit) size: {len(hspace_n_theta2)}", file=f)
-    
+
+    return dict(
+        eval2=eval2, evecs2=evecs2,
+        n_theta2=n_theta2,
+        hspace_2_charge=hspace_2_charge,
+        evals_tot=evals_tot, evecs_tot=evecs_tot,
+        hspace_full=hspace_full,
+        n_theta1_dressed=n_theta1_dressed,
+        n_theta2_dressed=n_theta2_dressed,
+        top_idx=top_idx,
+        top_overlap=top_overlap,
+        hspace_n_theta1=hspace_n_theta1,
+        hspace_n_theta2=hspace_n_theta2,
+    )
+
+
+def save_two_qubit_data(params, folder_save, get_flux_derivative=False):
+    """
+    Generate and save two-qubit quantum system data including
+    eigenstates, operators, and Hilbert space information.
+
+    This function performs:
+    computes single-qubit subsystems, calculates coupling strength, constructs
+    the full Hamiltonian, finds eigenstates, analyzes dressed state decompositions,
+    and saves all data.
+
+    NOTE: All eigenvalues and operators are saved without the * 2 pi
+
+
+    Parameters
+    ----------
+    params : dict
+        Dictionary containing circuit parameters including YAML template,
+        transformation matrix, flux values, charge offsets, and analysis thresholds
+    folder_save : str or Path
+        Directory path where output files will be saved
+
+    Returns
+    -------
+    None
+        Saves two_qubit_data.npz and summary.txt files to folder_save
+    """
+    summary_file = str(Path(folder_save, 'two_qubit_data_summary.txt'))
+    zp, g = _build_circuit(params, summary_file)
+
+    ######################################################################################
+    if get_flux_derivative:
+        # get flux derivative data
+        flux_vec = [0] + list(np.logspace(-6, -5, 5))
+        zp0 = zp.subsystems[0].get_spectrum_vs_paramvals(
+            "Φ1", flux_vec, evals_count=500, num_cpus=4, subtract_ground=True
+        )
+        x0 = np.array(zp0.param_vals, dtype=float)
+        y0 = np.array(zp0.energy_table, dtype=float)
+        dx0 = np.diff(x0)
+        dy0 = np.diff(y0, axis=0)
+        dydx0 = dy0 / dx0[:, None]
+        d2ydx2_0 = np.diff(dydx0, axis=0) / dx0[:-1, None]
+
+        zp1 = zp.subsystems[1].get_spectrum_vs_paramvals(
+            "Φ2", flux_vec, evals_count=500, num_cpus=4, subtract_ground=True
+        )
+        x1 = np.array(zp1.param_vals, dtype=float)
+        y1 = np.array(zp1.energy_table, dtype=float)
+        dx1 = np.diff(x1)
+        dy1 = np.diff(y1, axis=0)
+        dydx1 = dy1 / dx1[:, None]
+        d2ydx2_1 = np.diff(dydx1, axis=0) / dx1[:-1, None]
+
+        flux_npz_path = Path(folder_save, "flux_derivative_subsystems.npz")
+        np.savez(
+            flux_npz_path,
+            flux_vec=flux_vec,
+            y_zp0=y0,
+            d2ydx2_zp0=d2ydx2_0,
+            y_zp1=y1,
+            d2ydx2_zp1=d2ydx2_1,
+        )
+        return flux_npz_path
+
+    ######################################################################################
+    subsystem1_data = _compute_subsystem1(zp, params)
+    sweep_point_data = _compute_sweep_point(zp, g, subsystem1_data, params, summary_file)
+
     # Save data
     np.savez(str(Path(folder_save, 'two_qubit_data.npz')),
-                eval1=eval1, eval2=eval2,
-                evecs1=evecs1, evecs2=evecs2,
-                n_theta1=n_theta1, n_theta2=n_theta2,
-                hspace_1_charge=hspace_1_charge,
-                hspace_2_charge=hspace_2_charge,
+                eval1=subsystem1_data["eval1"], eval2=sweep_point_data["eval2"],
+                evecs1=subsystem1_data["evecs1"], evecs2=sweep_point_data["evecs2"],
+                n_theta1=subsystem1_data["n_theta1"], n_theta2=sweep_point_data["n_theta2"],
+                hspace_1_charge=subsystem1_data["hspace_1_charge"],
+                hspace_2_charge=sweep_point_data["hspace_2_charge"],
                 g_theta1theta2=g,
-                evals_tot=evals_tot, evecs_tot=evecs_tot,
-                hspace_full=hspace_full,
-                n_theta1_dressed=n_theta1_dressed,
-                n_theta2_dressed=n_theta2_dressed,
-                top_idx=top_idx,
-                top_overlap=top_overlap,
-                hspace_n_theta1=hspace_n_theta1,
-                hspace_n_theta2=hspace_n_theta2,
+                evals_tot=sweep_point_data["evals_tot"], evecs_tot=sweep_point_data["evecs_tot"],
+                hspace_full=sweep_point_data["hspace_full"],
+                n_theta1_dressed=sweep_point_data["n_theta1_dressed"],
+                n_theta2_dressed=sweep_point_data["n_theta2_dressed"],
+                top_idx=sweep_point_data["top_idx"],
+                top_overlap=sweep_point_data["top_overlap"],
+                hspace_n_theta1=sweep_point_data["hspace_n_theta1"],
+                hspace_n_theta2=sweep_point_data["hspace_n_theta2"],
                 params=params
                 )
+
+
+_SWEEP_FIXED_SHAPE_KEYS = ["eval1", "n_theta1", "eval2", "n_theta2", "g_theta1theta2",
+                           "evals_tot", "hspace_full", "top_idx", "top_overlap",
+                           "n_theta1_dressed", "n_theta2_dressed"]
+_SWEEP_RAGGED_KEYS = ["hspace_1_charge", "hspace_2_charge", "hspace_n_theta1", "hspace_n_theta2"]
+
+
+def _stack_object(arrs):
+    """1-D object array where element i is arrs[i] (works for ragged / mixed
+    shapes; keeps load_two_qubit_sweep(index=i) returning the i-th point)."""
+    out = np.empty(len(arrs), dtype=object)
+    for i, a in enumerate(arrs):
+        out[i] = a
+    return out
+
+
+def _point_checkpoint_path(folder_save, index):
+    """Per-point checkpoint file (one completed sweep point)."""
+    return Path(folder_save, "_points", f"point_{index:04d}.npz")
+
+
+def _checkpoint_ok(ckpt, index, value, rtol=1e-9):
+    """True if `ckpt` is a complete checkpoint for this (index, value)."""
+    try:
+        d = np.load(ckpt, allow_pickle=True)
+        if int(d["index"]) != index:
+            return False
+        if not np.isclose(float(d["value"]), float(value), rtol=rtol, atol=0.0):
+            return False
+        return all(k in d.files for k in _SWEEP_FIXED_SHAPE_KEYS + _SWEEP_RAGGED_KEYS)
+    except Exception:
+        return False
+
+
+def _compute_one_point(params, sweep_param_name, index, value, folder_save):
+    """
+    Compute one sweep point and write it to a per-point checkpoint file
+    (folder_save/_points/point_{index}.npz), then return the index.
+
+    Runs at module scope (not a closure) so joblib can pickle it to workers.
+    evecs1/evecs2/evecs_tot are computed internally but excluded, so each
+    checkpoint is small (~tens of MB). The checkpoint is written atomically
+    (temp file + rename) so a kill mid-write cannot leave a corrupt point; and
+    because each point is persisted as it finishes, a later crash (e.g. in the
+    collate) or an interrupt never discards completed work -- re-running with
+    resume=True skips points whose checkpoint already exists.
+    """
+    point_params = dict(params)
+    point_params[sweep_param_name] = value
+
+    summary_file = str(Path(folder_save, f'summary_{sweep_param_name}={value}.txt'))
+    zp, g = _build_circuit(point_params, summary_file)
+
+    subsystem1_data = _compute_subsystem1(zp, point_params)
+    point_data = _compute_sweep_point(zp, g, subsystem1_data, point_params, summary_file)
+
+    point_data["g_theta1theta2"] = g
+    point_data["eval1"] = subsystem1_data["eval1"]
+    point_data["n_theta1"] = subsystem1_data["n_theta1"]
+    point_data["hspace_1_charge"] = subsystem1_data["hspace_1_charge"]
+    result = {k: point_data[k] for k in _SWEEP_FIXED_SHAPE_KEYS + _SWEEP_RAGGED_KEYS}
+
+    ckpt = _point_checkpoint_path(folder_save, index)
+    ckpt.parent.mkdir(parents=True, exist_ok=True)
+    tmp = ckpt.parent / (ckpt.stem + ".tmp.npz")
+    np.savez(str(tmp), index=index, value=value, **result)
+    tmp.replace(ckpt)   # atomic on the same filesystem
+    return index
+
+
+def save_two_qubit_sweep(params, sweep_param_name, sweep_values, folder_save,
+                         n_jobs=1, inner_max_num_threads=None,
+                         resume=True, keep_checkpoints=True):
+    """
+    Sweep a single parameter (e.g. "EC2") and save the resulting two-qubit data
+    for every value in one combined npz.
+
+    Storage strategy: evecs1/evecs2/evecs_tot -- by far the largest arrays and
+    only needed to build dissipative jump operators -- are computed but NOT
+    saved, since this sweep targets coherent-dynamics analysis. Everything else
+    is kept per sweep point. See save_two_qubit_data if the full evecs are
+    needed for a single point.
+
+    Every other quantity (including qubit-1 data eval1/n_theta1) is recomputed
+    and stored per point, because none of it is invariant when a qubit-2 param
+    such as EC2 changes (see _compute_subsystem1). Per-point subsystem-1 data is
+    small, so this costs little storage.
+
+    npz layout
+    ----------
+    saved once   : sweep_param_name, sweep_param_values, params
+    swept (axis0): eval1, n_theta1, eval2, n_theta2, g_theta1theta2, evals_tot,
+                   hspace_full, top_idx, top_overlap, n_theta1_dressed,
+                   n_theta2_dressed  -- stacked along a leading sweep axis
+    swept ragged : hspace_1_charge, hspace_2_charge, hspace_n_theta1,
+                   hspace_n_theta2  -- dtype=object arrays (lengths vary per
+                   point due to threshold-based truncation)
+
+    Checkpointing: each point is written to folder_save/_points/point_XXXX.npz
+    as it completes, so an interrupt or a crash in the (long) run or the final
+    collate never discards finished work -- re-run with resume=True to continue.
+
+    Parameters
+    ----------
+    params : dict
+        Base parameter dictionary (as passed to save_two_qubit_data); the
+        entry named sweep_param_name is overridden for each sweep point.
+    sweep_param_name : str
+        Key in params to sweep, e.g. "EC2". Must be one of the circuit
+        parameters substituted into the YAML template.
+    sweep_values : sequence
+        Values to substitute for sweep_param_name.
+    folder_save : str or Path
+        Directory to save two_qubit_sweep_data.npz and per-point summary
+        files (summary_{sweep_param_name}={value}.txt) to. Created if absent.
+    n_jobs : int, optional
+        Number of sweep points to compute in parallel (joblib/loky). Default 1
+        (serial, with a tqdm progress bar). Each point is independent and, since
+        evecs are dropped, ships back only ~tens of MB, so parallelism is cheap.
+    inner_max_num_threads : int or None, optional
+        Threads each worker may use for inner BLAS/OpenMP work when n_jobs > 1.
+        None (default) inherits the environment (e.g. OMP_NUM_THREADS). Set this
+        to give each worker more threads than the env allows -- useful when there
+        are fewer sweep points than cores and you want each point to run faster.
+        Ignored when n_jobs == 1.
+    resume : bool, optional
+        If True (default), skip sweep points whose checkpoint already exists in
+        folder_save/_points/ (matching index + value), so an interrupted or
+        crashed run continues instead of recomputing. Set False to force a fresh
+        computation of every point (existing checkpoints are overwritten).
+    keep_checkpoints : bool, optional
+        If True (default), keep the per-point files in folder_save/_points/ after
+        the combined npz is written (they enable resume/re-collate and are safe
+        to delete manually once the combined npz is verified). If False, delete
+        them after a successful save.
+
+    Returns
+    -------
+    None
+        Saves two_qubit_sweep_data.npz and per-point summary_*.txt files to
+        folder_save. Each point is also checkpointed to folder_save/_points/.
+    """
+    folder_save = Path(folder_save)
+    folder_save.mkdir(parents=True, exist_ok=True)
+    (folder_save / "_points").mkdir(exist_ok=True)
+    sweep_values = list(sweep_values)
+    n = len(sweep_values)
+
+    # Resume: compute only points without a valid checkpoint.
+    todo = [(i, v) for i, v in enumerate(sweep_values)
+            if not (resume and _checkpoint_ok(_point_checkpoint_path(folder_save, i), i, v))]
+    if resume and len(todo) < n:
+        print(f"[save_two_qubit_sweep] resume: {n - len(todo)}/{n} points already "
+              f"checkpointed; computing {len(todo)}.")
+
+    # Each point writes its own checkpoint as it finishes (crash/interrupt safe).
+    if n_jobs == 1:
+        for i, v in tqdm(todo, desc=f"sweep {sweep_param_name}"):
+            _compute_one_point(params, sweep_param_name, i, v, str(folder_save))
+    else:
+        from joblib import Parallel, delayed, parallel_config
+        with parallel_config(backend="loky", inner_max_num_threads=inner_max_num_threads):
+            Parallel(n_jobs=n_jobs, verbose=10)(
+                delayed(_compute_one_point)(params, sweep_param_name, i, v, str(folder_save))
+                for i, v in todo
+            )
+
+    # Collate from the per-point checkpoints (in sweep order).
+    missing = [i for i in range(n) if not _point_checkpoint_path(folder_save, i).exists()]
+    if missing:
+        raise RuntimeError(f"missing checkpoints for indices {missing}; cannot collate.")
+    collected = {k: [] for k in _SWEEP_FIXED_SHAPE_KEYS + _SWEEP_RAGGED_KEYS}
+    for i in range(n):
+        d = np.load(_point_checkpoint_path(folder_save, i), allow_pickle=True)
+        for k in collected:
+            collected[k].append(d[k])
+
+    sweep_arrays = {k: _stack_object(collected[k]) for k in _SWEEP_RAGGED_KEYS}
+    # Keys expected to be shape-uniform across points are np.stack'd; but the
+    # charge-threshold truncation can occasionally change a shape (e.g. an
+    # hspace size shifting by one), so fall back to a dtype=object array (and
+    # report which key) rather than crashing at the end of a long sweep.
+    for k in _SWEEP_FIXED_SHAPE_KEYS:
+        try:
+            sweep_arrays[k] = np.stack(collected[k])
+        except ValueError:
+            shapes = [np.asarray(a).shape for a in collected[k]]
+            print(f"[save_two_qubit_sweep] WARNING: key '{k}' has non-uniform shapes "
+                  f"across sweep points; storing as dtype=object. Shapes: {shapes}")
+            sweep_arrays[k] = _stack_object(collected[k])
+
+    np.savez(str(folder_save / 'two_qubit_sweep_data.npz'),
+                sweep_param_name=sweep_param_name,
+                sweep_param_values=np.array(sweep_values),
+                params=params,
+                **sweep_arrays
+                )
+
+    if not keep_checkpoints:
+        for i in range(n):
+            _point_checkpoint_path(folder_save, i).unlink(missing_ok=True)
+        for tmp in (folder_save / "_points").glob("*.tmp.npz"):
+            tmp.unlink(missing_ok=True)
+        try:
+            (folder_save / "_points").rmdir()
+        except OSError:
+            pass
+
+
+def load_two_qubit_sweep_values(folder_load):
+    """
+    Return the sweep axis of a two_qubit_sweep_data.npz saved by
+    save_two_qubit_sweep, so a caller can see which points are available before
+    loading one.
+
+    Parameters
+    ----------
+    folder_load : str or Path
+        Directory containing two_qubit_sweep_data.npz.
+
+    Returns
+    -------
+    tuple[str, numpy.ndarray]
+        (sweep_param_name, sweep_param_values) -- e.g. ("EC2", array([...])).
+    """
+    data = np.load(Path(folder_load, 'two_qubit_sweep_data.npz'), allow_pickle=True)
+    return str(data['sweep_param_name']), np.array(data['sweep_param_values'], dtype=float)
+
+
+def load_two_qubit_sweep(folder_load, value=None, index=None, return_full=False, rtol=1e-6):
+    """
+    Load a single point of a parameter sweep saved by save_two_qubit_sweep.
+
+    The returned list matches load_two_qubit_data's format exactly (same order,
+    same 2*pi scaling), so downstream fidelity/optimization code can consume a
+    sweep point wherever it currently consumes a single two_qubit_data.npz --
+    with ONE difference: eket_tot is None, because the sweep intentionally drops
+    the full eigenvectors (evecs_tot). This is sufficient for coherent-dynamics
+    (Schrodinger) work, which only needs eval_tot and the dressed drive
+    operators; it is NOT sufficient for building noisy collapse operators, which
+    require eket_tot. See load_two_qubit_sweep_values to list available points.
+
+    Parameters
+    ----------
+    folder_load : str or Path
+        Directory containing two_qubit_sweep_data.npz.
+    value : float, optional
+        Swept parameter value to load. Matched against sweep_param_values with
+        np.isclose(rtol=rtol). Exactly one of value/index must be given.
+    index : int, optional
+        Integer position along the sweep axis. Exactly one of value/index must
+        be given.
+    return_full : bool, optional
+        If True, return (npz_object, index) for the resolved point instead of
+        the processed list. Default False.
+    rtol : float, optional
+        Relative tolerance for matching value against sweep_param_values.
+
+    Returns
+    -------
+    list or tuple
+        If return_full=False: [hspace_full, eket_tot (None), eval_tot, n_theta0,
+        n_theta1, n_theta0_dress, n_theta1_dress, hspace_0, hspace_1,
+        hspace_n_theta1, hspace_n_theta2, logi_state] for the selected point.
+        If return_full=True: (data, index) where data is the raw NpzFile.
+    """
+    if (value is None) == (index is None):
+        raise ValueError("Provide exactly one of value or index.")
+
+    data = np.load(Path(folder_load, 'two_qubit_sweep_data.npz'), allow_pickle=True)
+    sweep_values = np.array(data['sweep_param_values'], dtype=float)
+
+    if index is None:
+        matches = np.flatnonzero(np.isclose(sweep_values, value, rtol=rtol))
+        if len(matches) == 0:
+            raise ValueError(
+                f"No sweep point near {str(data['sweep_param_name'])}={value}; "
+                f"available values: {sweep_values.tolist()}"
+            )
+        if len(matches) > 1:
+            raise ValueError(
+                f"value={value} matches multiple sweep points {matches.tolist()} "
+                f"(rtol={rtol}); tighten rtol or use index."
+            )
+        i = int(matches[0])
+    else:
+        i = int(index)
+
+    if return_full:
+        return data, i
+
+    hspace_full = data['hspace_full'][i].tolist()
+    eket_tot = None  # evecs_tot not saved in a sweep (coherent-dynamics only)
+    eval_tot = 2*np.pi*data['evals_tot'][i]
+    n_theta0 = 2*np.pi*data['n_theta1'][i]
+    n_theta1 = 2*np.pi*data['n_theta2'][i]
+    n_theta0_dress = 2*np.pi*data['n_theta1_dressed'][i]
+    n_theta1_dress = 2*np.pi*data['n_theta2_dressed'][i]
+    hspace_0 = np.asarray(data['hspace_1_charge'][i]).tolist()
+    hspace_1 = np.asarray(data['hspace_2_charge'][i]).tolist()
+    hspace_n_theta1 = np.asarray(data['hspace_n_theta1'][i]).tolist()
+    hspace_n_theta2 = np.asarray(data['hspace_n_theta2'][i]).tolist()
+    logi_state = ['0-0', '0-2', '2-0', '2-2']
+    return [hspace_full, eket_tot, eval_tot, n_theta0, n_theta1, n_theta0_dress,
+        n_theta1_dress, hspace_0, hspace_1, hspace_n_theta1, hspace_n_theta2, logi_state]
 
 
 def load_two_qubit_data(folder_load, return_full=False):

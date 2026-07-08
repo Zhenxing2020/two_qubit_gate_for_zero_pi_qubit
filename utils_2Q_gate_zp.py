@@ -1620,7 +1620,9 @@ def build_hamiltonian_2q(cz_run, index_select, eval_tot, eket_tot, drive_term):
     """
     H0_full = qt.Qobj(np.diag(eval_tot))
     H0_select = truncate_2( H0_full, index_select)
-    eket_tot = eket_tot[index_select]
+    # eket_tot is only needed to build noisy collapse operators; coherent runs
+    # (and parameter-sweep data saved without evecs_tot) pass None here.
+    eket_tot = eket_tot[index_select] if eket_tot is not None else None
     drive_select = truncate_2(drive_term, index_select)
     if cz_run:
         H_drive_select = [ H0_select,   [drive_select, drive_gauss_A] ]
