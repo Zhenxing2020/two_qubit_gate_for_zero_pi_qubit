@@ -11,6 +11,7 @@ Date: 2025
 # ===== Standard Library Imports =====
 import os
 import sys
+import argparse
 from datetime import datetime
 import pytz
 # ===== Third-Party Imports =====
@@ -80,8 +81,10 @@ def load_system_data(config):
     print("Loading system data...")
 
     # Load two-qubit system data (returns eigenstates, energies, etc.)
-    (hspace_full, eket_tot, eval_tot, _, n_theta1_dress,
-     _, _, logi_state) = hd.load_two_qubit_data(config['folder_load'], return_full=False)
+    (hspace_full, eket_tot, eval_tot, _, _, _, n_theta1_dress,
+     _, _, hspace_n_theta1, _, logi_state) = hd.load_two_qubit_data(
+        config['folder_load'], return_full=False
+    )
 
     # Use the dressed theta_1 term as the drive term
     drive_term = n_theta1_dress
@@ -90,7 +93,10 @@ def load_system_data(config):
     W_20_50 = eval_tot[hspace_full.index('5-0')] - eval_tot[hspace_full.index('2-0')]
 
     # Choose Hilbert space truncation: truncated model or full model
-    if config['use_truc_model']:
+    if config['reduced_model'] == 'charge_pick':
+        index_select = hspace_n_theta1[:config['truc_optimize']]
+        hspace_select = [hspace_full[i] for i in index_select]
+    elif config['use_truc_model']:
         hspace_select = ut.truc_model[config['truc_model_name']][:config['truc_optimize']]
     else:
         hspace_select = hspace_full[:config['truc_optimize']]
@@ -103,6 +109,10 @@ def load_system_data(config):
     # Load initial drive parameters corresponding to gate time indices
     pulse_param = ut.load_drive_params_2q(config['cz_run'], 
                                           folder=config['folder_pulse'])[config['gate_time_indices'], :]
+    pulse_table = pd.read_csv(config['folder_pulse'])
+    initial_fidelity = pulse_table[
+        config['initial_fidelity_column']
+    ].to_numpy()[config['gate_time_indices']]
 
     # Print summary information
     print(f"Loaded system data with {len(hspace_full)} total states")
@@ -120,7 +130,8 @@ def load_system_data(config):
         W_20_50=W_20_50,
         option_ideal=option_ideal,
         option_noisy=option_noisy,
-        pulse_param=pulse_param
+        pulse_param=pulse_param,
+        initial_fidelity=initial_fidelity,
     )
 
 
@@ -224,7 +235,8 @@ def optimize_single_gate_time(
     # Prepare arguments for fidelity function evaluation
     args_truc = [
         hamiltonians['H_drive_select'], system_data['W_20_50'], 1, [],
-        hamiltonians['logi_idx_select'], system_data['option_ideal'], system_data['option_noisy']
+        hamiltonians['logi_idx_select'], system_data['option_ideal'],
+        system_data['option_noisy'], config['use_qt_fidelity']
     ]
 
     print(f"\n--- Optimizing gate time index {gate_time_idx} (tg = {tg_initial:.6f}) ---")
@@ -343,14 +355,12 @@ def check_pulse_in_large(drive_params, system_data, hamiltonians, config):
     float
         Fidelity value in the large Hilbert space.
     """
-    tg, drive_amp, detune = drive_params
-    n_cpu_parallel = 16
-
-    arg_all = [tg, drive_amp, detune,
-               n_cpu_parallel, np.arange(config['truc_large']), system_data['W_20_50'], 
-               hamiltonians['H_drive_large'], hamiltonians['logi_idx_large']]
-    fidelity_large = ut.cz_fidelity_log_old(arg_all)
-    return fidelity_large
+    args_large = [
+        hamiltonians['H_drive_large'], system_data['W_20_50'], 1, [],
+        hamiltonians['logi_idx_large'], system_data['option_ideal'],
+        system_data['option_noisy'], config['use_qt_fidelity']
+    ]
+    return ut.cz_fidelity_log_noise(drive_params, *args_large)
 
 # ==============================================================
 # PRINTING AND REPORTING
@@ -383,7 +393,10 @@ def print_configuration_summary(system_data, config):
     print(f"  - reverse tg optimization: {config['tg_reverse']}")
     print(f"  - use_x0: {config['use_x0']}")
     print(f"  - folder pulse: {config['folder_pulse']}")
+    print(f"  - use_qt_fidelity: {config['use_qt_fidelity']}")
+    print(f"  - initial fidelity column: {config['initial_fidelity_column']}")
     ut.print_pulse_params(f"param_input", system_data['pulse_param'])        
+    ut.print_fidelity("initial_fidelity", system_data['initial_fidelity'])
 
     print("=" * 60)
 
@@ -419,6 +432,7 @@ def get_optimization_config(custom_config=None):
     config = {
         'truc_large': 1000,
         'truc_optimize': 300,
+        'reduced_model': 'charge_pick',
         'use_truc_model': False,
         'truc_model_name': 'cz_short_500_detune1',
         'max_step_ideal': 1e-3,
@@ -429,9 +443,11 @@ def get_optimization_config(custom_config=None):
         'recombination': 0.7,
         'tol': 0.01,
         'mutation': (0.5, 1),
-        'folder_load': '../../data/_truc_3000',
+        'folder_load': '../data/Two_qubit_data_Sorted_Truc',
         'cz_run': True,
-        'folder_pulse': 'data/npz/cz_pulse_neighbor.txt',
+        'folder_pulse': '../figure/data/data_cz_fidelity_npz_select.txt',
+        'initial_fidelity_column': 'f_charge_60',
+        'use_qt_fidelity': True,
         'tg_reverse': False,
         'use_x0': 'from_input',  # Options: None, 'from_neighbor', 'from_input'
         # if use 'from_neighbor', the first one will use from input, make sure it gives nice fidelity
@@ -446,8 +462,8 @@ def get_optimization_config(custom_config=None):
         # 'detune_bound': (0.03, 0.1),                  
         
         # 'gate_time_indices': (np.arange(144,175)-20).tolist(),
-        'gate_time_indices': (np.arange(20,50) - 20).tolist(),
-        'amp_bound': (0.01, 0.05), 
+        'gate_time_indices': np.arange(30).tolist(),
+        'amp_bound': (0.005, 0.05),
         'detune_bound': (0.001, 0.04),                    
     }
 
@@ -466,8 +482,24 @@ def main():
     print(f"Starting {os.path.basename(__file__)}")
     ut.print_time()
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--use-qt-fidelity",
+        type=lambda x: x.lower() in {"true", "1", "yes"},
+        default=True,
+    )
+    parser.add_argument(
+        "--start-index", type=int, default=0,
+        help="resume at this zero-based row of the pulse table",
+    )
+    args = parser.parse_args()
+
     # Step 1: Load optimization configuration (default + user overrides)
-    config = get_optimization_config()
+    config = get_optimization_config({
+        'truc_optimize': 60,
+        'use_qt_fidelity': args.use_qt_fidelity,
+        'gate_time_indices': np.arange(args.start_index, 30).tolist(),
+    })
 
     # Step 2: Load system data including eigenstates, energies, logical states, etc.
     system_data = load_system_data(config)

@@ -402,8 +402,18 @@ def find_overlap(eket, *arg):
 # CNOT-gate
 
 def cnot_fidelity_log(arg_all):
+    if len(arg_all) == 14:
+        use_qt_fidelity = True
+    elif len(arg_all) == 15:
+        use_qt_fidelity = arg_all[-1]
+        arg_all = arg_all[:-1]
+    else:
+        raise ValueError(
+            "cnot_fidelity_log expects 14 arguments plus optional "
+            "use_qt_fidelity"
+        )
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
-     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, 
+     H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx,
      mid_state, option_ideal, option_noisy] = arg_all
     pulse_args = {'drive_amp_A': drive_amp_A ,
                 'drive_freq_A': w_0_2 + 2*np.pi*detune_A,
@@ -417,7 +427,10 @@ def cnot_fidelity_log(arg_all):
     # print(f'np.shape(propagator)={np.shape(propagator)}')    
     # print(f'propagator={propagator}')    
     
-    fidelity = get_fidelity_super_operator(propagator, logi_idx, cnot(), c_op_list, mid_state)
+    fidelity = get_fidelity_super_operator(
+        propagator, logi_idx, cnot(), c_op_list, mid_state,
+        use_qt_fidelity=use_qt_fidelity,
+    )
     
     # if prop.isoper:
     #     U_final = cnot_phase_correct(prop, mid_state)
@@ -430,12 +443,22 @@ def cnot_fidelity_log(arg_all):
 
 def cnot_fidelity_log_noise(arg_optimize, *args):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg_optimize
-    [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, 
+    if len(args) == 9:
+        use_qt_fidelity = True
+    elif len(args) == 10:
+        use_qt_fidelity = args[-1]
+        args = args[:-1]
+    else:
+        raise ValueError(
+            "cnot_fidelity_log_noise expects 9 system arguments plus "
+            "optional use_qt_fidelity"
+        )
+    [H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx,
      mid_state, option_ideal, option_noisy] = args
 
     arg_all = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B,
      H_qbt_drive, w_0_2, w_1_2, num_cpus, c_op_list, logi_idx, 
-     mid_state, option_ideal, option_noisy]
+     mid_state, option_ideal, option_noisy, use_qt_fidelity]
 
     return cnot_fidelity_log(arg_all)
 
@@ -680,9 +703,11 @@ def cz_phase_correct(U_kraus):
 def cz_fidelity_log(arg_all):
     # print_time()
     # print('debug: good in cz_fidelity_log beginning')
-    [tg, drive_amp, detune, 
-     H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx, 
-     option_ideal, option_noisy] = arg_all
+    if len(arg_all) == 10:
+        arg_all = [*arg_all, True]
+    [tg, drive_amp, detune,
+     H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx,
+     option_ideal, option_noisy, use_qt_fidelity] = arg_all
 
     pulse_args = {'drive_amp_A': drive_amp,
                 'drive_freq_A': W_target + 2*np.pi*detune,
@@ -696,7 +721,10 @@ def cz_fidelity_log(arg_all):
     
     # print_time()
     # print('debug: good in cz_fidelity_log  before get_fidelity_super_operator')
-    fidelity = get_fidelity_super_operator(propagator, logi_idx, cz_gate(), c_op_list)
+    fidelity = get_fidelity_super_operator(
+        propagator, logi_idx, cz_gate(), c_op_list,
+        use_qt_fidelity=use_qt_fidelity,
+    )
     # p0_kraus = qt.to_kraus(qt.to_super(propagator))
     # if len(c_op_list) != 0:
     #     p0_kraus = [truncate_2(i, logi_idx) for i in p0_kraus]
@@ -707,9 +735,14 @@ def cz_fidelity_log(arg_all):
 
 def cz_fidelity_log_noise(arg_optimize, *args):
     [tg, drive_amp, detune] = arg_optimize # Independent arguments that can be optimized over
-    [H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy] = args # System arguments
+    if len(args) == 7:
+        args = (*args, True)
+    [H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx,
+     option_ideal, option_noisy, use_qt_fidelity] = args # System arguments
 
-    arg_all = [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy]
+    arg_all = [tg, drive_amp, detune, H_qbt_drive, W_target, num_cpus,
+               c_op_list, logi_idx, option_ideal, option_noisy,
+               use_qt_fidelity]
 
     return cz_fidelity_log(arg_all)
 
@@ -1099,7 +1132,11 @@ def xgate_fidelity_log_noise(args_indep, *args):
         float: Logarithm of the infidelity for the X-gate in a noisy system.
     """
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = args_indep
-    [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx, option_ideal, option_noisy] = args
+    if len(args) == 8:
+        # Backward compatibility for existing optimization/archive scripts.
+        args = (*args, True)
+    [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx,
+     option_ideal, option_noisy, use_qt_fidelity] = args
 
     pulse_args = {
         'drive_amp_A': drive_amp_A,
@@ -1111,7 +1148,13 @@ def xgate_fidelity_log_noise(args_indep, *args):
     tlist = np.linspace(0, tg, num= 10*int(tg))
     propagator = get_propagator(H_qbt_drive, tlist, num_cpus, 
                                 c_op_list, pulse_args, logi_idx, option_ideal, option_noisy)
-    fidelity = get_fidelity_super_operator(propagator, logi_idx, qt.sigmax(), c_op_list)
+    fidelity = get_fidelity_super_operator(
+        propagator,
+        logi_idx,
+        qt.sigmax(),
+        c_op_list,
+        use_qt_fidelity=use_qt_fidelity,
+    )
 
     # print(f'\n len(c_op_list)={len(c_op_list)}')
     # print(f'U_noise.istp={propagator.istp}')
@@ -1203,7 +1246,10 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx, option_i
 
         return [qt.Qobj(u[:, :, k], dims=[[[N], [N]], [[dimz], [dimz]]]) for k in range(len(tlist))][-1]
 
-def get_fidelity_super_operator(propagator, logi_idx, gate_target, c_op_list, mid_state=None):
+def get_fidelity_super_operator(
+    propagator, logi_idx, gate_target, c_op_list, mid_state=None,
+    use_qt_fidelity=True,
+):
     """
     Computes the average gate fidelity for a given superoperator.
 
@@ -1234,7 +1280,24 @@ def get_fidelity_super_operator(propagator, logi_idx, gate_target, c_op_list, mi
         super_op_post = qt.to_super(propagator)        
     else:
         # Noisy system, convert to Kraus operators and then to superoperator
-        kraus = qt.to_kraus(propagator)
+        # QuTiP 4's Choi-to-Kraus conversion takes sqrt of small negative
+        # eigenvalues caused by solver roundoff.  Clip those numerical
+        # negatives to zero before constructing the Kraus operators.
+        choi = qt.to_choi(propagator)
+        vals, vecs = np.linalg.eigh(choi.full())
+        shape = (
+            int(np.prod(choi.dims[0][1])),
+            int(np.prod(choi.dims[0][0])),
+        )
+        kraus_dims = choi.dims[0][::-1]
+        kraus = [
+            qt.Qobj(
+                np.sqrt(val) * vec.reshape(shape, order="F"),
+                dims=kraus_dims,
+            )
+            for val, vec in zip(vals, vecs.T)
+            if val > 1e-9
+        ]
         kraus = [truncate_2(i, logi_idx) for i in kraus]    
         if gate_target == cz_gate():
             kraus = cz_phase_correct(kraus)    
@@ -1242,7 +1305,25 @@ def get_fidelity_super_operator(propagator, logi_idx, gate_target, c_op_list, mi
             kraus = cnot_phase_correct(kraus, mid_state=mid_state)    
         super_op_post = qt.kraus_to_super(kraus)
 
-    return qt.metrics.average_gate_fidelity(super_op_post, target=gate_target)
+    if not use_qt_fidelity:
+        fidelity_input = super_op_post if len(c_op_list) == 0 else kraus
+        return average_gate_fidelity_trace_decreasing(
+            fidelity_input, target=gate_target
+        )
+
+    if len(c_op_list) == 0:
+        return qt.metrics.average_gate_fidelity(
+            super_op_post, target=gate_target
+        )
+
+    # This is QuTiP's trace-preserving average_gate_fidelity formula,
+    # evaluated on the Kraus list directly to avoid another unstable
+    # Kraus -> superoperator -> Choi -> Kraus round trip in QuTiP 4.
+    d = kraus[0].shape[0]
+    overlap = sum(
+        np.abs((K * gate_target.dag()).tr()) ** 2 for K in kraus
+    )
+    return float(np.real_if_close((d + overlap) / (d * (d + 1))))
 
 # def xgate_fidelity_optimize(arg, *args):
 #     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg, drag] = args
@@ -1776,7 +1857,7 @@ def load_drive_params_xgate(drive_theta, drive_phi):
     else:
         return np.array([[828.759495, 0.013563, 0.034964, -0.003029, -0.003182]])
 
-    folder = 'data_xgate_theta_mstep_3e4_npz.txt' if drive_theta else 'data_xgate_phi_3ncut_mstep_1e3.txt'
+    folder = 'data_xgate_theta_mstep_3e4_npz.txt' if drive_theta else 'data_xgate_phi_mstep_1e3_npz.txt'
     f_xgate = pd.read_csv('../figure/data/' + folder)
     return f_xgate[['tg', 'drive_amp_1', 'drive_amp_2', 'detune_1', 'detune_2']].to_numpy()
 
@@ -1849,6 +1930,120 @@ def load_noise_data_2q(t1_tphi_other,
     gamma_dephase_02_q0 = gamma_q0['tphi_02'].to_numpy() *50 /t1_tphi_other
     gamma_dephase_02_q1 = gamma_q1['tphi_02'].to_numpy() *50 /t1_tphi_other
     return n_theta0, n_theta1, gamma_dephase_02_q0, gamma_dephase_02_q1
+
+def average_gate_fidelity_trace_decreasing(oper, target=None):
+    """
+    Average gate fidelity for a possibly trace-decreasing quantum map.
+
+    The quantum map is
+
+        E(rho) = sum_k K_k rho K_k.dag()
+
+    and the average fidelity relative to target unitary U is
+
+        F_avg =
+            [sum_k Tr(K_k.dag() K_k)
+             + sum_k |Tr(U.dag() K_k)|^2]
+            / [d(d + 1)].
+
+    For a trace-preserving map,
+
+        sum_k K_k.dag() K_k = I,
+
+    and the first term reduces to d, recovering the standard
+    average-gate-fidelity formula.
+
+    Parameters
+    ----------
+    oper : qutip.Qobj or list[qutip.Qobj]
+        A square operator, superoperator, or list of Kraus operators.
+
+        A square non-unitary operator V is interpreted as the
+        one-Kraus map
+
+            rho -> V rho V.dag().
+
+    target : qutip.Qobj or None
+        Target unitary. If None, the identity is used.
+
+    Returns
+    -------
+    fidelity : float
+        Leakage-inclusive average gate fidelity.
+    """
+
+    # Convert input to Kraus representation.
+    if isinstance(oper, (list, tuple)):
+        kraus_form = list(oper)
+
+    elif isinstance(oper, qt.Qobj):
+        if oper.issuper:
+            kraus_form = qt.to_kraus(oper)
+        elif oper.isoper:
+            kraus_form = [oper]
+        else:
+            raise TypeError(
+                "oper must be an operator, superoperator, "
+                "or a list of Kraus operators."
+            )
+
+    else:
+        raise TypeError(
+            "oper must be a qutip.Qobj or a list of qutip.Qobj."
+        )
+
+    if len(kraus_form) == 0:
+        raise ValueError("The Kraus list is empty.")
+
+    d_out, d_in = kraus_form[0].shape
+
+    if d_out != d_in:
+        raise ValueError(
+            "Only square Kraus operators are supported."
+        )
+
+    d = d_in
+
+    for i, K in enumerate(kraus_form):
+        if not isinstance(K, qt.Qobj):
+            raise TypeError(
+                f"Kraus operator {i} is not a qutip.Qobj."
+            )
+
+        if K.shape != (d, d):
+            raise ValueError(
+                f"Kraus operator {i} has shape {K.shape}; "
+                f"expected {(d, d)}."
+            )
+
+    if target is None:
+        target = qt.qeye(d)
+
+    if not isinstance(target, qt.Qobj):
+        raise TypeError("target must be a qutip.Qobj.")
+
+    if target.shape != (d, d):
+        raise ValueError(
+            f"target has shape {target.shape}; expected {(d, d)}."
+        )
+
+    # Average survival contribution.
+    survival_term = sum(
+        np.real((K.dag() * K).tr())
+        for K in kraus_form
+    )
+
+    # Target-overlap contribution.
+    overlap_term = sum(
+        np.abs((target.dag() * K).tr()) ** 2
+        for K in kraus_form
+    )
+
+    fidelity = (
+        survival_term + overlap_term
+    ) / (d * (d + 1))
+
+    return float(np.real_if_close(fidelity))
 
 hspace_theta_256 = [
 0, 1, 2, 4, 5, 7, 8, 11, 12, 16 ,

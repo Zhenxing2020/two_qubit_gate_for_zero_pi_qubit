@@ -20,6 +20,7 @@ Date: 2025
 # ===== Standard Library Imports =====
 import os
 import sys
+import argparse
 from datetime import datetime
 import pytz
 import json
@@ -75,8 +76,8 @@ def load_system_data_cz(config):
 
     print("Loading system data for CZ...")
 
-    (hspace_full, eket_tot, eval_tot, _,
-     n_theta1_dress, _, _, logi_state) = hd.load_two_qubit_data(
+    (hspace_full, eket_tot, eval_tot, _, _, _,
+     n_theta1_dress, _, _, _, _, logi_state) = hd.load_two_qubit_data(
         config['folder_load'], return_full=False
     )
 
@@ -126,8 +127,9 @@ def load_system_data_cnot(config):
 
     print("Loading system data for CNOT...")
 
-    (hspace_full, eket_tot, eval_tot, n_theta0_dress,
-     n_theta1_dress, hspace_0, hspace_1, hspace_n_theta1, hspace_n_theta2, logi_state) = hd.load_two_qubit_data(
+    (hspace_full, eket_tot, eval_tot, _, _, n_theta0_dress,
+     n_theta1_dress, hspace_0, hspace_1, hspace_n_theta1,
+     hspace_n_theta2, logi_state) = hd.load_two_qubit_data(
         config['folder_load'], return_full=False
     )
 
@@ -310,6 +312,7 @@ def evaluate_fidelity_truncated(x, system_data, hamiltonians, config):
             hamiltonians['logi_idx_select'],
             system_data['option_ideal'],
             system_data['option_noisy'],
+            config.get('use_qt_fidelity', False),
         ]
         return ut.cz_fidelity_log_noise(x, *args)
 
@@ -325,6 +328,7 @@ def evaluate_fidelity_truncated(x, system_data, hamiltonians, config):
             config['mid_state'],
             system_data['option_ideal'],
             system_data['option_noisy'],
+            config.get('use_qt_fidelity', False),
         ]
         return ut.cnot_fidelity_log_noise(x, *args)
     else:
@@ -364,6 +368,7 @@ def evaluate_fidelity_large(drive_params, system_data, hamiltonians, config):
             config['mid_state'],
             system_data['option_ideal'],
             system_data['option_noisy'],
+            config.get('use_qt_fidelity', False),
         ]
         return ut.cnot_fidelity_log(arg_all)
     else:
@@ -389,13 +394,15 @@ def fid_func_global(x):
     )
 
 from pathos.multiprocessing import ProcessingPool as Pool
-pool = Pool(nodes=50)
 def vectorized_fid(X):
     """
     Example vectorized fidelity using a process pool.
     Not used by default differential evolution, but available if needed.
     """    
-    return pool.map(fid_func_global, X)
+    # Construct only when this optional helper is actually used.  Creating a
+    # 50-process pool at import time wastes workers during normal SciPy DE.
+    with Pool(nodes=50) as pool:
+        return pool.map(fid_func_global, X)
 
 
 def optimize_single_gate_time(
@@ -470,8 +477,8 @@ def optimize_single_gate_time(
             print("Using x0 from previous optimized param")
             params['x0'] = [tg_initial] + drive_param_list[-1][1:]
     elif config['use_x0'] == 'from_input':
-        print("Using x0 from input for initialization")
-        params['x0'] = config['x0_array']
+        print("Using the corresponding previous pulse as x0")
+        params['x0'] = np.asarray(system_data['pulse_param'][gate_time_idx], dtype=float)
     else:
         print("No x0 used")
 
@@ -757,6 +764,7 @@ def compute_fidelity_given_params(params, system_data, hamiltonians, config):
             hamiltonians['logi_idx_select'],
             system_data['option_ideal'],
             system_data['option_noisy'],
+            config.get('use_qt_fidelity', False),
         ]
 
         f_trunc = ut.cz_fidelity_log_noise(params, *args)
@@ -772,6 +780,7 @@ def compute_fidelity_given_params(params, system_data, hamiltonians, config):
             config['mid_state'],
             system_data['option_ideal'],
             system_data['option_noisy'],
+            config.get('use_qt_fidelity', False),
         ]
         # print("params =", params)
         # print("args =", args)        
@@ -887,9 +896,10 @@ def get_optimization_config(gate_type="CNOT", custom_config=None):
         # x0 使用方式：None / 'from_neighbor' / 'from_input'
         use_x0='from_neighbor',
         first_x0_from_input=True,
+        use_qt_fidelity=False,
         
         # folder_load='../../data/_truc_3000',
-        folder_load = '../data/December_17_2025_Sorted_Untruc'
+        folder_load = '../data/Two_qubit_data_Sorted_Untruc'
     )
 
     # =====================================================
@@ -979,6 +989,21 @@ def get_optimization_config(gate_type="CNOT", custom_config=None):
 # ==============================================================
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--pulse-file",
+        default="../figure/data/data_cnot_fidelity_npz.txt",
+        help="previous CNOT pulse CSV used as one x0 per gate time",
+    )
+    parser.add_argument("--workers", type=int, default=60)
+    parser.add_argument("--truc-optimize", type=int, default=220)
+    parser.add_argument("--truc-large", type=int, default=1000)
+    parser.add_argument("--use-qt-fidelity", action="store_true")
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--result-file", default=None)
+    parser.add_argument("--csv-file", default=None)
+    cli = parser.parse_args()
+
     print(f"Starting {os.path.basename(__file__)}")
     ut.print_time()
 
@@ -988,13 +1013,26 @@ def main():
 
     # Override some configuration entries here if needed
     custom_config = {
-        # "resume": True,
-        # "do_plot": False,
+        "folder_pulse": cli.pulse_file,
+        "gate_time_indices": slice(None),
+        "use_x0": "from_input",
+        "first_x0_from_input": True,
+        "workers": cli.workers,
+        "truc_optimize": cli.truc_optimize,
+        "truc_large": cli.truc_large,
+        "use_qt_fidelity": cli.use_qt_fidelity,
+        "resume": cli.resume,
     }
     config = get_optimization_config(gate_type=gate_type, custom_config=custom_config)
+    if cli.result_file:
+        config["result_file"] = cli.result_file
+    if cli.csv_file:
+        config["csv_file"] = cli.csv_file
 
     # Step 1: Load system data
     system_data = load_system_data(config)
+    # Optimize every row in the previous pulse table at that row's gate time.
+    config["tg_opt_vec"] = np.asarray(system_data["pulse_param"])[:, 0].tolist()
 
     # Step 2: Build Hamiltonians
     hamiltonians = build_hamiltonians(system_data, config)

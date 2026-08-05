@@ -1,6 +1,11 @@
 import sys
-sys.path.append('../')
 import os
+import argparse
+from pathlib import Path
+XGATE_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = XGATE_DIR.parent
+sys.path.append(str(PROJECT_DIR))
+os.chdir(XGATE_DIR)
 import pytz
 from datetime import datetime
 import numpy as np
@@ -26,8 +31,10 @@ def fidelity_de():
     fidelity = []
     drive_param = []
     fidelity_full = []
-    args = [H_truc, w_trans_1, w_trans_2, num_cpus, [], logi_idx, option_ideal, option_noisy]
-    for jdx, tg in tqdm(enumerate(tg_vec)):
+    args = [H_truc, w_trans_1, w_trans_2, num_cpus, [], logi_idx,
+            option_ideal, option_noisy, use_qt_fidelity]
+    for jdx, initial in tqdm(enumerate(initial_params), total=len(initial_params)):
+        tg = initial[0]
         tg_bounds = (tg+tg_bound[0], tg+tg_bound[1])
         bounds = (tg_bounds, amp1_bounds, amp2_bounds, detune1_bounds, detune2_bounds)
 
@@ -38,6 +45,7 @@ def fidelity_de():
             disp=True,
             callback=ut.print_soln,
             init="sobol",
+            x0=initial,
             workers=workers,
             popsize=popsize,
             mutation=mutation,
@@ -48,12 +56,8 @@ def fidelity_de():
         fidelity.append(res.fun)
         drive_param.append(res.x)
 
-        # Evaluate full system fidelity
-        [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = res.x
-        argz = [tg, drive_amp_A, drive_amp_B, detune_A, detune_B, 
-                H_full, w_trans_1, w_trans_2, num_cpus, 
-                [], logi_idx_full, option_ideal, option_noisy]
-        fidelity_full.append(ut.xgate_fidelity_log(argz))
+        # Re-evaluate the optimized pulse with the selected fidelity mode.
+        fidelity_full.append(ut.xgate_fidelity_log_noise(res.x, *args))
 
         # Print progress
         print(f"\nOptimal result for tg={tg}:")
@@ -69,22 +73,47 @@ def fidelity_de():
         ut.print_time()
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--drive", choices=("phi", "theta"), required=True)
+    parser.add_argument(
+        "--start-index", type=int, default=0,
+        help="resume at this zero-based row of the pulse table",
+    )
+    parser.add_argument(
+        "--use-qt-fidelity",
+        type=lambda x: x.lower() in {"true", "1", "yes"},
+        default=True,
+    )
+    cli = parser.parse_args()
     print(os.path.basename(__file__))  # Print the name of the current Python file
     print("NUMEXPR_NUM_THREADS =", os.environ.get('NUMEXPR_NUM_THREADS'))
     print("MKL_NUM_THREADS =", os.environ.get('MKL_NUM_THREADS'))
     ut.print_time()
 
-    drive_phi, drive_theta  = False, True
+    drive_phi, drive_theta = cli.drive == "phi", cli.drive == "theta"
+    use_qt_fidelity = cli.use_qt_fidelity
+
+    pulse_file = (
+        "../figure/data/data_xgate_phi_mstep_1e3_npz.txt"
+        if drive_phi
+        else "../figure/data/data_xgate_theta_mstep_3e4_npz.txt"
+    )
+    fidelity_column = "f_charge_160_npz" if drive_phi else "f_157_charge"
+    pulse_table = pd.read_csv(pulse_file)
+    initial_params = pulse_table[
+        ["tg", "drive_amp_1", "drive_amp_2", "detune_1", "detune_2"]
+    ].to_numpy()[cli.start_index:]
+    initial_fidelity = pulse_table[fidelity_column].to_numpy()[cli.start_index:]
 
     # Parameter bounds
     if drive_theta:
-        amp1_bounds, amp2_bounds = (0.01, 0.05), (0.025, 0.2)
-        detune1_bounds, detune2_bounds = (-0.17, -0.2), (0.1, 0.3)
-        tg_vec = [2,3,4] # np.arange(40, 50, step=1).tolist()
+        amp1_bounds, amp2_bounds = (0, 0.45), (0, 0.1)
+        detune1_bounds, detune2_bounds = (-0.1, 0.05), (-0.05, 0.05)
+        tg_vec = initial_params[:, 0].tolist()
     else:
         amp1_bounds, amp2_bounds = (0.15, 0.3), (0, 0.3)
         detune1_bounds, detune2_bounds = (0.3, 0.5), (0.3, 0.5)
-        tg_vec = np.arange(10, 50, step=10).tolist()
+        tg_vec = initial_params[:, 0].tolist()
 
     tg_bound = (-0.01, 0.01)
 
@@ -92,14 +121,18 @@ if __name__ == '__main__':
     num_cpus = 1 # Lower num_cpus <4 can reduce num of workers while >4 won’t change the num.
     workers, popsize = 100, 10
     recombination, tol, mutation = 0.7, 0.01, (0.5, 1.0)
-    n_truc, n_full = 150, 300
+    n_truc, n_full = 300, 300
 
-    max_step_ideal = 1e-3 # Set max_step to 0 for parallel execution
+    # Theta-drive dynamics require the same 3e-4 ns solver step used by the
+    # fidelity runner; 1e-3 can produce a numerically inconsistent objective.
+    max_step_ideal = 3e-4 if drive_theta else 1e-3
     nsteps_ideal = 10/ max_step_ideal  # Set nsteps to a large number for parallel execution
     option_ideal = qt.Options(max_step=max_step_ideal, nsteps=nsteps_ideal, store_states=True, num_cpus=1)  
     option_noisy = None
     evals, n_theta, n_phi, logi_state = ut.load_qubit_data_xgate() # Load spectrum and matrix elements
-    w_trans_1, w_trans_2, drive_term = ut.compute_drive_xgate(evals, n_theta, n_phi, drive_phi, drive_theta)  
+    w_trans_1, w_trans_2, drive_term = ut.compute_drive_xgate(
+        evals, n_theta, n_phi, drive_phi, drive_theta
+    )
 
     # Construct Hamiltonians
     hspace_truc = ut.get_truncated_subspace_xgate(drive_term, n_truc)
@@ -110,6 +143,11 @@ if __name__ == '__main__':
 
     # Print configuration
     print("drive_phi=", drive_phi, ", drive_theta=", drive_theta)
+    print("use_qt_fidelity=", use_qt_fidelity)
+    print("pulse_file=", pulse_file)
+    print("initial_fidelity_column=", fidelity_column)
+    print("start_index=", cli.start_index)
+    ut.print_fidelity("initial_fidelity", initial_fidelity)
     print("tg_vec:", tg_vec)
     print("amp1_bounds=", amp1_bounds, ", amp2_bounds=", amp2_bounds)
     print("detune1_bounds=", detune1_bounds, ", detune2_bounds=", detune2_bounds)

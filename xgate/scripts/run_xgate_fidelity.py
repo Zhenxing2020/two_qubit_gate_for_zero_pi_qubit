@@ -40,6 +40,16 @@ def _parse_tg_list(text: str):
     return [int(item.strip()) for item in text.split(",") if item.strip()]
 
 
+def _parse_bool(text: str):
+    """Parse a command-line boolean."""
+    value = text.strip().lower()
+    if value in {"true", "1", "yes", "y"}:
+        return True
+    if value in {"false", "0", "no", "n"}:
+        return False
+    raise argparse.ArgumentTypeError("expected true or false")
+
+
 def _load_qubit_data(qubit_0: bool):
     """Load spectrum and matrix elements with stable unpacking."""
     data = ut.load_qubit_data_xgate(qubit_0=qubit_0)
@@ -103,7 +113,9 @@ def run_xgate_fidelity(args):
     )
     # `ut.load_drive_params_xgate()` returns rows as:
     # [tg (ns), drive_amp_A, drive_amp_B, detune_A (GHz), detune_B (GHz)].
-    params_all = ut.load_drive_params_xgate(args.drive_theta, args.drive_phi)
+    params_all = getattr(args, "params_override", None)
+    if params_all is None:
+        params_all = ut.load_drive_params_xgate(args.drive_theta, args.drive_phi)
     params = params_all[args.tg_list, :]
     n_hspace = len(setup["hspace"])
     n_job = len(params)
@@ -117,6 +129,7 @@ def run_xgate_fidelity(args):
     print(f"T1 = Tphi = {args.t1} us, num_cpus = {solver_num_cpus}")
     print(f"calculate_ideal = {args.calculate_ideal}, calculate_noise = {args.calculate_noise}")
     print(f"apply_decay = {args.apply_decay}, apply_dephase = {args.apply_dephase}")
+    print(f"use_qt_fidelity = {args.use_qt_fidelity}")
     print("n_hspace =", n_hspace, "; n_job =", n_job, "; parallel_jobs =", parallel_jobs)
     ut.print_fidelity(f"hspace ({args.n_full}/{n_hspace})", setup["hspace"], num_each_row=10)
     ut.print_fidelity("params", params.tolist(), num_each_row=1)
@@ -131,6 +144,7 @@ def run_xgate_fidelity(args):
             setup["logi_idx"],
             option_ideal,
             option_noisy,
+            args.use_qt_fidelity,
         ]
         f_ideal = Parallel(n_jobs=parallel_jobs)(
             delayed(ut.xgate_fidelity_log_noise)(args_indep, *ideal_args) for args_indep in params
@@ -160,6 +174,7 @@ def run_xgate_fidelity(args):
             setup["logi_idx"],
             option_ideal,
             option_noisy,
+            args.use_qt_fidelity,
         ]
         f_noise = Parallel(n_jobs=parallel_jobs)(
             delayed(ut.xgate_fidelity_log_noise)(args_indep, *noisy_args) for args_indep in params
@@ -254,6 +269,31 @@ def run_xgate_population(args):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--use-qt-fidelity",
+        type=_parse_bool,
+        default=None,
+        metavar="{true,false}",
+        help="use QuTiP fidelity (true) or trace-decreasing fidelity (false)",
+    )
+    parser.add_argument("--drive-phi", type=_parse_bool, default=None)
+    parser.add_argument("--drive-theta", type=_parse_bool, default=None)
+    parser.add_argument("--calculate-noise", type=_parse_bool, default=None)
+    parser.add_argument("--calculate-ideal", type=_parse_bool, default=None)
+    parser.add_argument("--n-full", type=int, default=None)
+    parser.add_argument("--tg-list", type=_parse_tg_list, default=None)
+    parser.add_argument("--t1", type=float, default=None, help="T1=Tphi in us")
+    parser.add_argument(
+        "--pulse-file", default=None,
+        help="CSV containing tg, drive_amp_1, drive_amp_2, detune_1, detune_2",
+    )
+    parser.add_argument(
+        "--parallel-jobs", type=int, default=None,
+        help="number of outer Joblib jobs",
+    )
+    cli_args = parser.parse_args()
+
     mode = "fidelity" #"population"
 
     # Keep simulation inputs here so they are easier to read and edit.
@@ -266,12 +306,28 @@ def main():
         "t1": 170,  # us
         "charge_truc": True,
         "calculate_ideal": True, # must set to False if run experiment noisy xgate 
-        "calculate_noise": True,
+        "calculate_noise": False,
         "num_cpus": 4,
         "parallel_jobs": 10,
         "apply_decay": True,
         "apply_dephase": True,
+        # May be overridden by --use-qt-fidelity true/false.
+        "use_qt_fidelity": True,
     }
+    if cli_args.use_qt_fidelity is not None:
+        common_args["use_qt_fidelity"] = cli_args.use_qt_fidelity
+    if cli_args.drive_phi is not None:
+        common_args["drive_phi"] = cli_args.drive_phi
+    if cli_args.drive_theta is not None:
+        common_args["drive_theta"] = cli_args.drive_theta
+    if cli_args.calculate_noise is not None:
+        common_args["calculate_noise"] = cli_args.calculate_noise
+    if cli_args.calculate_ideal is not None:
+        common_args["calculate_ideal"] = cli_args.calculate_ideal
+    if cli_args.t1 is not None:
+        common_args["t1"] = cli_args.t1
+    if cli_args.parallel_jobs is not None:
+        common_args["parallel_jobs"] = cli_args.parallel_jobs
 
     fidelity_args = {
         "max_step_ideal": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
@@ -316,6 +372,22 @@ def main():
             "pop_detune_b": 0.360503,  # GHz;
         }    
 
+    # Apply size/index overrides after drive-specific defaults.
+    if cli_args.n_full is not None:
+        common_args["n_full"] = cli_args.n_full
+    if cli_args.tg_list is not None:
+        fidelity_args["tg_list"] = cli_args.tg_list
+
+    if cli_args.pulse_file is not None:
+        pulse_table = pd.read_csv(cli_args.pulse_file)
+        params_override = pulse_table[
+            ["tg", "drive_amp_1", "drive_amp_2", "detune_1", "detune_2"]
+        ].to_numpy()
+        # The loader below reads this Namespace field when supplied.
+        common_args["params_override"] = params_override
+        if cli_args.tg_list is None:
+            fidelity_args["tg_list"] = list(range(len(params_override)))
+
     if mode == "population":    
         common_args["n_full"] = 30 # 1000
             ################## theta and phi ##################
@@ -351,9 +423,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-

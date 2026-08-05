@@ -1,9 +1,12 @@
 import os
 import sys
+import argparse
+import re
 import threading
 import time
 from pathlib import Path
 import numpy as np
+import pandas as pd
 import psutil
 from joblib import Parallel, delayed
 
@@ -263,6 +266,7 @@ def run_gate_fidelity(
             logi_idx_select,
             option_ideal,
             option_noisy,
+            cfg["use_qt_fidelity"],
         ]
         return Parallel(n_jobs=cfg["n_job"])(
             delayed(ut.cz_fidelity_log_noise)(p, *args_common)
@@ -279,6 +283,7 @@ def run_gate_fidelity(
         gate["mid_state"],
         option_ideal,
         option_noisy,
+        cfg["use_qt_fidelity"],
     ]
     return Parallel(n_jobs=cfg["n_job"])(
         delayed(ut.cnot_fidelity_log_noise)(p, *args_common)
@@ -446,36 +451,113 @@ def print_config(cfg, max_array_rows=50):
 # ============================================================
 # Main
 # ============================================================
+def _parse_int_list(text):
+    return [int(item.strip()) for item in text.split(",") if item.strip()]
+
+
+def _parse_bool(text):
+    value = text.strip().lower()
+    if value in {"true", "1", "yes", "y"}:
+        return True
+    if value in {"false", "0", "no", "n"}:
+        return False
+    raise argparse.ArgumentTypeError("expected true or false")
+
+
+def _load_cz_pulse_params(folder):
+    """Load either a CSV pulse table or a printed ``np.array`` table."""
+    try:
+        table = pd.read_csv(folder)
+        return table[["tg", "drive_amp", "detune"]].to_numpy()
+    except (pd.errors.ParserError, KeyError):
+        rows = []
+        with open(folder, encoding="utf-8") as stream:
+            for line in stream:
+                match = re.match(
+                    r"\s*\[\s*([-+0-9.eE]+)\s*,\s*([-+0-9.eE]+)\s*,"
+                    r"\s*([-+0-9.eE]+)\s*\]",
+                    line,
+                )
+                if match:
+                    rows.append([float(value) for value in match.groups()])
+                elif rows:
+                    break
+        if not rows:
+            raise ValueError(f"No [tg, drive_amp, detune] rows found in {folder}")
+        return np.asarray(rows)
+
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--gate", choices=("cz", "cnot"), default="cz",
+        help="two-qubit gate to simulate",
+    )
+    parser.add_argument("--n-truc-list", type=_parse_int_list, default=None)
+    parser.add_argument("--tg-list", type=_parse_int_list, default=None)
+    parser.add_argument("--calculate-ideal", type=_parse_bool, default=None)
+    parser.add_argument("--calculate-noise", type=_parse_bool, default=None)
+    parser.add_argument("--use-qt-fidelity", type=_parse_bool, default=None)
+    parser.add_argument("--t1", type=float, default=None, help="T1=Tphi in us")
+    parser.add_argument("--pulse-file", default=None)
+    parser.add_argument("--parallel-jobs", type=int, default=None)
+    parser.add_argument("--tg-parallel", type=_parse_bool, default=None)
+    cli_args = parser.parse_args()
+
     print(os.path.basename(__file__))
     ut.print_time()
 
     ################################################################
     cfg = get_config()
-    cfg["cz_run"] = False # True for CZ, False for CNOT
+    cfg["cz_run"] = cli_args.gate == "cz"
     cfg["t1_tphi_other"] = 170  # us
-    cfg["n_truc_list"] = [30] # np.arange(200, 401, step=10) # [100] # [60, 90, 120] # [70, 100, 130] # [80, 110, 140] #
+    cfg["n_truc_list"] = [200] # np.arange(200, 401, step=10) # [100] # [60, 90, 120] # [70, 100, 130] # [80, 110, 140] #
     #  [60, 90, 120] # np.arange(60, 241, step=20).tolist() + [500,1000]   
     cfg["reduced_model"] = 'charge_pick' # 'graph_pick', 'lowest_state', 'charge_pick'
     cfg["calculate_ideal"] = True
-    cfg["calculate_noise"] = True    
+    cfg["calculate_noise"] = False    
     cfg["apply_decay"] = True
     cfg["apply_dephase"] = True
     cfg["decay_enlarge"] = 1
     cfg["filter_ratio"] = 0.3 # default is 0.3    
     cfg["tg_para"] = False
+    # Trace-decreasing fidelity is the project default because it includes
+    # leakage/survival loss. Pass --use-qt-fidelity true for QuTiP's formula.
+    cfg["use_qt_fidelity"] = False
+
+    if cli_args.n_truc_list is not None:
+        cfg["n_truc_list"] = cli_args.n_truc_list
+    if cli_args.calculate_ideal is not None:
+        cfg["calculate_ideal"] = cli_args.calculate_ideal
+    if cli_args.calculate_noise is not None:
+        cfg["calculate_noise"] = cli_args.calculate_noise
+    if cli_args.use_qt_fidelity is not None:
+        cfg["use_qt_fidelity"] = cli_args.use_qt_fidelity
+    if cli_args.t1 is not None:
+        cfg["t1_tphi_other"] = cli_args.t1
+    if cli_args.parallel_jobs is not None:
+        cfg["n_job"] = cli_args.parallel_jobs
+    if cli_args.tg_parallel is not None:
+        cfg["tg_para"] = cli_args.tg_parallel
 
     if cfg["cz_run"]:
-        folder = 'data/npz/cz_pulse_neighbor.txt'
-        cfg["tg_list"] = [0] # np.arange(6, 179, step=12).tolist()  
+        folder = cli_args.pulse_file or '../figure/data/data_cz_fidelity_npz_select.txt'
+        # folder = 'data/npz/cz_pulse_neighbor.txt'
+        pulse_params_all = _load_cz_pulse_params(folder)
+        cfg["tg_list"] = np.arange(len(pulse_params_all))
+        if cli_args.tg_list is not None:
+            cfg["tg_list"] = cli_args.tg_list
         # [0, 36, 72, 108, 144] # [72] # [72,179] # [0, 45, 90, 135, 179] 
         # [0,  30,  60,  90, 120, 150] [0, 45, 72, 90, 135, 179]
         # np.arange(180)[0::6].tolist() +[179] #np.array([135, 179]) #np.arange(180)[0::6]
-        cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], ]  # [1::4,] 
+        cfg["params"] = pulse_params_all[cfg["tg_list"], ]
     else:
-        folder = '../figure/data/data_cnot_fidelity_npz.txt'
-        cfg["tg_list"] = [0] # [15,32] # np.arange(32)[1::6] 
-        cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], ]  # [1::4,]
+        folder = cli_args.pulse_file or '../figure/data/data_cnot_fidelity_npz.txt'
+        pulse_params_all = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)
+        cfg["tg_list"] = np.arange(len(pulse_params_all))
+        if cli_args.tg_list is not None:
+            cfg["tg_list"] = cli_args.tg_list
+        cfg["params"] = pulse_params_all[cfg["tg_list"], ]
     ################################################################
 
     ut.print_fidelity("params", cfg["params"].tolist(), num_each_row=1)
@@ -487,7 +569,6 @@ def main():
     option_ideal, option_noisy = ut.get_qutip_options(
         cfg["max_step_ideal"], cfg["max_step_noisy"]
     )
-
 
     f_ideal_all = []
     f_noise_all = []
@@ -597,4 +678,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
