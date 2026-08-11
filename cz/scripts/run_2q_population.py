@@ -58,6 +58,7 @@ def get_config():
     cfg["max_step_noisy"] = 1e-3
     cfg["num_cpus"] = 4
     cfg["samples_per_ns"] = 1
+    cfg["num_time_points"] = 500
 
     # ---------- Plot / save ----------
     cfg["save_txt"] = True
@@ -187,7 +188,9 @@ def qutip_options(cfg, noisy):
 def run_population_for_params(H_drive_select, hspace_select, params, gate, cfg, c_op_list):
     """Run mesolve for all logical initial states for one pulse row."""
     tg = float(params[0])
-    num_points = max(2, int(cfg["samples_per_ns"] * tg))
+    num_points = cfg.get("num_time_points")
+    if num_points is None:
+        num_points = max(2, int(cfg["samples_per_ns"] * tg))
     tlist = np.linspace(0, tg, num=num_points)
     pulse_args = build_pulse_args(cfg["cz_run"], params, gate)
 
@@ -350,7 +353,7 @@ def main():
 
     cfg = get_config()
 
-    cfg["cz_run"] = False  # True for CZ, False for CNOT
+    cfg["cz_run"] = True  # True for CZ, False for CNOT
     cfg["calculate_ideal"] = True
     cfg["calculate_noise"] = False
     cfg["n_truc_list"] = [1000]
@@ -362,8 +365,9 @@ def main():
     cfg["samples_per_ns"] = 1
     # ---------- Pulse parameters ----------
     if cfg["cz_run"]:
-        folder = "../figure/data/data_cz_fidelity_npz_select.txt"
-        cfg["tg_list"] = [12] # tg need to add another 20ns
+        # Leakage-inclusive optimized pulse nearest tg=91.9 ns.
+        folder = "../figure/data/data_cz_fidelity_leakage.txt"
+        cfg["tg_list"] = [12]
         cfg["params"] = ut.load_drive_params_2q(cfg["cz_run"], folder=folder)[cfg["tg_list"], :]
     else:
         folder = "../cnot/data/data_cnot_fidelity_npz.txt"

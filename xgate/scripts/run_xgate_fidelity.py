@@ -13,6 +13,10 @@ import qutip as qt
 import scqubits.settings as settings
 import pandas as pd
 from joblib import Parallel, delayed
+import matplotlib
+if not os.environ.get("DISPLAY"):
+    matplotlib.use("Agg")
+from matplotlib import pyplot as plt
 
 XGATE_DIR = Path(__file__).resolve().parents[1]
 PROJECT_DIR = XGATE_DIR.parent
@@ -193,14 +197,18 @@ def run_xgate_population(args):
     )
     n_hspace = len(setup["hspace"])
     # Population-mode solver step sizes are also in ns.
-    option_ideal = qt.Options(max_step=args.max_step_ideal, nsteps=1 / args.max_step_ideal, store_states=True, num_cpus=2)
-    option_noisy = qt.Options(max_step=args.max_step_noisy, nsteps=1 / args.max_step_noisy, store_states=True, num_cpus=4)
+    # nsteps is the allowed number of internal substeps between saved tlist
+    # points, not the total trajectory step count.  Long Phi pulses can need
+    # substantially more than 1/max_step before reaching the next output time.
+    option_ideal = qt.Options(max_step=args.max_step_ideal, nsteps=10_000_000, store_states=False, num_cpus=2)
+    option_noisy = qt.Options(max_step=args.max_step_noisy, nsteps=10_000_000, store_states=False, num_cpus=4)
     print("drive_phi=", args.drive_phi, "; drive_theta =", args.drive_theta, "; n_full =", args.n_full, "; charge_truc =", args.charge_truc)
     print(f"T1 = Tphi = {args.t1} us, tg = {args.pop_tg:.0f}")
     print(f"calculate_ideal = {args.calculate_ideal}")
     ut.print_fidelity(f"hspace ({args.n_full}/{n_hspace})", setup["hspace"], num_each_row=10)
 
-    tlist = np.linspace(0, args.pop_tg, num=5 * int(args.pop_tg))  # ns
+    # Use the same number of saved trajectory points for every requested gate.
+    tlist = np.linspace(0, args.pop_tg, num=500)  # ns
     pulse_args = {
         "drive_amp_A": args.pop_drive_amp_a,  # effective drive amplitude used with `drive_term`
         "drive_freq_A": setup["w_trans_1"] + 2 * np.pi * args.pop_detune_a,  # rad/ns = rad/ns + 2*pi*GHz
@@ -208,7 +216,17 @@ def run_xgate_population(args):
         "drive_freq_B": setup["w_trans_2"] + 2 * np.pi * args.pop_detune_b,  # rad/ns = rad/ns + 2*pi*GHz
         "gate_time": args.pop_tg,  # ns
     }
-    states = [qt.basis(n_hspace, i) for i in range(n_hspace)]
+    state_phi = [0, 2, 9, 10, 19, 33, 37, 47]
+    state_phi_theta = [0, 2, 9]
+    state_theta = [0, 2, 7, 25, 4, 1, 5]
+    if args.drive_phi and args.drive_theta:
+        state_interest = state_phi_theta
+    elif args.drive_phi and not args.drive_theta:
+        state_interest = state_phi
+    else:
+        state_interest = state_theta
+    state_interest_idx = [setup["hspace"].index(i) for i in state_interest]
+    e_ops = [qt.basis(n_hspace, i).proj() for i in state_interest_idx]
     c_op_list = None
     if not args.calculate_ideal:
         state_idx_tphi, gamma_dephase_new = ut.load_dephasing_data_xgate(args.drive_theta)
@@ -228,44 +246,52 @@ def run_xgate_population(args):
     for jdx, state_j in enumerate(setup["logi_idx"]):
         result[jdx] = qt.mesolve(
             setup["h_qbt_drive"],
-            states[state_j],
+            qt.basis(n_hspace, state_j),
             tlist,
             c_ops=c_op_list,
-            e_ops=[state * state.dag() for state in states],
+            e_ops=e_ops,
             args=pulse_args,
             options=option_ideal if args.calculate_ideal else option_noisy,
         )
 
     print('np.shape(c_op_list)=',  np.shape(c_op_list))
-    state_phi = [0, 2, 9, 10, 19, 33, 37, 47]
-    state_phi_theta = [0, 2, 9]
-    state_theta = [0, 2, 7, 25]
     col_phi = ["tg"] + [f"{i}" for i in state_phi] + ["other"]
     col_theta = ["tg"] + [f"{i}" for i in state_theta] + ["other"]
     col_phi_theta = ["tg"] + [f"{i}" for i in state_phi_theta] + ["other"]
     if args.drive_phi and args.drive_theta:
-        columns, state_interest = col_phi_theta, state_phi_theta
+        columns = col_phi_theta
     elif args.drive_phi and not args.drive_theta:
-        columns, state_interest = col_phi, state_phi
+        columns = col_phi
     else:
-        columns, state_interest = col_theta, state_theta
+        columns = col_theta
 
-    ut.top_population(np.array(result[0].expect).sum(axis=1), setup["hspace"])
-    ut.top_population(np.array(result[1].expect).sum(axis=1), setup["hspace"])
-    state_interest_idx = [setup["hspace"].index(i) for i in state_interest]
     pop = np.array(result[0].expect)
-    pop_interest = pop[state_interest_idx, :]
-    pop_other = np.delete(pop, state_interest_idx, axis=0).sum(axis=0)
+    pop_interest = pop
+    pop_other = 1.0 - pop_interest.sum(axis=0)
     pop_save = np.vstack((tlist, pop_interest, pop_other)).T
 
     output_dir = Path("data/population")
     output_dir.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = output_dir / (
-        f"population_phi={args.drive_phi}_theta={args.drive_theta}_tg={args.pop_tg:.0f}_T1={args.t1}us_n={n_hspace}_{ts}.txt"
+        f"population_phi={args.drive_phi}_theta={args.drive_theta}_tg={args.pop_tg:.0f}_T1={args.t1}us_n={n_hspace}.txt"
     )
     pd.DataFrame(pop_save, columns=columns).to_csv(output_file, sep=",", index=False, header=True)
     print(f"data saved in {output_file}")
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.6))
+    for row, label in zip(pop_interest, columns[1:-1]):
+        ax.plot(tlist, row, label=label)
+    ax.plot(tlist, pop_other, "--", label="other")
+    ax.set(xlabel="Time (ns)", ylabel="Population", ylim=(-0.02, 1.02))
+    ax.set_title(
+        f"X-gate population, n={n_hspace}, $t_g$={args.pop_tg:.3f} ns"
+    )
+    ax.legend(ncol=2, fontsize=8)
+    fig.tight_layout()
+    plot_file = output_file.with_suffix(".png")
+    fig.savefig(plot_file, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    print(f"plot saved in {plot_file}")
 
 
 def main():
@@ -282,6 +308,8 @@ def main():
     parser.add_argument("--calculate-noise", type=_parse_bool, default=None)
     parser.add_argument("--calculate-ideal", type=_parse_bool, default=None)
     parser.add_argument("--n-full", type=int, default=None)
+    parser.add_argument("--mode", choices=("fidelity", "population"), default=None)
+    parser.add_argument("--charge-truc", type=_parse_bool, default=None)
     parser.add_argument("--tg-list", type=_parse_tg_list, default=None)
     parser.add_argument("--t1", type=float, default=None, help="T1=Tphi in us")
     parser.add_argument(
@@ -294,7 +322,7 @@ def main():
     )
     cli_args = parser.parse_args()
 
-    mode = "fidelity" #"population"
+    mode = cli_args.mode or "fidelity"
 
     # Keep simulation inputs here so they are easier to read and edit.
     common_args = {
@@ -328,6 +356,8 @@ def main():
         common_args["t1"] = cli_args.t1
     if cli_args.parallel_jobs is not None:
         common_args["parallel_jobs"] = cli_args.parallel_jobs
+    if cli_args.charge_truc is not None:
+        common_args["charge_truc"] = cli_args.charge_truc
 
     fidelity_args = {
         "max_step_ideal": 3e-4,  # ns 3e-4 for theta, 1e-3 for phi
@@ -397,11 +427,32 @@ def main():
     
             ################## theta ##################
         elif common_args["drive_theta"] and not common_args["drive_phi"]:
-            fidelity_args["tg_list"] = [0] # [3] #[::4], # [:1] 
+            if cli_args.tg_list is None:
+                fidelity_args["tg_list"] = [0]
      
             ################## phi ##################
         elif common_args["drive_phi"] and not common_args["drive_theta"]:
-            fidelity_args["tg_list"] = [10]
+            if cli_args.tg_list is None:
+                fidelity_args["tg_list"] = [10]
+
+        # In population mode a pulse file supplies the optimized row selected
+        # by --tg-list (one row is expected for an individual trajectory).
+        if cli_args.pulse_file is not None:
+            selected = params_override[fidelity_args["tg_list"]]
+            if len(selected) != 1:
+                raise ValueError("population mode requires exactly one --tg-list index")
+            row = selected[0]
+            population_args.update({
+                "pop_tg": float(row[0]),
+                "pop_drive_amp_a": float(row[1]),
+                "pop_drive_amp_b": float(row[2]),
+                "pop_detune_a": float(row[3]),
+                "pop_detune_b": float(row[4]),
+            })
+        # Apply this last: the historical population default above must not
+        # overwrite an explicit truncation requested on the command line.
+        if cli_args.n_full is not None:
+            common_args["n_full"] = cli_args.n_full
 
 
     args = argparse.Namespace(**common_args, **fidelity_args, **population_args)
