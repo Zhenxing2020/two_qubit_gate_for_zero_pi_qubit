@@ -33,14 +33,6 @@ print(sum(1 for _ in csv.DictReader(p.open())) if p.exists() else 0)
 PY
 }
 
-wait_for_workers() {
-  while (( $(ps -e --no-headers | wc -l) >= 150 )); do
-    echo "[$(date -Is)] process count >=150; waiting 300 seconds"
-    sleep 300
-  done
-}
-
-wait_for_workers
 rows="$(row_count)"
 echo "[$(date -Is)] optimized rows before resume: $rows/33"
 if (( rows < 33 )); then
@@ -71,7 +63,6 @@ d.rename(columns={'p0':'tg','p1':'drive_amp_1','p2':'drive_amp_2',
 PY
 
 for t1 in 170 30 3; do
-  wait_for_workers
   log="$NOISE_DIR/cnot_noise_leakage_optimized_n220_T1=${t1}us.log"
   # A completed log has one final 33-element fidelity_noise_list. Re-run an
   # incomplete log from scratch so the finalizer cannot consume partial data.
@@ -87,11 +78,14 @@ PY
   then
     : > "$log"
     cd "$ROOT/cz"
+    # Noisy n=220 superoperators are memory intensive. Run gate times
+    # sequentially; eight concurrent gate times previously exhausted RAM.
     python -u scripts/run_2q_fidelity.py \
       --gate cnot --n-truc-list 220 \
       --calculate-ideal false --calculate-noise true \
       --use-qt-fidelity false --t1 "$t1" \
-      --pulse-file "$PULSES" --parallel-jobs 8 --tg-parallel true \
+      --pulse-file "$PULSES" --parallel-jobs 1 --tg-parallel false \
+      --num-cpus-noisy 1 \
       > "$log" 2>&1
   fi
 done

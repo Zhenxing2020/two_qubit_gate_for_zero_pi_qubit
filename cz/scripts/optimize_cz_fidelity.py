@@ -447,7 +447,7 @@ def get_optimization_config(custom_config=None):
         'cz_run': True,
         'folder_pulse': '../figure/data/data_cz_fidelity_npz_select.txt',
         'initial_fidelity_column': 'f_charge_60',
-        'use_qt_fidelity': True,
+        'use_qt_fidelity': False,  # default: leakage-inclusive trace-decreasing fidelity
         'tg_reverse': False,
         'use_x0': 'from_input',  # Options: None, 'from_neighbor', 'from_input'
         # if use 'from_neighbor', the first one will use from input, make sure it gives nice fidelity
@@ -486,7 +486,8 @@ def main():
     parser.add_argument(
         "--use-qt-fidelity",
         type=lambda x: x.lower() in {"true", "1", "yes"},
-        default=True,
+        default=False,
+        help="use QuTiP fidelity instead of the default leakage-inclusive trace-decreasing formula",
     )
     parser.add_argument(
         "--start-index", type=int, default=0,

@@ -1,0 +1,83 @@
+task = population-limited initial = [828.759495, 0.013563, 0.034964, -0.003029, -0.003182]
+RUN_CONFIG {
+  "started": "2026-08-13T09:41:31.425074",
+  "pid": 864818,
+  "task": "population-limited",
+  "output_dir": "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/xgate_828_optimization/population_limited_20260813_094127_864812",
+  "initial": {
+    "tg": 828.759495,
+    "drive_amp_1": 0.013563,
+    "drive_amp_2": 0.034964,
+    "detune_1": -0.003029,
+    "detune_2": -0.003182
+  },
+  "bounds": {
+    "tg": [
+      826.759495,
+      830.759495
+    ],
+    "drive_amp_1": [
+      0.002,
+      0.03
+    ],
+    "drive_amp_2": [
+      0.015,
+      0.055
+    ],
+    "detune_1": [
+      -0.008,
+      0.002
+    ],
+    "detune_2": [
+      -0.008,
+      0.002
+    ]
+  },
+  "n_full": 200,
+  "hamiltonian_dim": 200,
+  "state_range": [
+    0,
+    199
+  ],
+  "logical_indices": [
+    0,
+    2
+  ],
+  "intermediate_state": 9,
+  "population_limit": 0.12,
+  "population_points": 1001,
+  "max_step": 0.0003,
+  "solver_nsteps": 10000000,
+  "workers": 100,
+  "popsize": 10,
+  "maxiter": 200,
+  "tol": 0.001,
+  "seed": 828,
+  "init_method": "sobol",
+  "mutation": [
+    0.5,
+    1.0
+  ],
+  "recombination": 0.7,
+  "polish": false,
+  "use_qt_fidelity": false,
+  "tg_window": 2.0,
+  "check_only": false,
+  "thread_environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1"
+  }
+}
+INITIAL_EVALUATION {
+  "log10_infidelity": -2.87399211273157,
+  "infidelity": 0.0013366197908206707,
+  "fidelity": 0.9986633802091793,
+  "max_intermediate_population": 0.11539009500272124,
+  "intermediate_state": 9,
+  "constraint_active": true,
+  "population_limit": 0.12,
+  "constraint_margin": 0.004609904997278758,
+  "constraint_feasible": true
+}

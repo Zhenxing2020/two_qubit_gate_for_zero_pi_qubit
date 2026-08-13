@@ -403,7 +403,8 @@ def find_overlap(eket, *arg):
 
 def cnot_fidelity_log(arg_all):
     if len(arg_all) == 14:
-        use_qt_fidelity = True
+        # Project default: leakage-inclusive trace-decreasing fidelity.
+        use_qt_fidelity = False
     elif len(arg_all) == 15:
         use_qt_fidelity = arg_all[-1]
         arg_all = arg_all[:-1]
@@ -444,7 +445,8 @@ def cnot_fidelity_log(arg_all):
 def cnot_fidelity_log_noise(arg_optimize, *args):
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = arg_optimize
     if len(args) == 9:
-        use_qt_fidelity = True
+        # Project default: leakage-inclusive trace-decreasing fidelity.
+        use_qt_fidelity = False
     elif len(args) == 10:
         use_qt_fidelity = args[-1]
         args = args[:-1]
@@ -704,7 +706,8 @@ def cz_fidelity_log(arg_all):
     # print_time()
     # print('debug: good in cz_fidelity_log beginning')
     if len(arg_all) == 10:
-        arg_all = [*arg_all, True]
+        # Project default: leakage-inclusive trace-decreasing fidelity.
+        arg_all = [*arg_all, False]
     [tg, drive_amp, detune,
      H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx,
      option_ideal, option_noisy, use_qt_fidelity] = arg_all
@@ -736,7 +739,8 @@ def cz_fidelity_log(arg_all):
 def cz_fidelity_log_noise(arg_optimize, *args):
     [tg, drive_amp, detune] = arg_optimize # Independent arguments that can be optimized over
     if len(args) == 7:
-        args = (*args, True)
+        # Project default: leakage-inclusive trace-decreasing fidelity.
+        args = (*args, False)
     [H_qbt_drive, W_target, num_cpus, c_op_list, logi_idx,
      option_ideal, option_noisy, use_qt_fidelity] = args # System arguments
 
@@ -1133,8 +1137,9 @@ def xgate_fidelity_log_noise(args_indep, *args):
     """
     [tg, drive_amp_A, drive_amp_B, detune_A, detune_B] = args_indep
     if len(args) == 8:
-        # Backward compatibility for existing optimization/archive scripts.
-        args = (*args, True)
+        # Project default: leakage-inclusive trace-decreasing fidelity.
+        # Callers can still explicitly append True to request QuTiP fidelity.
+        args = (*args, False)
     [H_qbt_drive, w_trans_1, w_trans_2, num_cpus, c_op_list, logi_idx,
      option_ideal, option_noisy, use_qt_fidelity] = args
 
@@ -1248,7 +1253,7 @@ def get_propagator(H, tlist, num_cpus, c_op_list, pulse_args, logi_idx, option_i
 
 def get_fidelity_super_operator(
     propagator, logi_idx, gate_target, c_op_list, mid_state=None,
-    use_qt_fidelity=True,
+    use_qt_fidelity=False,
 ):
     """
     Computes the average gate fidelity for a given superoperator.

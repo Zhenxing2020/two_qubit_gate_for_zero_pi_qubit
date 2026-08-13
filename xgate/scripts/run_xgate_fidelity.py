@@ -340,7 +340,7 @@ def main():
         "apply_decay": True,
         "apply_dephase": True,
         # May be overridden by --use-qt-fidelity true/false.
-        "use_qt_fidelity": True,
+        "use_qt_fidelity": False,
     }
     if cli_args.use_qt_fidelity is not None:
         common_args["use_qt_fidelity"] = cli_args.use_qt_fidelity

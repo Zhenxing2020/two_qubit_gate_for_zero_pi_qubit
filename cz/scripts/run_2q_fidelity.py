@@ -502,6 +502,10 @@ def main():
     parser.add_argument("--pulse-file", default=None)
     parser.add_argument("--parallel-jobs", type=int, default=None)
     parser.add_argument("--tg-parallel", type=_parse_bool, default=None)
+    parser.add_argument(
+        "--num-cpus-noisy", type=int, default=None,
+        help="internal CPUs used by each noisy solver (lower this to reduce RAM)",
+    )
     cli_args = parser.parse_args()
 
     print(os.path.basename(__file__))
@@ -539,6 +543,8 @@ def main():
         cfg["n_job"] = cli_args.parallel_jobs
     if cli_args.tg_parallel is not None:
         cfg["tg_para"] = cli_args.tg_parallel
+    if cli_args.num_cpus_noisy is not None:
+        cfg["num_cpus_noisy"] = cli_args.num_cpus_noisy
 
     if cfg["cz_run"]:
         folder = cli_args.pulse_file or '../figure/data/data_cz_fidelity_npz_select.txt'
