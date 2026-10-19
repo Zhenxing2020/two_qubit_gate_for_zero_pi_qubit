@@ -78,8 +78,10 @@ class NestablePool(multiprocessing.pool.Pool):
         kwargs["context"] = _NoDaemonContext()
         super().__init__(*args, **kwargs)
 
-GATE_DIR = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+GATE_DIR = SCRIPT_DIR.parent
 PROJECT_DIR = GATE_DIR.parent
+sys.path.append(str(SCRIPT_DIR))
 sys.path.append(str(PROJECT_DIR))
 os.chdir(GATE_DIR)
 
@@ -96,6 +98,7 @@ from optimize_2q_fidelity import (
 #     differential_evolution call; workers inherit them via fork on Linux) ===
 GLOBAL_system_data = None
 GLOBAL_hamiltonians = None
+GLOBAL_static_tg = None
 
 
 def cz_objective(x, num_cpus=1):
@@ -111,6 +114,11 @@ def cz_objective(x, num_cpus=1):
         sd["option_noisy"],
     ]
     return ut.cz_fidelity_log_noise(list(x), *args)
+
+
+def cz_objective_static_tg(x, num_cpus=1):
+    """Two-variable CZ objective with gate time removed from the DE search."""
+    return cz_objective([GLOBAL_static_tg, x[0], x[1]], num_cpus)
 
 
 # ==============================================================
@@ -179,8 +187,15 @@ def get_sweep_config(custom_config=None):
     # get_optimization_config already created an empty cz_<ts> result dir that
     # we are about to replace; drop it if still empty so it does not litter.
     old_dir = config.get("result_dir")
-    if old_dir and os.path.isdir(old_dir) and not os.listdir(old_dir):
-        os.rmdir(old_dir)
+    if old_dir:
+        # Concurrent sweep processes can inherit the same second-resolution
+        # timestamp and therefore the same temporary directory.  Another
+        # process may remove it between any of these filesystem operations.
+        try:
+            if os.path.isdir(old_dir) and not os.listdir(old_dir):
+                os.rmdir(old_dir)
+        except FileNotFoundError:
+            pass
 
     # Label the output dir with the swept parameter AND the seed gate time so
     # runs over different sweeps (EC2 vs Ecc vs ...) and different gate durations
@@ -190,6 +205,9 @@ def get_sweep_config(custom_config=None):
     seed_tg = ut.load_drive_params_2q(True, folder=config["folder_pulse"])[config["seed_tg_idx"], 0]
     param_tag = os.path.basename(os.path.normpath(config["folder_load"])).replace("_sweep", "")
     label = f"cz_sweep_{param_tag}_tg{round(seed_tg)}_{config['timestamp']}"
+    result_suffix = str(config.get("result_suffix", "")).strip()
+    if result_suffix:
+        label += result_suffix if result_suffix.startswith("_") else f"_{result_suffix}"
     base_dir = f"data/results/{label}"
     os.makedirs(base_dir, exist_ok=True)
     config.update(dict(
@@ -246,7 +264,7 @@ def optimize_cz_point(config, index, x0):
 
     Returns (f_trunc, f_large, optimized_params, W_20_50).
     """
-    global GLOBAL_system_data, GLOBAL_hamiltonians
+    global GLOBAL_system_data, GLOBAL_hamiltonians, GLOBAL_static_tg
 
     system_data = load_cz_sweep_point(config, index)
     hamiltonians = build_hamiltonians_cz(system_data, config)
@@ -255,6 +273,7 @@ def optimize_cz_point(config, index, x0):
     GLOBAL_hamiltonians = hamiltonians
 
     x0 = list(x0)
+    static_tg = bool(config.get("static_tg", False))
     tg0 = x0[0]
     # tg_bound is a +/-window around a center gate time. By default the center is
     # this point's own (warm-started, drifting) seed tg0, so the window walks
@@ -265,20 +284,35 @@ def optimize_cz_point(config, index, x0):
     tg_bounds = (tg_center + config["tg_bound"][0], tg_center + config["tg_bound"][1])
     bounds = [list(tg_bounds), list(config["amp_bound"]), list(config["detune_bound"])]
 
+    if static_tg:
+        # A zero-width DE dimension is still represented internally and can
+        # distort population sizing/convergence. Remove tg from the optimizer
+        # altogether and restore it when evaluating/saving the pulse.
+        GLOBAL_static_tg = float(tg_center)
+        x0_search = x0[1:]
+        search_bounds = bounds[1:]
+        search_labels = ("amp", "detune")
+    else:
+        x0_search = x0
+        search_bounds = bounds
+        search_labels = ("tg", "amp", "detune")
+
     # DE requires x0 within bounds. A seed pulse for a different gate regime
     # (e.g. the weaker-drive tg~182 ns gate) can fall outside a configured
     # bound; widen that bound to include the seed plus a 10%-of-span margin so
     # DE still has room to move, rather than crashing on "x0 outside bounds".
-    for k, label in enumerate(("tg", "amp", "detune")):
-        lo, hi = bounds[k]
+    for k, label in enumerate(search_labels):
+        lo, hi = search_bounds[k]
         margin = 0.1 * (hi - lo)
-        if x0[k] < lo:
-            bounds[k][0] = x0[k] - margin
-            print(f"[WARN] seed {label}={x0[k]:.6g} < bound; widened low to {bounds[k][0]:.6g}")
-        elif x0[k] > hi:
-            bounds[k][1] = x0[k] + margin
-            print(f"[WARN] seed {label}={x0[k]:.6g} > bound; widened high to {bounds[k][1]:.6g}")
-    bounds = tuple(tuple(b) for b in bounds)
+        if x0_search[k] < lo:
+            search_bounds[k][0] = x0_search[k] - margin
+            print(f"[WARN] seed {label}={x0_search[k]:.6g} < bound; "
+                  f"widened low to {search_bounds[k][0]:.6g}")
+        elif x0_search[k] > hi:
+            search_bounds[k][1] = x0_search[k] + margin
+            print(f"[WARN] seed {label}={x0_search[k]:.6g} > bound; "
+                  f"widened high to {search_bounds[k][1]:.6g}")
+    search_bounds = tuple(tuple(b) for b in search_bounds)
 
     inner_cpus = config.get("inner_num_cpus", 1)
 
@@ -286,10 +320,10 @@ def optimize_cz_point(config, index, x0):
     ut.print_time()
 
     de_kwargs = dict(
-        func=cz_objective,
-        bounds=bounds,
+        func=cz_objective_static_tg if static_tg else cz_objective,
+        bounds=search_bounds,
         args=(inner_cpus,),
-        x0=x0,
+        x0=x0_search,
         init="sobol",
         disp=True,
         callback=ut.print_soln,
@@ -310,7 +344,7 @@ def optimize_cz_point(config, index, x0):
         with NestablePool(processes=config["workers"]) as pool:
             result = sp.optimize.differential_evolution(workers=pool.map, **de_kwargs)
 
-    params = result.x.tolist()
+    params = ([GLOBAL_static_tg] + result.x.tolist()) if static_tg else result.x.tolist()
     f_trunc = float(result.fun)
     f_large = float(evaluate_fidelity_large(params, system_data, hamiltonians, config)) \
         if config["do_large"] else np.nan
@@ -335,6 +369,25 @@ def build_anchor_and_passes(n):
     down_range = list(range(min(anchors) - 1, -1, -1))
     up_range = list(range(max(anchors) + 1, n))
     return anchors, down_range, up_range
+
+
+def project_neighbor_pulse(target_value, previous_value, previous_pulse,
+                           older_value=None, older_pulse=None):
+    """Seed a sweep point by copying one neighbor or extrapolating from two.
+
+    The sweep grids are not always uniformly spaced, so the two-point case uses
+    the actual swept-parameter spacing rather than assuming equal steps.
+    """
+    previous_pulse = np.asarray(previous_pulse, dtype=float)
+    if older_pulse is None or older_value is None:
+        return previous_pulse.tolist()
+
+    denominator = previous_value - older_value
+    if denominator == 0:
+        return previous_pulse.tolist()
+    step_ratio = (target_value - previous_value) / denominator
+    older_pulse = np.asarray(older_pulse, dtype=float)
+    return (previous_pulse + step_ratio * (previous_pulse - older_pulse)).tolist()
 
 
 # ==============================================================
@@ -710,13 +763,33 @@ def run_sweep(config):
         return
 
     # 2) expand outward; each point seeded from the neighbor toward center
-    prev = params[min(anchors)]
+    prev_idx = min(anchors)
+    prev = params[prev_idx]
+    older_idx = None
+    older = None
     for i in tqdm(down_range, desc="down"):
-        prev = do_point(i, prev)
+        guess = project_neighbor_pulse(
+            values[i], values[prev_idx], prev,
+            values[older_idx] if older_idx is not None else None, older)
+        print(f"[SEED] index {i}: {'projected from two neighbors' if older is not None else 'copied from one neighbor'} "
+              f"-> {np.round(guess, 6)}")
+        result = do_point(i, guess)
+        older_idx, older = prev_idx, prev
+        prev_idx, prev = i, result
 
-    prev = params[max(anchors)]
+    prev_idx = max(anchors)
+    prev = params[prev_idx]
+    older_idx = None
+    older = None
     for i in tqdm(up_range, desc="up"):
-        prev = do_point(i, prev)
+        guess = project_neighbor_pulse(
+            values[i], values[prev_idx], prev,
+            values[older_idx] if older_idx is not None else None, older)
+        print(f"[SEED] index {i}: {'projected from two neighbors' if older is not None else 'copied from one neighbor'} "
+              f"-> {np.round(guess, 6)}")
+        result = do_point(i, guess)
+        older_idx, older = prev_idx, prev
+        prev_idx, prev = i, result
 
     # 3) Final validation pass: hold the pulse calibrated at the reference point
     #    (nearest the sweep midpoint = nominal) FIXED and evaluate it at full
@@ -1048,6 +1121,11 @@ def main():
                              "gate time for EVERY sweep point, instead of recentering on "
                              "each point's drifting warm-started seed. Keeps gate time "
                              "essentially pinned across the sweep (window width unchanged).")
+    parser.add_argument("--tg-width", type=float, default=None, metavar="W",
+                        help="Use a seed-centered +/-W ns gate-time window. W=0 removes "
+                             "gate time from the optimizer and fixes it exactly to seed_tg.")
+    parser.add_argument("--result-suffix", type=str, default=None,
+                        help="Suffix appended to the newly-created result directory name.")
     parser.add_argument("--plot", type=str, default=None,
                         help="Regenerate the infidelity + summary plots from an existing "
                              "result (cz_sweep_*.npz file or its folder) and exit; no optimization.")
@@ -1075,6 +1153,12 @@ def main():
         custom["workers"] = args.workers
     if args.tg_absolute:
         custom["tg_absolute"] = True
+    if args.tg_width is not None:
+        width = abs(args.tg_width)
+        custom.update(tg_absolute=True, tg_bound=(-width, width),
+                      static_tg=(width == 0.0))
+    if args.result_suffix is not None:
+        custom["result_suffix"] = args.result_suffix
     config = get_sweep_config(custom)
     print(json.dumps({k: str(v) for k, v in config.items() if k != "zp_yml"}, indent=1)[:2000])
     run_sweep(config)

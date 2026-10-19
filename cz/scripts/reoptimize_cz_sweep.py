@@ -58,6 +58,11 @@ def main():
                         help="DE population workers for the re-opt (default: saved config).")
     parser.add_argument("--n-cpu-inner", type=int, default=None,
                         help="Inner sesolve parallelism per objective (default: saved config).")
+    parser.add_argument("--tg-window", type=float, default=None, metavar="W",
+                        help="Relax the gate-time search to a symmetric +/-W ns window "
+                             "pinned on the seed gate time (sets tg_absolute + "
+                             "tg_bound=(-W, W)), overriding the saved (tight) window. "
+                             "E.g. --tg-window 20 lets tg roam +/-20 ns per point.")
     args = parser.parse_args()
 
     custom = {}
@@ -65,6 +70,14 @@ def main():
         custom["workers"] = args.workers
     if args.n_cpu_inner is not None:
         custom["inner_num_cpus"] = args.n_cpu_inner
+    if args.tg_window is not None:
+        custom["tg_absolute"] = True
+        custom["tg_bound"] = (-abs(args.tg_window), abs(args.tg_window))
+        # A saved fixed-time run has static_tg=True.  Explicitly turn that mode
+        # off when the caller asks to reopen a nonzero gate-time window;
+        # otherwise optimize_cz_point removes tg from the DE variables and the
+        # requested window silently has no effect.
+        custom["static_tg"] = (abs(args.tg_window) == 0.0)
 
     print(os.path.basename(__file__))
     ut.print_time()

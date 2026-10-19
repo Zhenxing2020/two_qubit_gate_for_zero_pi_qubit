@@ -128,12 +128,7 @@ def gate_fidelity(Utarg, Ucand):
         raise ValueError(" Hilbert space dims don't match.")
 
     Ucandp = remove_global_phase(Ucand)
-    dim =  Ucandp.shape[0]
-
-    # Special case of Eq 5 in https://arxiv.org/pdf/quant-ph/0701138.
-    denom = dim * (dim + 1)
-    fidelity = (((Ucandp.dag() * Ucandp).tr() + np.abs((Ucandp.dag() * Utarg).tr()) ** 2) / denom )
-    return fidelity
+    return average_gate_fidelity_trace_decreasing(Ucandp, target=Utarg)
 
 # Drive Coefficient on qubit A
 def drive_cos_A(t: float, args: dict) -> float:
@@ -748,7 +743,7 @@ def cz_fidelity_log_old(arg_all):
                                         rz(dphi(Uc, (1,1)))))
     Uc_reshaped = qt.Qobj(Uc.data, dims=[[2, 2], [2, 2]])
     Ucprime = remove_global_phase(Uz * Uc_reshaped)
-    fidelity = qt.average_gate_fidelity(Ucprime, target=cz_gate())
+    fidelity = average_gate_fidelity_trace_decreasing(Ucprime, target=cz_gate())
     return np.log10(1-fidelity)
 
 
@@ -1242,7 +1237,122 @@ def get_fidelity_super_operator(propagator, logi_idx, gate_target, c_op_list, mi
             kraus = cnot_phase_correct(kraus, mid_state=mid_state)    
         super_op_post = qt.kraus_to_super(kraus)
 
-    return qt.metrics.average_gate_fidelity(super_op_post, target=gate_target)
+    return average_gate_fidelity_trace_decreasing(super_op_post, target=gate_target)
+
+def average_gate_fidelity_trace_decreasing(oper, target=None):
+    """
+    Average gate fidelity for a possibly trace-decreasing quantum map.
+
+    The quantum map is
+
+        E(rho) = sum_k K_k rho K_k.dag()
+
+    and the average fidelity relative to target unitary U is
+
+        F_avg =
+            [sum_k Tr(K_k.dag() K_k)
+             + sum_k |Tr(U.dag() K_k)|^2]
+            / [d(d + 1)].
+
+    For a trace-preserving map,
+
+        sum_k K_k.dag() K_k = I,
+
+    and the first term reduces to d, recovering the standard
+    average-gate-fidelity formula.
+
+    Parameters
+    ----------
+    oper : qutip.Qobj or list[qutip.Qobj]
+        A square operator, superoperator, or list of Kraus operators.
+
+        A square non-unitary operator V is interpreted as the
+        one-Kraus map
+
+            rho -> V rho V.dag().
+
+    target : qutip.Qobj or None
+        Target unitary. If None, the identity is used.
+
+    Returns
+    -------
+    fidelity : float
+        Leakage-inclusive average gate fidelity.
+    """
+
+    # Convert input to Kraus representation.
+    if isinstance(oper, (list, tuple)):
+        kraus_form = list(oper)
+
+    elif isinstance(oper, qt.Qobj):
+        if oper.issuper:
+            kraus_form = qt.to_kraus(oper)
+        elif oper.isoper:
+            kraus_form = [oper]
+        else:
+            raise TypeError(
+                "oper must be an operator, superoperator, "
+                "or a list of Kraus operators."
+            )
+
+    else:
+        raise TypeError(
+            "oper must be a qutip.Qobj or a list of qutip.Qobj."
+        )
+
+    if len(kraus_form) == 0:
+        raise ValueError("The Kraus list is empty.")
+
+    d_out, d_in = kraus_form[0].shape
+
+    if d_out != d_in:
+        raise ValueError(
+            "Only square Kraus operators are supported."
+        )
+
+    d = d_in
+
+    for i, K in enumerate(kraus_form):
+        if not isinstance(K, qt.Qobj):
+            raise TypeError(
+                f"Kraus operator {i} is not a qutip.Qobj."
+            )
+
+        if K.shape != (d, d):
+            raise ValueError(
+                f"Kraus operator {i} has shape {K.shape}; "
+                f"expected {(d, d)}."
+            )
+
+    if target is None:
+        target = qt.qeye(d)
+
+    if not isinstance(target, qt.Qobj):
+        raise TypeError("target must be a qutip.Qobj.")
+
+    if target.shape != (d, d):
+        raise ValueError(
+            f"target has shape {target.shape}; expected {(d, d)}."
+        )
+
+    # Average survival contribution.
+    survival_term = sum(
+        np.real((K.dag() * K).tr())
+        for K in kraus_form
+    )
+
+    # Target-overlap contribution.
+    overlap_term = sum(
+        np.abs((target.dag() * K).tr()) ** 2
+        for K in kraus_form
+    )
+
+    fidelity = (
+        survival_term + overlap_term
+    ) / (d * (d + 1))
+
+    return float(np.real_if_close(fidelity))
+
 
 # def xgate_fidelity_optimize(arg, *args):
 #     [H0, drive_term, w_trans_1, w_trans_2, hilbert_space, tg, drag] = args

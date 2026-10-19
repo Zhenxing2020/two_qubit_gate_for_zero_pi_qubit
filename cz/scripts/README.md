@@ -149,6 +149,23 @@ summary PNGs after those runs finish:
 - **Fidelity evaluator:** optimization and all re-scoring use `ut.cz_fidelity_log_noise`
   (super-operator propagator, 3 pts/ns). Runs launched before this was standardized
   carry a ~1% offset in their `truc=1000` curve — that's what step 3 fixes.
+- **Leakage-aware fidelity:** projected logical maps must ultimately route through
+  `ut.average_gate_fidelity_trace_decreasing`.  Unlike QuTiP 4.7's
+  `average_gate_fidelity`, this uses
+  `sum_k Tr(K_k.dag() K_k)` rather than assuming that term is exactly `d`, so
+  population leaked out of the logical subspace contributes to the reported
+  infidelity.  `ut.get_fidelity_super_operator` is the central production route.
+- **Rescore saved final pulses:** `rescore_final_pulses_trace_decreasing.py` preserves
+  the optimized pulse parameters and original result, creates a sibling
+  `<run>_trace_decreasing` directory, and recomputes `f_trunc`, `f_large`, and
+  `f_fixed`.  It checkpoints every completed sweep point and is safe to rerun:
+
+      python rescore_final_pulses_trace_decreasing.py \
+          data/results/cz_sweep_<final-run> --workers 21
+
+  Completed NPZ files record
+  `config["fidelity_formula"] = "average_gate_fidelity_trace_decreasing"`; the
+  copied directory also retains the former arrays in `legacy_scores.npz`.
 - **Log files** (in `$DATA`): `opt_<param>_<gate>.out` (per optimize run),
   `opt_reopt_<run>.out` (per re-opt), `run_<param>.out` (per generation),
   `_cz_weekend_monitor.log`, `_reopt_finished_loop.log`.
