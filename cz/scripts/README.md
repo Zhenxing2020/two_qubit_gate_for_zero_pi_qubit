@@ -15,6 +15,10 @@ with all 21 points (coherent-only: `evecs_tot` dropped, loader returns `eket_tot
 
     DATA=/data/zp_sweeps/test2          # e.g. $DATA/EC2_sweep/two_qubit_sweep_data.npz
 
+The matching qubit-1 referee campaign (`EC1`, `EJ1`, `ECJ1`, `EL1`, `ng1`, `Phi1`)
+is documented in [`QUBIT1_REFEREE_SWEEPS.md`](QUBIT1_REFEREE_SWEEPS.md). Its
+bandwidth-conscious, resumable launcher is `launch_qubit1_referee_sweeps.sh`.
+
 **Optimization results** (output) are written under the repo to
 **`cz/data/results/cz_sweep_<param>_tg<gate>_<ts>/`** — one self-documenting dir per run
 (npz + csv + `cz_sweep_summary.png`).

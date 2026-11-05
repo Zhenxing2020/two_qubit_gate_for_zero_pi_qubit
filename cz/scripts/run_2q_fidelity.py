@@ -292,16 +292,21 @@ def build_collapse_ops(cfg, data, eket_truc):
     """
     noise_dephase_path = Path(cfg["noise_dephase_path"])
     noise_data = np.load(noise_dephase_path)
-    gamma_dephase_02_q0 = np.abs(noise_data["q0"] / cfg["t1_tphi_other"])
-    gamma_dephase_02_q1 = np.abs(noise_data["q1"] / cfg["t1_tphi_other"])
+    tphi_us = cfg.get("tphi_us", cfg["t1_tphi_other"])
+    t1_us = cfg.get("t1_us", cfg["t1_tphi_other"])
+    t1_us_q0 = cfg.get("t1_us_q0", t1_us)
+    t1_us_q1 = cfg.get("t1_us_q1", t1_us)
+    if min(tphi_us, t1_us_q0, t1_us_q1) <= 0:
+        raise ValueError("T1 and Tphi times must be positive")
+    gamma_dephase_02_q0 = np.abs(noise_data["q0"] / tphi_us)
+    gamma_dephase_02_q1 = np.abs(noise_data["q1"] / tphi_us)
     print(f"noise source = {noise_dephase_path}")
 
     n_theta0 = data["n_theta0"] / (2 * np.pi)
     n_theta1 = data["n_theta1"] / (2 * np.pi)
 
-    Gamma = 1 / 1e3 / cfg["t1_tphi_other"]
-    Gamma_decay_q0 = Gamma / (n_theta0[4, 8] ** 2)
-    Gamma_decay_q1 = Gamma / (n_theta1[4, 8] ** 2)
+    Gamma_decay_q0 = 1 / (1e3 * t1_us_q0 * n_theta0[4, 8] ** 2)
+    Gamma_decay_q1 = 1 / (1e3 * t1_us_q1 * n_theta1[4, 8] ** 2)
 
     transition_a, n_theta0_trunc = ut.get_transitions_for_collapse(
         data["hspace_0"],
@@ -313,6 +318,16 @@ def build_collapse_ops(cfg, data, eket_truc):
         n_theta1,
         filter_ratio=cfg["filter_ratio"],
     )
+    for lower, upper in cfg.get("extra_decay_pairs", ()):
+        for hspace, transitions in (
+            (data["hspace_0"], transition_a),
+            (data["hspace_1"], transition_b),
+        ):
+            if lower not in hspace or upper not in hspace:
+                raise ValueError(f"Extra decay transition {upper}->{lower} is outside the selected single-qubit space")
+            pair = (hspace.index(lower), hspace.index(upper))
+            if pair not in transitions:
+                transitions.append(pair)
 
     c_op_list = ut.construct_c_ops_2q(
         data["dim_0"],
@@ -329,6 +344,10 @@ def build_collapse_ops(cfg, data, eket_truc):
         cfg["apply_decay"],
         cfg["apply_dephase"],
         cfg["decay_enlarge"],
+        cfg.get("collapse_setup_workers", 10),
+        cfg.get("nonlogical_rate_scale", 1),
+        tuple(data["hspace_0"].index(state) for state in (0, 2)),
+        tuple(data["hspace_1"].index(state) for state in (0, 2)),
     )
     # print(f"len(c_op_list) = {len(c_op_list)}")
     return c_op_list
@@ -598,4 +617,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

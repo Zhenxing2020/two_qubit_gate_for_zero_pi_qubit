@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from qutip.qip.operations import rz, cz_gate, cnot, rx, hadamard_transform, swap
 import cmath
 import scipy.sparse as ssp
+from scipy.optimize import minimize
 from sympy import symbols
 from joblib import Parallel, delayed
 from multiprocessing import Pool
@@ -664,13 +665,88 @@ def XI_phase_correct(U_kraus):
 
 
 def cz_phase_correct(U_kraus):
-    U_final = []
+    return cz_phase_optimize_channel(U_kraus)[0]
+
+def cz_phase_correct_dominant(U_kraus):
+    weights = np.asarray([
+        float(np.real((u.dag() * u).tr())) for u in U_kraus
+    ])
+    dominant_index = int(np.argmax(weights))
+    dominant = U_kraus[dominant_index]
+    angle_q0 = float(dphi(dominant, (2, 2)))
+    angle_q1 = float(dphi(dominant, (1, 1)))
+    Uz = remove_global_phase(qt.tensor(rz(angle_q0), rz(angle_q1)))
+    corrected = []
     for u in U_kraus:
-        Uz = remove_global_phase(qt.tensor( rz(dphi(u, (2,2))),
-                                            rz(dphi(u, (1,1)))))
-        Uc_reshaped = qt.Qobj(u.data, dims=[[2, 2], [2, 2]])
-        U_final.append(remove_global_phase(Uz * Uc_reshaped))
-    return U_final
+        reshaped = qt.Qobj(u.data, dims=[[2, 2], [2, 2]])
+        corrected.append(Uz * reshaped)
+    return corrected, (angle_q0, angle_q1), dominant_index, weights[dominant_index]
+
+
+def cz_phase_correct_channel(U_kraus):
+    if not U_kraus:
+        raise ValueError("Kraus list is empty")
+    # E(|0><j|)[0,j] = sum_k K_k[0,0] conj(K_k[j,j]).  These
+    # coherences are properties of the channel and are unchanged by unitary
+    # mixing of its Kraus representation.
+    coherence_02 = sum(u[0, 0] * np.conj(u[2, 2]) for u in U_kraus)
+    coherence_01 = sum(u[0, 0] * np.conj(u[1, 1]) for u in U_kraus)
+    angle_q0 = float(np.angle(coherence_02))
+    angle_q1 = float(np.angle(coherence_01))
+    Uz = remove_global_phase(qt.tensor(
+        rz(angle_q0),
+        rz(angle_q1),
+    ))
+    corrected = []
+    for u in U_kraus:
+        reshaped = qt.Qobj(u.data, dims=[[2, 2], [2, 2]])
+        corrected.append(Uz * reshaped)
+    return corrected, (angle_q0, angle_q1)
+
+
+def cz_phase_optimize_channel(U_kraus, target=None):
+    """Numerically optimize one channel-wide local-Z correction.
+
+    The better of the dominant-Kraus and coherence-weighted corrections is
+    used as the initial point.  Only two angles are optimized, and the same
+    resulting unitary is applied to every Kraus operator.
+
+    Returns ``(corrected, angles, fidelity, seed_name, scipy_result)``.
+    """
+    if not U_kraus:
+        raise ValueError("Kraus list is empty")
+    if target is None:
+        target = cz_gate()
+
+    dominant, dominant_angles, _, _ = cz_phase_correct_dominant(U_kraus)
+    weighted, weighted_angles = cz_phase_correct_channel(U_kraus)
+    dominant_fidelity = average_gate_fidelity_trace_decreasing(dominant, target)
+    weighted_fidelity = average_gate_fidelity_trace_decreasing(weighted, target)
+    if dominant_fidelity >= weighted_fidelity:
+        seed_name, seed = "dominant", np.asarray(dominant_angles)
+    else:
+        seed_name, seed = "weighted", np.asarray(weighted_angles)
+
+    reshaped = [qt.Qobj(u.data, dims=[[2, 2], [2, 2]]) for u in U_kraus]
+
+    def corrected_at(angles):
+        uz = qt.tensor(rz(float(angles[0])), rz(float(angles[1])))
+        return [uz * u for u in reshaped]
+
+    result = minimize(
+        lambda angles: -average_gate_fidelity_trace_decreasing(
+            corrected_at(angles), target
+        ),
+        seed,
+        method="Nelder-Mead",
+        options={"xatol": 1e-12, "fatol": 1e-14, "maxiter": 1000},
+    )
+    if not result.success:
+        raise RuntimeError(f"Local-Z optimization failed: {result.message}")
+    angles = (np.asarray(result.x) + np.pi) % (2 * np.pi) - np.pi
+    corrected = corrected_at(angles)
+    fidelity = average_gate_fidelity_trace_decreasing(corrected, target)
+    return corrected, tuple(angles), fidelity, seed_name, result
 
 def cz_fidelity_log(arg_all):
     # print_time()
@@ -1232,7 +1308,7 @@ def get_fidelity_super_operator(propagator, logi_idx, gate_target, c_op_list, mi
         kraus = qt.to_kraus(propagator)
         kraus = [truncate_2(i, logi_idx) for i in kraus]    
         if gate_target == cz_gate():
-            kraus = cz_phase_correct(kraus)    
+            kraus, _, _, _ = cz_phase_correct_dominant(kraus)
         if gate_target == cnot():
             kraus = cnot_phase_correct(kraus, mid_state=mid_state)    
         super_op_post = qt.kraus_to_super(kraus)
@@ -1553,7 +1629,9 @@ def construct_c_ops_2q(dim_0, dim_1, n_theta0_trunc, n_theta1_trunc,
                         gamma_dephase_02_q0, gamma_dephase_02_q1, eket_tot, 
                         Gamma_decay_q0, Gamma_decay_q1, 
                         transition_a, transition_b, 
-                        apply_decay=True, apply_dephase=True, decay_enlarge=1):
+                        apply_decay=True, apply_dephase=True, decay_enlarge=1,
+                        setup_workers=10, nonlogical_rate_scale=1,
+                        logical_positions_q0=(0, 2), logical_positions_q1=(0, 2)):
     """
     Constructs collapse operators for dissipation.
     """
@@ -1561,27 +1639,47 @@ def construct_c_ops_2q(dim_0, dim_1, n_theta0_trunc, n_theta1_trunc,
     qubit_a = True
     if apply_decay:
         arg_a_decay = [dim_0, dim_1, n_theta0_trunc, eket_tot, qubit_a, Gamma_decay_q0] 
-        jump_t1_a = Parallel(n_jobs=10)(delayed(get_jump_op_decay)
+        jump_t1_a = Parallel(n_jobs=setup_workers)(delayed(get_jump_op_decay)
                                         (transition, *arg_a_decay) 
                                         for transition in transition_a)
     if apply_dephase:
         arg_a_dephase = [dim_0, dim_1, gamma_dephase_02_q0, eket_tot, qubit_a] 
-        jump_tphi_a = Parallel(n_jobs=10)(delayed(get_jump_op_dephase)
+        jump_tphi_a = Parallel(n_jobs=setup_workers)(delayed(get_jump_op_dephase)
                                         (state_j, *arg_a_dephase) 
                                         for state_j in range(1,dim_0))
 
     qubit_a = False
     if apply_decay:
         arg_b_decay = [dim_0, dim_1, n_theta1_trunc, eket_tot, qubit_a, Gamma_decay_q1] 
-        jump_t1_b = Parallel(n_jobs=10)(delayed(get_jump_op_decay)
+        jump_t1_b = Parallel(n_jobs=setup_workers)(delayed(get_jump_op_decay)
                                         (transition, *arg_b_decay) 
                                         for transition in transition_b)
     if apply_dephase:
         arg_b_dephase = [dim_0, dim_1, gamma_dephase_02_q1, eket_tot, qubit_a] 
-        jump_tphi_b = Parallel(n_jobs=10)(delayed(get_jump_op_dephase)
+        jump_tphi_b = Parallel(n_jobs=setup_workers)(delayed(get_jump_op_dephase)
                                         (state_j, *arg_b_dephase) 
                                         for state_j in range(1,dim_1))
     
+    # Collapse-operator amplitudes scale as sqrt(rate).  For decay, classify
+    # by the upper (decaying) state; for dephasing, by the projected state.
+    rate_amplitude_scale = np.sqrt(nonlogical_rate_scale)
+    jump_tphi_a = [
+        op if state_j in logical_positions_q0 else rate_amplitude_scale * op
+        for state_j, op in zip(range(1, dim_0), jump_tphi_a)
+    ]
+    jump_tphi_b = [
+        op if state_j in logical_positions_q1 else rate_amplitude_scale * op
+        for state_j, op in zip(range(1, dim_1), jump_tphi_b)
+    ]
+    jump_t1_a = [
+        op if transition[1] in logical_positions_q0 else rate_amplitude_scale * op
+        for transition, op in zip(transition_a, jump_t1_a)
+    ]
+    jump_t1_b = [
+        op if transition[1] in logical_positions_q1 else rate_amplitude_scale * op
+        for transition, op in zip(transition_b, jump_t1_b)
+    ]
+
     # print(f'decay_enlarge = {decay_enlarge}')
     # print(f'len(jump_tphi_a) = {len(jump_tphi_a)}, len(jump_tphi_b) = {len(jump_tphi_b)}')
     # print(f'len(jump_t1_a) = {len(jump_t1_a)}, len(jump_t1_b) = {len(jump_t1_b)}')
