@@ -13,7 +13,7 @@ import pandas as pd
 from datetime import datetime
 import pytz, os
 import networkx as nx
-
+from scipy.optimize import minimize
 
 XI = qt.tensor(qt.sigmax(), qt.identity(2))   
 
@@ -693,14 +693,98 @@ def XI_phase_correct(U_kraus):
 # CZ-gate
 
 
+# def cz_phase_correct(U_kraus):
+#     U_final = []
+#     for u in U_kraus:
+#         Uz = remove_global_phase(qt.tensor( rz(dphi(u, (2,2))),
+#                                             rz(dphi(u, (1,1)))))
+#         Uc_reshaped = qt.Qobj(u.data, dims=[[2, 2], [2, 2]])
+#         U_final.append(remove_global_phase(Uz * Uc_reshaped))
+#     return U_final
+
 def cz_phase_correct(U_kraus):
-    U_final = []
+    return cz_phase_optimize_channel(U_kraus)[0]
+
+def cz_phase_correct_dominant(U_kraus):
+    weights = np.asarray([
+        float(np.real((u.dag() * u).tr())) for u in U_kraus
+    ])
+    dominant_index = int(np.argmax(weights))
+    dominant = U_kraus[dominant_index]
+    angle_q0 = float(dphi(dominant, (2, 2)))
+    angle_q1 = float(dphi(dominant, (1, 1)))
+    Uz = remove_global_phase(qt.tensor(rz(angle_q0), rz(angle_q1)))
+    corrected = []
     for u in U_kraus:
-        Uz = remove_global_phase(qt.tensor( rz(dphi(u, (2,2))),
-                                            rz(dphi(u, (1,1)))))
-        Uc_reshaped = qt.Qobj(u.data, dims=[[2, 2], [2, 2]])
-        U_final.append(remove_global_phase(Uz * Uc_reshaped))
-    return U_final
+        reshaped = qt.Qobj(u.data, dims=[[2, 2], [2, 2]])
+        corrected.append(Uz * reshaped)
+    return corrected, (angle_q0, angle_q1), dominant_index, weights[dominant_index]
+
+
+def cz_phase_correct_channel(U_kraus):
+    if not U_kraus:
+        raise ValueError("Kraus list is empty")
+    # E(|0><j|)[0,j] = sum_k K_k[0,0] conj(K_k[j,j]).  These
+    # coherences are properties of the channel and are unchanged by unitary
+    # mixing of its Kraus representation.
+    coherence_02 = sum(u[0, 0] * np.conj(u[2, 2]) for u in U_kraus)
+    coherence_01 = sum(u[0, 0] * np.conj(u[1, 1]) for u in U_kraus)
+    angle_q0 = float(np.angle(coherence_02))
+    angle_q1 = float(np.angle(coherence_01))
+    Uz = remove_global_phase(qt.tensor(
+        rz(angle_q0),
+        rz(angle_q1),
+    ))
+    corrected = []
+    for u in U_kraus:
+        reshaped = qt.Qobj(u.data, dims=[[2, 2], [2, 2]])
+        corrected.append(Uz * reshaped)
+    return corrected, (angle_q0, angle_q1)
+
+
+def cz_phase_optimize_channel(U_kraus, target=None):
+    """Numerically optimize one channel-wide local-Z correction.
+
+    The better of the dominant-Kraus and coherence-weighted corrections is
+    used as the initial point.  Only two angles are optimized, and the same
+    resulting unitary is applied to every Kraus operator.
+
+    Returns ``(corrected, angles, fidelity, seed_name, scipy_result)``.
+    """
+    if not U_kraus:
+        raise ValueError("Kraus list is empty")
+    if target is None:
+        target = cz_gate()
+
+    dominant, dominant_angles, _, _ = cz_phase_correct_dominant(U_kraus)
+    weighted, weighted_angles = cz_phase_correct_channel(U_kraus)
+    dominant_fidelity = average_gate_fidelity_trace_decreasing(dominant, target)
+    weighted_fidelity = average_gate_fidelity_trace_decreasing(weighted, target)
+    if dominant_fidelity >= weighted_fidelity:
+        seed_name, seed = "dominant", np.asarray(dominant_angles)
+    else:
+        seed_name, seed = "weighted", np.asarray(weighted_angles)
+
+    reshaped = [qt.Qobj(u.data, dims=[[2, 2], [2, 2]]) for u in U_kraus]
+
+    def corrected_at(angles):
+        uz = qt.tensor(rz(float(angles[0])), rz(float(angles[1])))
+        return [uz * u for u in reshaped]
+
+    result = minimize(
+        lambda angles: -average_gate_fidelity_trace_decreasing(
+            corrected_at(angles), target
+        ),
+        seed,
+        method="Nelder-Mead",
+        options={"xatol": 1e-12, "fatol": 1e-14, "maxiter": 1000},
+    )
+    if not result.success:
+        raise RuntimeError(f"Local-Z optimization failed: {result.message}")
+    angles = (np.asarray(result.x) + np.pi) % (2 * np.pi) - np.pi
+    corrected = corrected_at(angles)
+    fidelity = average_gate_fidelity_trace_decreasing(corrected, target)
+    return corrected, tuple(angles), fidelity, seed_name, result
 
 def cz_fidelity_log(arg_all):
     # print_time()

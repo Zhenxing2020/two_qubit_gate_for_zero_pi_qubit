@@ -51,3 +51,44 @@ differential_evolution step 25: f(x)= -2.3362337714303325
 CHECKPOINT {"tg": 827.5302774089872, "drive_amp_1": 0.020067463572310283, "drive_amp_2": 0.05008494241306233, "detune_1": -0.006349212948478866, "detune_2": -0.006751261473068834, "log10_infidelity": -2.3362337714303325, "max_intermediate_population": 0.0450681928073761, "convergence": 0.002043936654945777, "updated": "2026-08-13T08:16:48.355466"}
 differential_evolution step 26: f(x)= -2.3362337714303325
 CHECKPOINT {"tg": 827.5302774089872, "drive_amp_1": 0.020067463572310283, "drive_amp_2": 0.05008494241306233, "detune_1": -0.006349212948478866, "detune_2": -0.006751261473068834, "log10_infidelity": -2.3362337714303325, "max_intermediate_population": 0.0450681928073761, "convergence": 0.002196608223987388, "updated": "2026-08-13T09:20:36.130029"}
+differential_evolution step 27: f(x)= -2.3362337714303325
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/Xgate_fidelity_optimize.py", line 196, in optimization_828
+    }
+     
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py", line 502, in differential_evolution
+    ret = solver.solve()
+          ^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/scipy/optimize/_differentialevolution.py", line 1184, in solve
+    warning_flag = bool(self.callback(res))
+                        ^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/scipy/optimize/_optimize.py", line 151, in wrapped_callback
+    return callback(np.copy(res.x), res.convergence)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/Xgate_fidelity_optimize.py", line 189, in callback
+    "tg_window": args.tg_window,
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/pathlib.py", line 1078, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/xgate_828_optimization/population_limited_20260812_013933_490758/population-limited.checkpoint.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/Xgate_fidelity_optimize.py", line 303, in <module>
+    evals, n_theta, n_phi, logical_states = ut.load_qubit_data_xgate()
+    ^^^^^^
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/Xgate_fidelity_optimize.py", line 299, in main
+    
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/Xgate_fidelity_optimize.py", line 209, in optimization_828
+    "max_intermediate_population": initial_population,
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/pathlib.py", line 1078, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/xgate/xgate_828_optimization/population_limited_20260812_013933_490758/population-limited.status'
