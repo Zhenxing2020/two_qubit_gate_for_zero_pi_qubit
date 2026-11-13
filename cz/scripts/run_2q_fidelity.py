@@ -243,6 +243,27 @@ def select_gate_quantities(cfg, data):
     return gate
 
 
+def _cz_fidelity_checkpoint(p, args_common, checkpoint_dir, signature, n_truc, pulse_index):
+    """Optional per-pulse checkpoint; standard runs keep the original path."""
+    import json
+    path = Path(checkpoint_dir) / f'n{n_truc}_pulse{pulse_index:03d}.json'
+    if path.exists():
+        saved = json.loads(path.read_text())
+        if saved.get('signature') == signature and saved.get('params') == list(map(float,p)):
+            return saved['log10_error']
+    value = float(ut.cz_fidelity_log_noise(p, *args_common))
+    error = float(10.0 ** value)
+    if not np.isfinite(value) or not 0 <= error <= 1:
+        raise ValueError(f'Invalid CZ error: {value}')
+    record = dict(signature=signature, n_truc=int(n_truc), pulse_index=int(pulse_index),
+                  params=list(map(float,p)), log10_error=value, fidelity=1-error, gate_error=error)
+    tmp = path.with_suffix('.json.tmp')
+    tmp.write_text(json.dumps(record, indent=2))
+    os.replace(tmp, path)
+    print(f"Saved n={n_truc}, pulse={pulse_index}, tg={p[0]:.6f} ns, error={error:.10g}", flush=True)
+    return value
+
+
 def run_gate_fidelity(
     cfg,
     H_drive_select,
@@ -268,6 +289,13 @@ def run_gate_fidelity(
             option_noisy,
             cfg["use_qt_fidelity"],
         ]
+        if cfg.get("ideal_checkpoint_dir") and not c_op_list:
+            Path(cfg["ideal_checkpoint_dir"]).mkdir(parents=True, exist_ok=True)
+            return Parallel(n_jobs=cfg["n_job"])(
+                delayed(_cz_fidelity_checkpoint)(
+                    p, args_common, cfg["ideal_checkpoint_dir"], cfg["checkpoint_signature"],
+                    H_drive_select[0].shape[0], i)
+                for i,p in enumerate(cfg["params"]))
         return Parallel(n_jobs=cfg["n_job"])(
             delayed(ut.cz_fidelity_log_noise)(p, *args_common)
             for p in cfg["params"]

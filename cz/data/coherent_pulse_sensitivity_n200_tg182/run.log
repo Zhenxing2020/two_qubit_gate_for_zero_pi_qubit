@@ -1,0 +1,69 @@
+Executing cell 17
+Executing cell 18
+Nominal [tg ns, amplitude, detune GHz]: [1.82010007e+02 7.88000000e-03 1.31270000e-02]
+n_truc: 200 ; workers: 50
+Executing cell 19
+Nominal fidelity: 0.9999319371596643 ; fixed Z angles: (-2.9815495494865725, -3.032809673566705)
+[Parallel(n_jobs=50)]: Using backend LokyBackend with 50 concurrent workers.
+[Parallel(n_jobs=50)]: Done  13 tasks      | elapsed:   36.1s
+[Parallel(n_jobs=50)]: Done  28 tasks      | elapsed:   36.3s
+[Parallel(n_jobs=50)]: Done  45 tasks      | elapsed:   36.8s
+[Parallel(n_jobs=50)]: Done  62 tasks      | elapsed:  1.2min
+[Parallel(n_jobs=50)]: Done  81 tasks      | elapsed:  1.2min
+[Parallel(n_jobs=50)]: Done 100 tasks      | elapsed:  1.2min
+[Parallel(n_jobs=50)]: Done 122 out of 200 | elapsed:  1.7min remaining:  1.1min
+[Parallel(n_jobs=50)]: Done 143 out of 200 | elapsed:  1.8min remaining:   42.1s
+[Parallel(n_jobs=50)]: Done 164 out of 200 | elapsed:  2.3min remaining:   30.4s
+[Parallel(n_jobs=50)]: Done 185 out of 200 | elapsed:  2.3min remaining:   11.3s
+[Parallel(n_jobs=50)]: Done 200 out of 200 | elapsed:  2.4min finished
+Saved 202 scan points to /home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/cz/data/coherent_pulse_sensitivity_n200_tg182
+Executing cell 20
+Traceback (most recent call last):
+  File "/tmp/run_sensitivity_notebook_section.py", line 11, in <module>
+    exec(compile(''.join(nb['cells'][i]['source']),str(p)+f'::cell{i}','exec'),namespace)
+  File "/home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/cz/sensitivity_pulse_params.ipynb::cell20", line 33, in <module>
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/figure.py", line 3490, in savefig
+    self.canvas.print_figure(fname, **kwargs)
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/backend_bases.py", line 2157, in print_figure
+    self.figure.draw(renderer)
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/artist.py", line 94, in draw_wrapper
+    result = draw(artist, renderer, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/artist.py", line 71, in draw_wrapper
+    return draw(artist, renderer)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/figure.py", line 3257, in draw
+    mimage._draw_list_compositing_images(
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/image.py", line 134, in _draw_list_compositing_images
+    a.draw(renderer)
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/artist.py", line 71, in draw_wrapper
+    return draw(artist, renderer)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/text.py", line 752, in draw
+    bbox, info, descent = self._get_layout(renderer)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/text.py", line 382, in _get_layout
+    w, h, d = _get_text_metrics_with_cache(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/text.py", line 69, in _get_text_metrics_with_cache
+    return _get_text_metrics_with_cache_impl(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/text.py", line 77, in _get_text_metrics_with_cache_impl
+    return renderer_ref().get_text_width_height_descent(text, fontprop, ismath)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/backends/backend_agg.py", line 215, in get_text_width_height_descent
+    self.mathtext_parser.parse(s, self.dpi, prop)
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/mathtext.py", line 86, in parse
+    return self._parse_cached(s, dpi, prop, antialiased, load_glyph_flags)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/mathtext.py", line 100, in _parse_cached
+    box = self._parser.parse(s, fontset, fontsize, dpi)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zlqed/anaconda3/envs/zp2q/lib/python3.11/site-packages/matplotlib/_mathtext.py", line 2173, in parse
+    raise ValueError("\n" + ParseException.explain(err, 0)) from None
+ValueError: 
+CZ coherent pulse sensitivity, $t_gpprox182$ ns
+                               ^
+ParseException: Expected end of text, found '$'  (at char 31), (line:1, col:32)
+
+Plot-label escaping corrected; plotting cell re-executed successfully. CSV, PNG/PDF and notebook output saved. Status: COMPLETE.

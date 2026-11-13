@@ -1,0 +1,27 @@
+Executing cell 17
+Executing cell 18
+Nominal [tg ns, amplitude, detune GHz]: [1.82014628e+02 7.88503000e-03 1.31204500e-02]
+n_truc: 200 ; workers: 50
+Executing cell 19
+Nominal fidelity: 0.9999321733059577 ; fixed Z angles: (-2.877561555830007, -2.93714161357851)
+[Parallel(n_jobs=50)]: Using backend LokyBackend with 50 concurrent workers.
+[Parallel(n_jobs=50)]: Done  13 tasks      | elapsed:   37.8s
+[Parallel(n_jobs=50)]: Done  28 tasks      | elapsed:   38.1s
+[Parallel(n_jobs=50)]: Done  45 tasks      | elapsed:   39.0s
+[Parallel(n_jobs=50)]: Done  62 tasks      | elapsed:  1.3min
+[Parallel(n_jobs=50)]: Done  81 tasks      | elapsed:  1.3min
+[Parallel(n_jobs=50)]: Done 100 tasks      | elapsed:  1.3min
+[Parallel(n_jobs=50)]: Done 122 out of 200 | elapsed:  1.9min remaining:  1.2min
+[Parallel(n_jobs=50)]: Done 143 out of 200 | elapsed:  1.9min remaining:   46.1s
+[Parallel(n_jobs=50)]: Done 164 out of 200 | elapsed:  2.5min remaining:   33.2s
+[Parallel(n_jobs=50)]: Done 185 out of 200 | elapsed:  2.5min remaining:   12.4s
+[Parallel(n_jobs=50)]: Done 200 out of 200 | elapsed:  2.6min finished
+Saved 202 scan points to /home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/cz/data/coherent_pulse_sensitivity_noise_pulses_n200_tg182
+Executing cell 20
+     scan phase_correction  min_sampled_fidelity  worst_deviation  passes_99p9_percent
+ detuning      optimized_z              0.999221            -0.50                 True
+ detuning          fixed_z              0.998029            -0.50                False
+amplitude      optimized_z              0.999321             0.02                 True
+amplitude          fixed_z              0.995919             0.02                False
+Tests refer to sampled points in ±500 kHz and ±2% windows; not a continuous-domain proof.
+COMPLETE: sensitivity notebook and plots saved.

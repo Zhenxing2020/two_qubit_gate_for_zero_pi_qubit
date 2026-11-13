@@ -1,0 +1,27 @@
+Selected [tg_ns, drive_amp, detune_GHz]: [1.82010007e+02 7.88000000e-03 1.31270000e-02]
+Pair (30.0, 30.0): 371 collapse operators
+Pair (300.0, 30.0): 371 collapse operators
+Pair (3000.0, 30.0): 371 collapse operators
+Pair (300.0, 3.0): 371 collapse operators
+Pair (300.0, 300.0): 371 collapse operators
+Noiseless fidelity=0.99993404541, error=6.59545902664e-05
+Starting 80 ME solves using 80 workers
+[Parallel(n_jobs=80)]: Using backend LokyBackend with 80 concurrent workers.
+[Parallel(n_jobs=80)]: Done   2 out of  80 | elapsed: 39.8min remaining: 1552.3min
+[Parallel(n_jobs=80)]: Done  11 out of  80 | elapsed: 44.5min remaining: 278.9min
+[Parallel(n_jobs=80)]: Done  20 out of  80 | elapsed: 47.2min remaining: 141.7min
+[Parallel(n_jobs=80)]: Done  29 out of  80 | elapsed: 48.8min remaining: 85.8min
+[Parallel(n_jobs=80)]: Done  38 out of  80 | elapsed: 49.3min remaining: 54.5min
+[Parallel(n_jobs=80)]: Done  47 out of  80 | elapsed: 50.2min remaining: 35.2min
+[Parallel(n_jobs=80)]: Done  56 out of  80 | elapsed: 51.3min remaining: 22.0min
+[Parallel(n_jobs=80)]: Done  65 out of  80 | elapsed: 52.6min remaining: 12.1min
+[Parallel(n_jobs=80)]: Done  74 out of  80 | elapsed: 54.3min remaining:  4.4min
+[Parallel(n_jobs=80)]: Done  80 out of  80 | elapsed: 57.0min finished
+           scan      tg_ns  n_truc  ideal_fidelity  ideal_error  T_logical_us  T_nonlogical_us  fidelity  gate_error  mean_full_trace  mean_logical_survival  logical_choi_min_eigenvalue
+   logical_scan 182.010007      60        0.999934     0.000066          30.0             30.0  0.994835    0.005165              1.0               0.999329                 8.353915e-16
+   logical_scan 182.010007      60        0.999934     0.000066         300.0             30.0  0.999245    0.000755              1.0               0.999766                -4.003789e-13
+   logical_scan 182.010007      60        0.999934     0.000066        3000.0             30.0  0.999688    0.000312              1.0               0.999810                -3.334509e-13
+nonlogical_scan 182.010007      60        0.999934     0.000066         300.0              3.0  0.997492    0.002508              1.0               0.998700                -2.548895e-14
+nonlogical_scan 182.010007      60        0.999934     0.000066         300.0             30.0  0.999245    0.000755              1.0               0.999766                -4.003789e-13
+nonlogical_scan 182.010007      60        0.999934     0.000066         300.0            300.0  0.999421    0.000579              1.0               0.999874                -1.789381e-13
+Saved results and plots: /home/zlqed/two_qubit_gate/zeropi/two_qubit_gate_clean/cz/data/separate_coherence_cz_182ns
